@@ -57,7 +57,7 @@
                                 <img class="img-profile rounded-circle"
                                     src="<?php echo base_url('assets/images/profile/undraw_profile_packing.svg'); ?>">
                             </a>
-                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in bg-white"
                                 aria-labelledby="userDropdown">
                                 <a class="dropdown-item" href="<?php echo site_url('setup/user/profile'); ?>">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
