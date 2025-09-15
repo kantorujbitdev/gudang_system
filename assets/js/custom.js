@@ -1,5 +1,4 @@
 // Custom JavaScript untuk aplikasi
-
 // Fungsi untuk format currency
 function formatCurrency(amount) {
 	return new Intl.NumberFormat("id-ID", {
@@ -56,3 +55,26 @@ $(document).click(function (e) {
 setTimeout(function () {
 	$(".alert").fadeOut("slow");
 }, 5000);
+
+// Handle sidebar toggle on mobile
+$(document).ready(function () {
+	// Check if window width is less than 768px
+	if ($(window).width() < 768) {
+		// Hide sidebar by default on mobile
+		$("body").addClass("sidebar-toggled");
+		$(".sidebar").addClass("toggled");
+	}
+
+	// Handle window resize
+	$(window).resize(function () {
+		if ($(window).width() < 768) {
+			// Hide sidebar by default on mobile
+			$("body").addClass("sidebar-toggled");
+			$(".sidebar").addClass("toggled");
+		} else {
+			// Show sidebar on desktop
+			$("body").removeClass("sidebar-toggled");
+			$(".sidebar").removeClass("toggled");
+		}
+	});
+});

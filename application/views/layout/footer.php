@@ -1,7 +1,5 @@
 </div>
-<!-- /.container-fluid -->
 <!-- End of Main Content -->
-
 <!-- Footer -->
 <footer class="sticky-footer bg-white">
     <div class="container my-auto">
@@ -15,12 +13,10 @@
 <!-- End of Content Wrapper -->
 </div>
 <!-- End of Page Wrapper -->
-
 <!-- Scroll to Top Button-->
 <a class="scroll-to-top rounded" href="#page-top">
     <i class="fas fa-angle-up"></i>
 </a>
-
 <!-- Logout Modal-->
 <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
     aria-hidden="true">
@@ -42,3 +38,17 @@
 </div>
 <!-- Modal Global -->
 <?php $this->load->view('layout/modal'); ?>
+<!-- Bootstrap core JavaScript-->
+<script src="<?php echo base_url('assets/vendor/jquery/jquery.min.js'); ?>"></script>
+<script src="<?php echo base_url('assets/vendor/bootstrap/js/bootstrap.bundle.min.js'); ?>"></script>
+<!-- Core plugin JavaScript-->
+<script src="<?php echo base_url('assets/vendor/jquery-easing/jquery.easing.min.js'); ?>"></script>
+<!-- Custom scripts for all pages-->
+<script src="<?php echo base_url('assets/js/sb-admin-2.min.js'); ?>"></script>
+<!-- Custom scripts for this template-->
+<script src="<?php echo base_url('assets/js/custom.js'); ?>"></script>
+<!-- Menu JavaScript-->
+<script src="<?php echo base_url('assets/js/menu.js'); ?>"></script>
+</body>
+
+</html>
