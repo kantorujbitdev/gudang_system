@@ -36,17 +36,8 @@ class MY_Controller extends CI_Controller
         // Menu
         $this->data['menu'] = $this->menu->get_menu();
 
-        // Notifikasi
-        $this->data['notifications'] = $this->get_notifications();
-
         // Title default
         $this->data['title'] = 'Dashboard';
-    }
-
-    private function get_notifications()
-    {
-        // Implementasi notifikasi
-        return [];
     }
 
     protected function render_view($view, $data = NULL)

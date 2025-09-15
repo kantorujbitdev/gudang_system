@@ -3,18 +3,17 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class Kategori extends MY_Controller
 {
-
     public function __construct()
     {
         parent::__construct();
         $this->load->model('setup/Kategori_model');
+        $this->load->helper('form');
     }
 
     public function index()
     {
         $this->data['title'] = 'Kategori Barang';
         $this->data['kategori'] = $this->Kategori_model->get_all();
-
         $this->render_view('setup/kategori/index');
     }
 
@@ -23,18 +22,23 @@ class Kategori extends MY_Controller
         $this->data['title'] = 'Tambah Kategori Barang';
 
         if ($this->input->post()) {
-            $data = array(
-                'id_perusahaan' => $this->session->userdata('id_perusahaan'),
-                'nama_kategori' => $this->input->post('nama_kategori'),
-                'deskripsi' => $this->input->post('deskripsi'),
-                'status_aktif' => 1
-            );
+            $this->form_validation->set_rules('nama_kategori', 'Nama Kategori', 'required|trim');
+            $this->form_validation->set_rules('deskripsi', 'Deskripsi', 'trim');
 
-            if ($this->Kategori_model->insert($data)) {
-                $this->session->set_flashdata('success', 'Kategori barang berhasil ditambahkan!');
-                redirect('setup/kategori');
-            } else {
-                $this->session->set_flashdata('error', 'Gagal menambahkan kategori barang!');
+            if ($this->form_validation->run() == TRUE) {
+                $data = array(
+                    'id_perusahaan' => $this->session->userdata('id_perusahaan'),
+                    'nama_kategori' => $this->input->post('nama_kategori'),
+                    'deskripsi' => $this->input->post('deskripsi'),
+                    'status_aktif' => 1
+                );
+
+                if ($this->Kategori_model->insert($data)) {
+                    $this->session->set_flashdata('success', 'Kategori barang berhasil ditambahkan!');
+                    redirect('setup/kategori');
+                } else {
+                    $this->session->set_flashdata('error', 'Gagal menambahkan kategori barang!');
+                }
             }
         }
 
@@ -51,16 +55,21 @@ class Kategori extends MY_Controller
         }
 
         if ($this->input->post()) {
-            $data = array(
-                'nama_kategori' => $this->input->post('nama_kategori'),
-                'deskripsi' => $this->input->post('deskripsi')
-            );
+            $this->form_validation->set_rules('nama_kategori', 'Nama Kategori', 'required|trim');
+            $this->form_validation->set_rules('deskripsi', 'Deskripsi', 'trim');
 
-            if ($this->Kategori_model->update($id_kategori, $data)) {
-                $this->session->set_flashdata('success', 'Kategori barang berhasil diperbarui!');
-                redirect('setup/kategori');
-            } else {
-                $this->session->set_flashdata('error', 'Gagal memperbarui kategori barang!');
+            if ($this->form_validation->run() == TRUE) {
+                $data = array(
+                    'nama_kategori' => $this->input->post('nama_kategori'),
+                    'deskripsi' => $this->input->post('deskripsi')
+                );
+
+                if ($this->Kategori_model->update($id_kategori, $data)) {
+                    $this->session->set_flashdata('success', 'Kategori barang berhasil diperbarui!');
+                    redirect('setup/kategori');
+                } else {
+                    $this->session->set_flashdata('error', 'Gagal memperbarui kategori barang!');
+                }
             }
         }
 

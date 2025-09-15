@@ -1,28 +1,5 @@
 // Custom JavaScript untuk aplikasi
 
-// Fix untuk dropdown menu click
-$(document).ready(function () {
-	// Make dropdown menu clickable on mobile
-	$(".navbar-nav .dropdown > a").on("click", function (e) {
-		if ($(window).width() < 992) {
-			e.preventDefault();
-			$(this).next(".dropdown-menu").toggle();
-		}
-	});
-
-	// Close dropdown when clicking outside
-	$(document).on("click", function (e) {
-		if (!$(e.target).is(".navbar-nav, .navbar-nav *")) {
-			$(".navbar-collapse").collapse("hide");
-		}
-	});
-
-	// Prevent dropdown from closing on click inside
-	$(".dropdown-menu").on("click", function (e) {
-		e.stopPropagation();
-	});
-});
-
 // Fungsi untuk format currency
 function formatCurrency(amount) {
 	return new Intl.NumberFormat("id-ID", {

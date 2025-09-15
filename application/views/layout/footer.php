@@ -40,9 +40,5 @@
         </div>
     </div>
 </div>
-
-<!-- Notifikasi -->
-<?php $this->load->view('layout/notifikasi'); ?>
-
 <!-- Modal Global -->
 <?php $this->load->view('layout/modal'); ?>

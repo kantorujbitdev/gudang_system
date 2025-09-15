@@ -1,3 +1,5 @@
+Bro kita lagi bangun sistem manajemen stok, dengan penjelasan seperti berikut:
+
 📄 Rancangan Sistem Manajemen Stok Gudang
 1. Gambaran Umum
 Sistem ini dirancang untuk mendukung manajemen stok gudang lintas perusahaan dengan fitur yang lengkap mulai dari penerimaan barang, pemindahan antar gudang, penjualan ke pelanggan/konsumen, hingga proses retur.
@@ -107,7 +109,7 @@ untuk menu sendiri akan dibuat dengan posisi topmenu dan susunannya seperti ini
 
 
 
-database sementara yang dimiliki seperti ini,
+database  yang dimiliki seperti ini,
 
 -- Create Tables
 CREATE TABLE `role_user` (
@@ -693,266 +695,369 @@ INSERT INTO `approval_flow` (`tipe_transaksi`, `status_dari`, `status_ke`, `id_r
 ('retur_penjualan', 'Requested', 'Verification', 5, 1), -- Admin Return verifikasi
 ('retur_penjualan', 'Verification', 'Approved', 5, 2); -- Admin Return approve
 
-gudang_system/
-├── application/
-│   ├── cache/
-│   ├── config/
-│   │   ├── autoload.php
-│   │   ├── config.php
-│   │   ├── constants.php
-│   │   ├── database.php
-│   │   ├── doctypes.php
-│   │   ├── foreign_chars.php
-│   │   ├── hooks.php
-│   │   ├── index.html
-│   │   ├── memcached.php
-│   │   ├── migration.php
-│   │   ├── mimes.php
-│   │   ├── profiler.php
-│   │   ├── routes.php
-│   │   ├── smileys.php
-│   │   └── user_agents.php
-│   ├── controllers/
-│   │   ├── Auth.php
-│   │   ├── Dashboard.php
-│   │   ├── Setup/
-│   │   │   ├── Kategori.php
-│   │   │   ├── Barang.php
-│   │   │   ├── Gudang.php
-│   │   │   ├── Pelanggan.php
-│   │   │   ├── Supplier.php
-│   │   │   └── User.php
-│   │   ├── Aktifitas/
-│   │   │   ├── Pemindahan.php
-│   │   │   ├── Penerimaan.php
-│   │   │   ├── Retur_penjualan.php
-│   │   │   └── Retur_pembelian.php
-│   │   ├── Daftar/
-│   │   │   ├── Pemindahan.php
-│   │   │   ├── Penerimaan.php
-│   │   │   ├── Retur_penjualan.php
-│   │   │   └── Retur_pembelian.php
-│   │   ├── Laporan/
-│   │   │   ├── Sales.php
-│   │   │   ├── Packing.php
-│   │   │   ├── Mutasi.php
-│   │   │   └── Summary.php
-│   │   ├── Pengaturan/
-│   │   │   ├── Stok_awal.php
-│   │   │   ├── Hak_akses.php
-│   │   │   ├── Approval.php
-│   │   │   └── Sistem.php
-│   │   └── index.html
-│   ├── core/
-│   │   ├── MY_Controller.php
-│   │   ├── MY_Model.php
-│   │   └── index.html
-│   ├── helpers/
-│   │   ├── company_filter_helper.php
-│   │   ├── menu_helper.php
-│   │   ├── stok_helper.php
-│   │   ├── index.html
-│   │   └── notification_helper.php
-│   ├── hooks/
-│   │   └── index.html
-│   ├── language/
-│   │   └── index.html
-│   ├── libraries/
-│   │   ├── Auth.php
-│   │   ├── Menu.php
-│   │   ├── Stok.php
-│   │   └── index.html
-│   ├── logs/
-│   ├── models/
-│   │   ├── Auth_model.php
-│   │   ├── Menu_model.php
-│   │   ├── Stok_model.php
-│   │   ├── Setup/
-│   │   │   ├── Kategori_model.php
-│   │   │   ├── Barang_model.php
-│   │   │   ├── Gudang_model.php
-│   │   │   ├── Pelanggan_model.php
-│   │   │   ├── Supplier_model.php
-│   │   │   └── User_model.php
-│   │   ├── Aktifitas/
-│   │   │   ├── Pemindahan_model.php
-│   │   │   ├── Penerimaan_model.php
-│   │   │   ├── Retur_penjualan_model.php
-│   │   │   └── Retur_pembelian_model.php
-│   │   ├── Daftar/
-│   │   │   ├── Pemindahan_model.php
-│   │   │   ├── Penerimaan_model.php
-│   │   │   ├── Retur_penjualan_model.php
-│   │   │   └── Retur_pembelian_model.php
-│   │   ├── Laporan/
-│   │   │   ├── Sales_model.php
-│   │   │   ├── Packing_model.php
-│   │   │   ├── Mutasi_model.php
-│   │   │   └── Summary_model.php
-│   │   ├── Pengaturan/
-│   │   │   ├── Stok_awal_model.php
-│   │   │   ├── Hak_akses_model.php
-│   │   │   ├── Approval_model.php
-│   │   │   └── Sistem_model.php
-│   │   └── index.html
-│   ├── third_party/
-├── views/application/views/
-    ├── auth/
-    │   ├── login.php
-    │   └── forgot_password.php
-    ├── errors/
-    │   ├── error_general.php
-    │   └── error_404.php
-    ├── layout/
-    │   ├── header.php
-    │   ├── top_menu.php
-    │   ├── footer.php
-    │   ├── script.php
-    │   ├── notifikasi.php
-    │   └── modal.php
-    ├── dashboard/
-    │   └── index.php
-    ├── setup/
-    │   ├── kategori/
-    │   │   ├── index.php          // Daftar kategori
-    │   │   ├── form.php           // Form tambah/edit kategori
-    │   │   └── detail.php         // Detail kategori
-    │   ├── barang/
-    │   │   ├── index.php          // Daftar barang
-    │   │   ├── form.php           // Form tambah/edit barang
-    │   │   ├── detail.php         // Detail barang
-    │   │   └── stok.php           // Info stok barang
-    │   ├── gudang/
-    │   │   ├── index.php          // Daftar gudang
-    │   │   ├── form.php           // Form tambah/edit gudang
-    │   │   └── detail.php         // Detail gudang
-    │   ├── pelanggan/
-    │   │   ├── index.php          // Daftar pelanggan
-    │   │   ├── form.php           // Form tambah/edit pelanggan
-    │   │   └── detail.php         // Detail pelanggan
-    │   ├── supplier/
-    │   │   ├── index.php          // Daftar supplier
-    │   │   ├── form.php           // Form tambah/edit supplier
-    │   │   └── detail.php         // Detail supplier
-    │   └── user/
-    │       ├── index.php          // Daftar user
-    │       ├── form.php           // Form tambah/edit user
-    │       ├── profile.php        // Profile user
-    │       └── change_password.php // Ubah password
-    ├── aktifitas/
-    │   ├── pemindahan/
-    │   │   ├── index.php          // Daftar pemindahan barang
-    │   │   ├── form.php           // Form tambah/edit pemindahan
-    │   │   ├── detail.php         // Detail pemindahan
-    │   │   └── konfirmasi.php     // Konfirmasi pemindahan
-    │   ├── penerimaan/
-    │   │   ├── index.php          // Daftar penerimaan barang
-    │   │   ├── form.php           // Form tambah/edit penerimaan
-    │   │   ├── detail.php         // Detail penerimaan
-    │   │   └── konfirmasi.php     // Konfirmasi penerimaan
-    │   ├── retur_penjualan/
-    │   │   ├── index.php          // Daftar retur penjualan
-    │   │   ├── form.php           // Form tambah/edit retur penjualan
-    │   │   ├── detail.php         // Detail retur penjualan
-    │   │   └── verifikasi.php     // Verifikasi retur
-    │   └── retur_pembelian/
-    │       ├── index.php          // Daftar retur pembelian
-    │       ├── form.php           // Form tambah/edit retur pembelian
-    │       ├── detail.php         // Detail retur pembelian
-    │       └── verifikasi.php     // Verifikasi retur
-    ├── daftar/
-    │   ├── pemindahan/
-    │   │   ├── index.php          // Daftar semua pemindahan
-    │   │   └── filter.php         // Filter pemindahan
-    │   ├── penerimaan/
-    │   │   ├── index.php          // Daftar semua penerimaan
-    │   │   └── filter.php         // Filter penerimaan
-    │   ├── retur_penjualan/
-    │   │   ├── index.php          // Daftar semua retur penjualan
-    │   │   └── filter.php         // Filter retur penjualan
-    │   └── retur_pembelian/
-    │       ├── index.php          // Daftar semua retur pembelian
-    │       └── filter.php         // Filter retur pembelian
-    ├── laporan/
-    │   ├── sales/
-    │   │   ├── index.php          // Laporan sales
-    │   │   ├── filter.php         // Filter laporan sales
-    │   │   ├── detail.php         // Detail laporan sales
-    │   │   └── export.php         // Export laporan sales
-    │   ├── packing/
-    │   │   ├── index.php          // Laporan packing
-    │   │   ├── filter.php         // Filter laporan packing
-    │   │   └── export.php         // Export laporan packing
-    │   ├── mutasi/
-    │   │   ├── index.php          // Laporan mutasi barang
-    │   │   ├── filter.php         // Filter laporan mutasi
-    │   │   └── export.php         // Export laporan mutasi
-    │   └── summary/
-    │       ├── index.php          // Ringkasan stok
-    │       ├── filter.php         // Filter ringkasan stok
-    │       └── export.php         // Export ringkasan stok
-    ├── pengaturan/
-    │   ├── stok_awal/
-    │   │   ├── index.php          // Daftar stok awal
-    │   │   ├── form.php           // Form tambah/edit stok awal
-    │   │   └── import.php         // Import stok awal
-    │   ├── hak_akses/
-    │   │   ├── index.php          // Daftar hak akses
-    │   │   ├── form.php           // Form tambah/edit hak akses
-    │   │   └── role.php           // Manajemen role
-    │   ├── approval/
-    │   │   ├── index.php          // Daftar approval flow
-    │   │   ├── form.php           // Form tambah/edit approval flow
-    │   │   └── diagram.php        // Diagram approval flow
-    │   └── sistem/
-    │       ├── index.php          // Pengaturan sistem
-    │       ├── backup.php         // Backup database
-    │       └── log.php            // Log sistem
-    └── partials/
-        ├── datatable.php          // Komponen datatable
-        ├── form_validation.php    // Komponen validasi form
-        ├── breadcrumb.php         // Komponen breadcrumb
-        ├── alert.php              // Komponen alert/notifikasi
-        └── pagination.php         // Komponen pagination
-  assets/
-  ├── css/
-  │   ├── bootstrap.min.css
-  │   ├── sb-admin-2.min.css
-  │   ├── fontawesome-all.min.css
-  │   └── custom.css
-  ├── js/
-  │   ├── jquery.min.js
-  │   ├── bootstrap.bundle.min.js
-  │   ├── sb-admin-2.min.js
-  │   └── custom.js
-  ├── vendor/  <-- Folder ini penting untuk library eksternal
-  │   ├── bootstrap/
-  │   │   ├── css/
-  │   │   │   └── bootstrap.min.css
-  │   │   └── js/
-  │   │       └── bootstrap.bundle.min.js
-  │   ├── jquery/
-  │   │   └── jquery.min.js
-  │   ├── fontawesome-free/
-  │   │   └── css/
-  │   │       └── all.min.css
-  │   └── datatables/
-  │       ├── css/
-  │       │   └── dataTables.bootstrap4.min.css
-  │       └── js/
-  │           ├── jquery.dataTables.min.js
-  │           └── dataTables.bootstrap4.min.js
-  ├── images/
-  │   ├── logo.png
-  │   ├── favicon.ico
-  │   └── login-bg.jpg
-  └── plugins/  <-- Folder untuk plugin tambahan
-├── system/
-├── uploads/
-│   ├── images/
-│   ├── documents/
-│   └── temp/
-├── index.php
-├── license.txt
-├── README.md
-└── .htaccess
+struktur file dan folder yg dimiliki:
+C:\xampp\htdocs\gudang_system\application\
+C:\xampp\htdocs\gudang_system\application\config
+C:\xampp\htdocs\gudang_system\application\config\autoload.php
+C:\xampp\htdocs\gudang_system\application\config\config.php
+C:\xampp\htdocs\gudang_system\application\config\constants.php
+C:\xampp\htdocs\gudang_system\application\config\database.php
+C:\xampp\htdocs\gudang_system\application\config\doctypes.php
+C:\xampp\htdocs\gudang_system\application\config\foreign_chars.php
+C:\xampp\htdocs\gudang_system\application\config\hooks.php
+C:\xampp\htdocs\gudang_system\application\config\index.html
+C:\xampp\htdocs\gudang_system\application\config\memcached.php
+C:\xampp\htdocs\gudang_system\application\config\migration.php
+C:\xampp\htdocs\gudang_system\application\config\mimes.php
+C:\xampp\htdocs\gudang_system\application\config\profiler.php
+C:\xampp\htdocs\gudang_system\application\config\routes.php
+C:\xampp\htdocs\gudang_system\application\config\smileys.php
+C:\xampp\htdocs\gudang_system\application\config\user_agents.php
+
+C:\xampp\htdocs\gudang_system\application\controllers
+C:\xampp\htdocs\gudang_system\application\controllers\aktifitas
+C:\xampp\htdocs\gudang_system\application\controllers\aktifitas\Pemindahan.php
+C:\xampp\htdocs\gudang_system\application\controllers\aktifitas\Penerimaan.php
+C:\xampp\htdocs\gudang_system\application\controllers\aktifitas\Retur_pembelian.php
+C:\xampp\htdocs\gudang_system\application\controllers\aktifitas\Retur_penjualan.php
+C:\xampp\htdocs\gudang_system\application\controllers\daftar
+C:\xampp\htdocs\gudang_system\application\controllers\daftar\Pemindahan.php
+C:\xampp\htdocs\gudang_system\application\controllers\daftar\Penerimaan.php
+C:\xampp\htdocs\gudang_system\application\controllers\daftar\Retur_pembelian.php
+C:\xampp\htdocs\gudang_system\application\controllers\daftar\Retur_penjualan.php
+C:\xampp\htdocs\gudang_system\application\controllers\laporan
+C:\xampp\htdocs\gudang_system\application\controllers\laporan\Mutasi.php
+C:\xampp\htdocs\gudang_system\application\controllers\laporan\Packing.php
+C:\xampp\htdocs\gudang_system\application\controllers\laporan\Sales.php
+C:\xampp\htdocs\gudang_system\application\controllers\laporan\Summary.php
+C:\xampp\htdocs\gudang_system\application\controllers\pengaturan
+C:\xampp\htdocs\gudang_system\application\controllers\pengaturan\Approval.php
+C:\xampp\htdocs\gudang_system\application\controllers\pengaturan\Hak_akses.php
+C:\xampp\htdocs\gudang_system\application\controllers\pengaturan\Sistem.php
+C:\xampp\htdocs\gudang_system\application\controllers\pengaturan\Stok_awal.php
+C:\xampp\htdocs\gudang_system\application\controllers\setup
+C:\xampp\htdocs\gudang_system\application\controllers\setup\Barang.php
+C:\xampp\htdocs\gudang_system\application\controllers\setup\Gudang.php
+C:\xampp\htdocs\gudang_system\application\controllers\setup\Kategori.php
+C:\xampp\htdocs\gudang_system\application\controllers\setup\Pelanggan.php
+C:\xampp\htdocs\gudang_system\application\controllers\setup\Supplier.php
+C:\xampp\htdocs\gudang_system\application\controllers\setup\User.php
+C:\xampp\htdocs\gudang_system\application\controllers\Auth.php
+C:\xampp\htdocs\gudang_system\application\controllers\Dashboard.php
+C:\xampp\htdocs\gudang_system\application\controllers\Debug.php
+C:\xampp\htdocs\gudang_system\application\controllers\index.html
+C:\xampp\htdocs\gudang_system\application\controllers\Welcome.php
+
+C:\xampp\htdocs\gudang_system\application\core
+C:\xampp\htdocs\gudang_system\application\core\index.html
+C:\xampp\htdocs\gudang_system\application\core\MY_Controller.php
+C:\xampp\htdocs\gudang_system\application\core\MY_Model.php
+
+C:\xampp\htdocs\gudang_system\application\helpers\stok_helper.php
+C:\xampp\htdocs\gudang_system\application\helpers\notification_helper.php
+C:\xampp\htdocs\gudang_system\application\helpers\menu_helper.php
+C:\xampp\htdocs\gudang_system\application\helpers\index.html
+C:\xampp\htdocs\gudang_system\application\helpers\company_filter_helper.php
+C:\xampp\htdocs\gudang_system\application\helpers
+
+C:\xampp\htdocs\gudang_system\application\libraries
+C:\xampp\htdocs\gudang_system\application\libraries\Auth.php
+C:\xampp\htdocs\gudang_system\application\libraries\index.html
+C:\xampp\htdocs\gudang_system\application\libraries\Menu.php
+C:\xampp\htdocs\gudang_system\application\libraries\Stok.php
+
+C:\xampp\htdocs\gudang_system\application\models\Stok_model.php
+C:\xampp\htdocs\gudang_system\application\models\Menu_model.php
+C:\xampp\htdocs\gudang_system\application\models\index.html
+C:\xampp\htdocs\gudang_system\application\models\Auth_model.php
+C:\xampp\htdocs\gudang_system\application\models\setup\User_model.php
+C:\xampp\htdocs\gudang_system\application\models\setup\Supplier_model.php
+C:\xampp\htdocs\gudang_system\application\models\setup\Pelanggan_model.php
+C:\xampp\htdocs\gudang_system\application\models\setup\Kategori_model.php
+C:\xampp\htdocs\gudang_system\application\models\setup\Gudang_model.php
+C:\xampp\htdocs\gudang_system\application\models\setup\Barang_model.php
+C:\xampp\htdocs\gudang_system\application\models\setup
+C:\xampp\htdocs\gudang_system\application\models\pengaturan\Stok_awal_model.php
+C:\xampp\htdocs\gudang_system\application\models\pengaturan\Sistem_model.php
+C:\xampp\htdocs\gudang_system\application\models\pengaturan\Hak_akses_model.php
+C:\xampp\htdocs\gudang_system\application\models\pengaturan\Approval_model.php
+C:\xampp\htdocs\gudang_system\application\models\pengaturan
+C:\xampp\htdocs\gudang_system\application\models\laporan\Summary_model.php
+C:\xampp\htdocs\gudang_system\application\models\laporan\Sales_model.php
+C:\xampp\htdocs\gudang_system\application\models\laporan\Packing_model.php
+C:\xampp\htdocs\gudang_system\application\models\laporan\Mutasi_model.php
+C:\xampp\htdocs\gudang_system\application\models\laporan
+C:\xampp\htdocs\gudang_system\application\models\daftar\Retur_penjualan_model.php
+C:\xampp\htdocs\gudang_system\application\models\daftar\Retur_pembelian_model.php
+C:\xampp\htdocs\gudang_system\application\models\daftar\Penerimaan_model.php
+C:\xampp\htdocs\gudang_system\application\models\daftar\Pemindahan_model.php
+C:\xampp\htdocs\gudang_system\application\models\daftar
+C:\xampp\htdocs\gudang_system\application\models\aktifitas\Retur_penjualan_model.php
+C:\xampp\htdocs\gudang_system\application\models\aktifitas\Retur_pembelian_model.php
+C:\xampp\htdocs\gudang_system\application\models\aktifitas\Penerimaan_model.php
+C:\xampp\htdocs\gudang_system\application\models\aktifitas\Pemindahan_model.php
+C:\xampp\htdocs\gudang_system\application\models\aktifitas
+C:\xampp\htdocs\gudang_system\application\models
+
+C:\xampp\htdocs\gudang_system\application\views
+C:\xampp\htdocs\gudang_system\application\views\aktifitas
+C:\xampp\htdocs\gudang_system\application\views\aktifitas\pemindahan
+C:\xampp\htdocs\gudang_system\application\views\aktifitas\pemindahan\detail.php
+C:\xampp\htdocs\gudang_system\application\views\aktifitas\pemindahan\form.php
+C:\xampp\htdocs\gudang_system\application\views\aktifitas\pemindahan\index.php
+C:\xampp\htdocs\gudang_system\application\views\aktifitas\pemindahan\konfirmasi.php
+C:\xampp\htdocs\gudang_system\application\views\aktifitas\penerimaan
+C:\xampp\htdocs\gudang_system\application\views\aktifitas\penerimaan\detail.php
+C:\xampp\htdocs\gudang_system\application\views\aktifitas\penerimaan\form.php
+C:\xampp\htdocs\gudang_system\application\views\aktifitas\penerimaan\index.php
+C:\xampp\htdocs\gudang_system\application\views\aktifitas\penerimaan\konfirmasi.php
+C:\xampp\htdocs\gudang_system\application\views\aktifitas\retur_pembelian
+C:\xampp\htdocs\gudang_system\application\views\aktifitas\retur_pembelian\detail.php
+C:\xampp\htdocs\gudang_system\application\views\aktifitas\retur_pembelian\form.php
+C:\xampp\htdocs\gudang_system\application\views\aktifitas\retur_pembelian\index.php
+C:\xampp\htdocs\gudang_system\application\views\aktifitas\retur_pembelian\verifikasi.php
+C:\xampp\htdocs\gudang_system\application\views\aktifitas\retur_penjualan
+C:\xampp\htdocs\gudang_system\application\views\aktifitas\retur_penjualan\detail.php
+C:\xampp\htdocs\gudang_system\application\views\aktifitas\retur_penjualan\form.php
+C:\xampp\htdocs\gudang_system\application\views\aktifitas\retur_penjualan\index.php
+C:\xampp\htdocs\gudang_system\application\views\aktifitas\retur_penjualan\verifikasi.php
+C:\xampp\htdocs\gudang_system\application\views\auth
+C:\xampp\htdocs\gudang_system\application\views\auth\forgot_password.php
+C:\xampp\htdocs\gudang_system\application\views\auth\login.php
+C:\xampp\htdocs\gudang_system\application\views\daftar
+C:\xampp\htdocs\gudang_system\application\views\daftar\pemindahan
+C:\xampp\htdocs\gudang_system\application\views\daftar\pemindahan\filter.php
+C:\xampp\htdocs\gudang_system\application\views\daftar\pemindahan\index.php
+C:\xampp\htdocs\gudang_system\application\views\daftar\penerimaan
+C:\xampp\htdocs\gudang_system\application\views\daftar\penerimaan\filter.php
+C:\xampp\htdocs\gudang_system\application\views\daftar\penerimaan\index.php
+C:\xampp\htdocs\gudang_system\application\views\daftar\retur_pembelian
+C:\xampp\htdocs\gudang_system\application\views\daftar\retur_pembelian\filter.php
+C:\xampp\htdocs\gudang_system\application\views\daftar\retur_pembelian\index.php
+C:\xampp\htdocs\gudang_system\application\views\daftar\retur_penjualan
+C:\xampp\htdocs\gudang_system\application\views\daftar\retur_penjualan\filter.php
+C:\xampp\htdocs\gudang_system\application\views\daftar\retur_penjualan\index.php
+C:\xampp\htdocs\gudang_system\application\views\dashboard
+C:\xampp\htdocs\gudang_system\application\views\dashboard\index.php
+C:\xampp\htdocs\gudang_system\application\views\errors
+C:\xampp\htdocs\gudang_system\application\views\laporan
+C:\xampp\htdocs\gudang_system\application\views\laporan\mutasi
+C:\xampp\htdocs\gudang_system\application\views\laporan\mutasi\export.php
+C:\xampp\htdocs\gudang_system\application\views\laporan\mutasi\filter.php
+C:\xampp\htdocs\gudang_system\application\views\laporan\mutasi\index.php
+C:\xampp\htdocs\gudang_system\application\views\laporan\packing
+C:\xampp\htdocs\gudang_system\application\views\laporan\packing\export.php
+C:\xampp\htdocs\gudang_system\application\views\laporan\packing\filter.php
+C:\xampp\htdocs\gudang_system\application\views\laporan\packing\index.php
+C:\xampp\htdocs\gudang_system\application\views\laporan\sales
+C:\xampp\htdocs\gudang_system\application\views\laporan\sales\detail.php
+C:\xampp\htdocs\gudang_system\application\views\laporan\sales\export.php
+C:\xampp\htdocs\gudang_system\application\views\laporan\sales\filter.php
+C:\xampp\htdocs\gudang_system\application\views\laporan\sales\index.php
+C:\xampp\htdocs\gudang_system\application\views\laporan\summary
+C:\xampp\htdocs\gudang_system\application\views\laporan\summary\export.php
+C:\xampp\htdocs\gudang_system\application\views\laporan\summary\filter.php
+C:\xampp\htdocs\gudang_system\application\views\laporan\summary\index.php
+C:\xampp\htdocs\gudang_system\application\views\layout
+C:\xampp\htdocs\gudang_system\application\views\layout\footer.php
+C:\xampp\htdocs\gudang_system\application\views\layout\header.php
+C:\xampp\htdocs\gudang_system\application\views\layout\modal.php
+C:\xampp\htdocs\gudang_system\application\views\layout\script.php
+C:\xampp\htdocs\gudang_system\application\views\layout\top_menu.php
+C:\xampp\htdocs\gudang_system\application\views\partials
+C:\xampp\htdocs\gudang_system\application\views\partials\alert.php
+C:\xampp\htdocs\gudang_system\application\views\partials\breadcrumb.php
+C:\xampp\htdocs\gudang_system\application\views\partials\datatable.php
+C:\xampp\htdocs\gudang_system\application\views\partials\form_validation.php
+C:\xampp\htdocs\gudang_system\application\views\partials\pagination.php
+C:\xampp\htdocs\gudang_system\application\views\pengaturan
+C:\xampp\htdocs\gudang_system\application\views\pengaturan\approval
+C:\xampp\htdocs\gudang_system\application\views\pengaturan\approval\diagram.php
+C:\xampp\htdocs\gudang_system\application\views\pengaturan\approval\form.php
+C:\xampp\htdocs\gudang_system\application\views\pengaturan\approval\index.php
+C:\xampp\htdocs\gudang_system\application\views\pengaturan\hak_akses
+C:\xampp\htdocs\gudang_system\application\views\pengaturan\hak_akses\form.php
+C:\xampp\htdocs\gudang_system\application\views\pengaturan\hak_akses\index.php
+C:\xampp\htdocs\gudang_system\application\views\pengaturan\hak_akses\role.php
+C:\xampp\htdocs\gudang_system\application\views\pengaturan\sistem
+C:\xampp\htdocs\gudang_system\application\views\pengaturan\sistem\backup.php
+C:\xampp\htdocs\gudang_system\application\views\pengaturan\sistem\index.php
+C:\xampp\htdocs\gudang_system\application\views\pengaturan\sistem\log.php
+C:\xampp\htdocs\gudang_system\application\views\pengaturan\stok_awal
+C:\xampp\htdocs\gudang_system\application\views\pengaturan\stok_awal\form.php
+C:\xampp\htdocs\gudang_system\application\views\pengaturan\stok_awal\import.php
+C:\xampp\htdocs\gudang_system\application\views\pengaturan\stok_awal\index.php
+C:\xampp\htdocs\gudang_system\application\views\setup
+C:\xampp\htdocs\gudang_system\application\views\setup\barang
+C:\xampp\htdocs\gudang_system\application\views\setup\barang\detail.php
+C:\xampp\htdocs\gudang_system\application\views\setup\barang\form.php
+C:\xampp\htdocs\gudang_system\application\views\setup\barang\index.php
+C:\xampp\htdocs\gudang_system\application\views\setup\barang\stok.php
+C:\xampp\htdocs\gudang_system\application\views\setup\gudang
+C:\xampp\htdocs\gudang_system\application\views\setup\gudang\detail.php
+C:\xampp\htdocs\gudang_system\application\views\setup\gudang\form.php
+C:\xampp\htdocs\gudang_system\application\views\setup\gudang\index.php
+C:\xampp\htdocs\gudang_system\application\views\setup\kategori
+C:\xampp\htdocs\gudang_system\application\views\setup\kategori\detail.php
+C:\xampp\htdocs\gudang_system\application\views\setup\kategori\form.php
+C:\xampp\htdocs\gudang_system\application\views\setup\kategori\index.php
+C:\xampp\htdocs\gudang_system\application\views\setup\pelanggan
+C:\xampp\htdocs\gudang_system\application\views\setup\pelanggan\detail.php
+C:\xampp\htdocs\gudang_system\application\views\setup\pelanggan\form.php
+C:\xampp\htdocs\gudang_system\application\views\setup\pelanggan\index.php
+C:\xampp\htdocs\gudang_system\application\views\setup\supplier
+C:\xampp\htdocs\gudang_system\application\views\setup\supplier\detail.php
+C:\xampp\htdocs\gudang_system\application\views\setup\supplier\form.php
+C:\xampp\htdocs\gudang_system\application\views\setup\supplier\index.php
+C:\xampp\htdocs\gudang_system\application\views\setup\user
+C:\xampp\htdocs\gudang_system\application\views\setup\user\change_password.php
+C:\xampp\htdocs\gudang_system\application\views\setup\user\form.php
+C:\xampp\htdocs\gudang_system\application\views\setup\user\index.php
+C:\xampp\htdocs\gudang_system\application\views\setup\user\profile.php
+
+C:\xampp\htdocs\gudang_system\assets
+C:\xampp\htdocs\gudang_system\assets\css
+C:\xampp\htdocs\gudang_system\assets\css\bootstrap.min.css
+C:\xampp\htdocs\gudang_system\assets\css\custom.css
+C:\xampp\htdocs\gudang_system\assets\css\sb-admin-2.min.css
+C:\xampp\htdocs\gudang_system\assets\images
+C:\xampp\htdocs\gudang_system\assets\images\profile
+C:\xampp\htdocs\gudang_system\assets\images\logo.png
+C:\xampp\htdocs\gudang_system\assets\js
+C:\xampp\htdocs\gudang_system\assets\js\bootstrap.bundle.min.js
+C:\xampp\htdocs\gudang_system\assets\js\custom.js
+C:\xampp\htdocs\gudang_system\assets\js\jquery.min.js
+C:\xampp\htdocs\gudang_system\assets\js\menu.js
+C:\xampp\htdocs\gudang_system\assets\js\sb-admin-2.min.js
+C:\xampp\htdocs\gudang_system\assets\plugins
+C:\xampp\htdocs\gudang_system\assets\vendor
+C:\xampp\htdocs\gudang_system\assets\vendor\bootstrap
+C:\xampp\htdocs\gudang_system\assets\vendor\bootstrap\css
+C:\xampp\htdocs\gudang_system\assets\vendor\bootstrap\js
+C:\xampp\htdocs\gudang_system\assets\vendor\datatables
+C:\xampp\htdocs\gudang_system\assets\vendor\datatables\css
+C:\xampp\htdocs\gudang_system\assets\vendor\datatables\css\dataTables.bootstrap4.min.css
+C:\xampp\htdocs\gudang_system\assets\vendor\datatables\js
+C:\xampp\htdocs\gudang_system\assets\vendor\datatables\js\dataTables.bootstrap4.min.js
+C:\xampp\htdocs\gudang_system\assets\vendor\datatables\js\jquery.dataTables.min.js
+C:\xampp\htdocs\gudang_system\assets\vendor\fontawesome-free
+C:\xampp\htdocs\gudang_system\assets\vendor\fontawesome-free\css
+C:\xampp\htdocs\gudang_system\assets\vendor\fontawesome-free\css\all.min.css
+C:\xampp\htdocs\gudang_system\assets\vendor\fontawesome-free\css\font-awesome.css
+C:\xampp\htdocs\gudang_system\assets\vendor\fontawesome-free\css\font-awesome.min.css
+C:\xampp\htdocs\gudang_system\assets\vendor\fontawesome-free\fonts
+C:\xampp\htdocs\gudang_system\assets\vendor\fontawesome-free\less
+C:\xampp\htdocs\gudang_system\assets\vendor\fontawesome-free\scss
+C:\xampp\htdocs\gudang_system\assets\vendor\fontawesome-free\webfonts
+C:\xampp\htdocs\gudang_system\assets\vendor\fontawesome-free\HELP-US-OUT.txt
+C:\xampp\htdocs\gudang_system\assets\vendor\jquery
+C:\xampp\htdocs\gudang_system\assets\vendor\jquery\jquery.min.js
+
+Tahapan Pembangunan Sistem Manajemen Stok Gudang (per modul)
+1. Pondasi Sistem
+Autentikasi:
+Modul login & logout
+Session management
+Middleware role & hak akses menu
+Template:
+Integrasi SB Admin 2 (header, sidebar, footer, dashboard dummy)
+Dinamisasi sidebar dari tabel menu + hak_akses_menu
+
+2. Modul Setup (Master Data)
+2.1 Perusahaan & Gudang
+Form input/edit perusahaan
+Form input/edit gudang (relasi ke perusahaan)
+List perusahaan & gudang
+
+2.2 Kategori & Barang
+Form kategori barang
+Form barang (relasi ke kategori & perusahaan)
+Stok awal barang per gudang (stok_awal → update ke stok_gudang)
+
+2.3 User & Role
+CRUD user
+Mapping role ke menu (Super Admin, Admin Perusahaan, Sales, Packing, Return)
+
+2.4 Supplier & Pelanggan
+CRUD supplier
+CRUD pelanggan (perusahaan → pelanggan distributor)
+✅ Setelah modul ini jadi → sistem sudah siap punya master data lengkap.
+
+3. Modul Transaksi Utama
+3.1 Pembelian
+Header pembelian + detail barang
+Status: Draft → Menunggu Penerimaan
+Belum update stok (stok bertambah di penerimaan)
+
+3.2 Penerimaan Barang
+Header penerimaan_barang + detail
+Relasi ke pembelian
+Status: Draft → Received → Completed
+Saat Received → update stok_gudang & log_stok
+
+3.3 Penjualan
+Header penjualan + detail barang
+Status: Draft → Packing → Shipping → Delivered → Completed
+Saat Shipping → stok gudang berkurang + log stok
+Integrasi dengan role Sales (user hanya bisa input penjualan, stok tetap dari gudang)
+
+3.4 Transfer Stok
+Header transfer_stok + detail barang
+Status: Draft → Packing → Shipping → Delivered
+Saat Shipping → kurangi stok gudang asal
+Saat Delivered → tambah stok gudang tujuan
+Catat ke log_stok
+
+3.5 Retur
+Retur Penjualan (retur_penjualan + detail)
+Requested → Verification → Approved → Completed
+Approved → tambah stok ke gudang
+Retur Pembelian (retur_pembelian + detail)
+Requested → Verification → Approved → Completed
+Approved → kurangi stok dari gudang
+✅ Setelah semua transaksi ini beres → sistem sudah bisa jalan penuh dari input barang → pembelian → stok masuk → penjualan → stok keluar → retur.
+
+4. Audit & Approval
+Implementasi log_status_transaksi untuk semua transaksi
+Catat siapa user yang update status & kapan
+Approval flow per role:
+Admin Return → approve/reject retur
+Admin Packing → approve status packing & shipping
+Admin Perusahaan → kontrol penuh transaksi perusahaannya
+Super Admin → bisa lihat semua
+
+5. Modul Laporan
+5.1 Laporan Sales
+Detail penjualan per pelanggan/konsumen
+Filter per tanggal, perusahaan, gudang
+
+5.2 Laporan Packing
+Daftar aktivitas packing & pengiriman
+
+5.3 Laporan Mutasi
+Mutasi barang per gudang
+Data dari log_stok
+
+5.4 Laporan Summary
+Ringkasan stok per barang & per gudang:
+Saldo awal
+Masuk
+Keluar
+Saldo akhir
+
+6. Finalisasi & Uji Coba
+End-to-end testing workflow:
+Input stok awal
+Pembelian → Penerimaan → Penjualan → Transfer → Retur
+Cek laporan mutasi & saldo
+User acceptance test (UAT) per role
+Fix bug & refinement
+
+7. Enhancement (Opsional ke Depan)
+Export laporan ke Excel / PDF
+Integrasi barcode / QR code
+
+
+saya baru memiliki file dan folder saja,
+secara codingan ini belum seutuhnya ada bro,
+mari kita lengkapi ya bro. untuk tahap 1 ya bro.
