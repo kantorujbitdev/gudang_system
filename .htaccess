@@ -1,0 +1,15 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /gudang_system/
+    
+    # Exclude existing files and directories
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+    
+    # Route all requests to index.php
+    RewriteRule ^(.*)$ index.php?/$1 [L,QSA]
+</IfModule>
+
+# Security settings
+Options -Indexes
