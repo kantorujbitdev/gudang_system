@@ -15,15 +15,6 @@
 
 <!-- Page level custom scripts -->
 <script>
-    // Toggle sidebar
-    $("#sidebarToggle, #sidebarToggleTop").on('click', function (e) {
-        $("body").toggleClass("sidebar-toggled");
-        $(".sidebar").toggleClass("toggled");
-        if ($(".sidebar").hasClass("toggled")) {
-            $('.sidebar .collapse').collapse('hide');
-        };
-    });
-
     // Close responsive menu
     $(document).click(function (e) {
         if (!$(e.target).is('.navbar-nav, .navbar-nav *')) {

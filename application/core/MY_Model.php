@@ -17,7 +17,7 @@ class MY_Model extends CI_Model
     }
 
     // Get all records
-    public function get_all($where = array(), $order_by = array())
+    public function get_all_data($where = array(), $order_by = array())
     {
         $this->db->from($this->table);
 
