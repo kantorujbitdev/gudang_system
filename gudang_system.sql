@@ -2,8 +2,8 @@
 -- version 5.2.0
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: Sep 15, 2025 at 02:04 PM
+-- Host: 127.0.0.1:3306
+-- Generation Time: Sep 16, 2025 at 01:43 AM
 -- Server version: 10.4.24-MariaDB
 -- PHP Version: 7.4.29
 
@@ -222,6 +222,13 @@ CREATE TABLE `gudang` (
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `gudang`
+--
+
+INSERT INTO `gudang` (`id_gudang`, `id_perusahaan`, `nama_gudang`, `alamat`, `telepon`, `created_by`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES
+(1, 1, 'Gudang Utama', 'Alamat Gudang Utama', '02112345679', NULL, 1, NULL, '2025-09-16 00:12:08', NULL);
 
 -- --------------------------------------------------------
 
@@ -561,6 +568,13 @@ CREATE TABLE `perusahaan` (
   `updated_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Dumping data for table `perusahaan`
+--
+
+INSERT INTO `perusahaan` (`id_perusahaan`, `nama_perusahaan`, `alamat`, `telepon`, `email`, `status_aktif`, `created_at`, `updated_at`) VALUES
+(1, 'PT. Maju Bersama', 'Jl. Sudirman No. 10, Jakarta', '021-12345678', NULL, 1, '2025-09-15 22:53:59', NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -716,6 +730,17 @@ CREATE TABLE `user` (
   `foto_profil` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Dumping data for table `user`
+--
+
+INSERT INTO `user` (`id_user`, `nama`, `username`, `password_hash`, `id_role`, `id_perusahaan`, `email`, `telepon`, `created_by`, `aktif`, `created_at`, `updated_at`, `last_login`, `foto_profil`) VALUES
+(1, 'Super Admin', 'admin', '$2y$10$Jk0IyD8hFSY6CbpX5MJtD.3GlVjw.g9hAVM/rymsjmza2cnTl02aq', 1, NULL, 'admin@example.com', '081234567890', NULL, 1, '2025-09-16 00:13:33', NULL, '2025-09-15 19:41:11', NULL),
+(2, 'Admin Perusahaan', 'adminperusahaan', '$2y$10$Jk0IyD8hFSY6CbpX5MJtD.3GlVjw.g9hAVM/rymsjmza2cnTl02aq', 2, 1, 'admin@perusahaan.com', '081234567891', NULL, 1, '2025-09-16 00:13:33', NULL, NULL, NULL),
+(3, 'Sales Online', 'sales', '$2y$10$Jk0IyD8hFSY6CbpX5MJtD.3GlVjw.g9hAVM/rymsjmza2cnTl02aq', 3, 1, 'sales@perusahaan.com', '081234567892', NULL, 1, '2025-09-16 00:13:33', NULL, NULL, NULL),
+(4, 'Admin Packing', 'packing', '$2y$10$Jk0IyD8hFSY6CbpX5MJtD.3GlVjw.g9hAVM/rymsjmza2cnTl02aq', 4, 1, 'packing@perusahaan.com', '081234567893', NULL, 1, '2025-09-16 00:13:33', NULL, NULL, NULL),
+(5, 'Admin Return', 'return', '$2y$10$Jk0IyD8hFSY6CbpX5MJtD.3GlVjw.g9hAVM/rymsjmza2cnTl02aq', 5, 1, 'return@perusahaan.com', '081234567894', NULL, 1, '2025-09-16 00:13:33', NULL, NULL, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -741,7 +766,7 @@ CREATE TABLE `v_stok_realtime` (
 --
 DROP TABLE IF EXISTS `v_stok_realtime`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_stok_realtime`  AS SELECT `sg`.`id_barang` AS `id_barang`, `sg`.`id_gudang` AS `id_gudang`, `b`.`nama_barang` AS `nama_barang`, `g`.`nama_gudang` AS `nama_gudang`, `sg`.`jumlah` AS `jumlah`, `sg`.`reserved` AS `reserved`, `sg`.`jumlah`- `sg`.`reserved` AS `stok_tersedia`, `b`.`satuan` AS `satuan`, `p`.`nama_perusahaan` AS `nama_perusahaan` FROM (((`stok_gudang` `sg` join `barang` `b` on(`sg`.`id_barang` = `b`.`id_barang`)) join `gudang` `g` on(`sg`.`id_gudang` = `g`.`id_gudang`)) join `perusahaan` `p` on(`sg`.`id_perusahaan` = `p`.`id_perusahaan`)) WHERE `b`.`aktif` = 1 AND `g`.`status_aktif` = 1 AND `p`.`status_aktif` = 11  ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_stok_realtime`  AS SELECT `sg`.`id_barang` AS `id_barang`, `sg`.`id_gudang` AS `id_gudang`, `b`.`nama_barang` AS `nama_barang`, `g`.`nama_gudang` AS `nama_gudang`, `sg`.`jumlah` AS `jumlah`, `sg`.`reserved` AS `reserved`, `sg`.`jumlah`- `sg`.`reserved` AS `stok_tersedia`, `b`.`satuan` AS `satuan`, `p`.`nama_perusahaan` AS `nama_perusahaan` FROM (((`stok_gudang` `sg` join `barang` `b` on(`sg`.`id_barang` = `b`.`id_barang`)) join `gudang` `g` on(`sg`.`id_gudang` = `g`.`id_gudang`)) join `perusahaan` `p` on(`sg`.`id_perusahaan` = `p`.`id_perusahaan`)) WHERE `b`.`aktif` = 1 AND `g`.`status_aktif` = 1 AND `p`.`status_aktif` = 1111  ;
 
 --
 -- Indexes for dumped tables
@@ -1060,7 +1085,7 @@ ALTER TABLE `detail_transfer_stok`
 -- AUTO_INCREMENT for table `gudang`
 --
 ALTER TABLE `gudang`
-  MODIFY `id_gudang` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_gudang` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `hak_akses_menu`
@@ -1132,7 +1157,7 @@ ALTER TABLE `penjualan`
 -- AUTO_INCREMENT for table `perusahaan`
 --
 ALTER TABLE `perusahaan`
-  MODIFY `id_perusahaan` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_perusahaan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `retur_pembelian`
@@ -1180,7 +1205,7 @@ ALTER TABLE `transfer_stok`
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `id_user` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_user` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Constraints for dumped tables
