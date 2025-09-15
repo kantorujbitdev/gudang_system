@@ -1,0 +1,138 @@
+/* Custom CSS untuk responsive design */
+.bg-login-image {
+	background: url("<?= base_url('assets/images/login-bg.jpg'); ?>");
+	background-position: center;
+	background-size: cover;
+}
+
+/* Timeline styling */
+.timeline {
+	position: relative;
+	padding: 20px 0;
+}
+
+.timeline-item {
+	position: relative;
+	padding-left: 40px;
+	margin-bottom: 20px;
+}
+
+.timeline-marker {
+	position: absolute;
+	left: 0;
+	top: 5px;
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	background-color: #4e73df;
+}
+
+.timeline-content {
+	background-color: #f8f9fc;
+	padding: 15px;
+	border-radius: 0.35rem;
+	border-left: 3px solid #4e73df;
+}
+
+.timeline-time {
+	font-size: 0.75rem;
+	color: #858796;
+	font-weight: bold;
+}
+
+.timeline-title {
+	font-size: 0.9rem;
+	font-weight: bold;
+	margin: 5px 0;
+}
+
+.timeline-text {
+	font-size: 0.8rem;
+	color: #5a5c69;
+	margin: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+	.navbar-nav {
+		text-align: center;
+	}
+
+	.navbar-nav .dropdown-menu {
+		position: static;
+		float: none;
+		width: auto;
+		margin-top: 0;
+		background-color: transparent;
+		border: 0;
+		box-shadow: none;
+	}
+
+	.navbar-nav .dropdown-menu .dropdown-item {
+		padding: 0.5rem 1rem;
+		color: rgba(0, 0, 0, 0.5);
+	}
+
+	.navbar-nav .dropdown-menu .dropdown-item:hover,
+	.navbar-nav .dropdown-menu .dropdown-item:focus {
+		color: rgba(0, 0, 0, 0.7);
+		background-color: transparent;
+	}
+
+	.navbar-nav .dropdown-menu .dropdown-item.active,
+	.navbar-nav .dropdown-menu .dropdown-item:active {
+		color: #000;
+		background-color: transparent;
+	}
+}
+
+/* Card hover effects */
+.card {
+	transition: transform 0.3s;
+}
+
+.card:hover {
+	transform: translateY(-5px);
+}
+
+/* Table responsive */
+.table-responsive {
+	border-radius: 0.35rem;
+}
+
+/* Form validation */
+.is-invalid {
+	border-color: #e74a3b;
+}
+
+.invalid-feedback {
+	display: block;
+	width: 100%;
+	margin-top: 0.25rem;
+	font-size: 80%;
+	color: #e74a3b;
+}
+
+/* Loading spinner */
+.spinner-border {
+	width: 3rem;
+	height: 3rem;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+	width: 8px;
+}
+
+::-webkit-scrollbar-track {
+	background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+	background: #888;
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: #555;
+}

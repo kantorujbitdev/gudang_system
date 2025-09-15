@@ -914,25 +914,39 @@ gudang_system/
         ├── breadcrumb.php         // Komponen breadcrumb
         ├── alert.php              // Komponen alert/notifikasi
         └── pagination.php         // Komponen pagination
-├── assets/
-│   ├── css/
-│   │   ├── bootstrap.min.css
-│   │   ├── sb-admin-2.min.css
-│   │   ├── fontawesome-all.min.css
-│   │   └── custom.css
-│   ├── js/
-│   │   ├── bootstrap.min.js
-│   │   ├── jquery.min.js
-│   │   ├── sb-admin-2.min.js
-│   │   ├── custom.js
-│   │   └── datatables.min.js
-│   ├── images/
-│   │   ├── logo.png
-│   │   └── favicon.ico
-│   └── plugins/
-│       ├── datatables/
-│       ├── select2/
-│       └── datetimepicker/
+  assets/
+  ├── css/
+  │   ├── bootstrap.min.css
+  │   ├── sb-admin-2.min.css
+  │   ├── fontawesome-all.min.css
+  │   └── custom.css
+  ├── js/
+  │   ├── jquery.min.js
+  │   ├── bootstrap.bundle.min.js
+  │   ├── sb-admin-2.min.js
+  │   └── custom.js
+  ├── vendor/  <-- Folder ini penting untuk library eksternal
+  │   ├── bootstrap/
+  │   │   ├── css/
+  │   │   │   └── bootstrap.min.css
+  │   │   └── js/
+  │   │       └── bootstrap.bundle.min.js
+  │   ├── jquery/
+  │   │   └── jquery.min.js
+  │   ├── fontawesome-free/
+  │   │   └── css/
+  │   │       └── all.min.css
+  │   └── datatables/
+  │       ├── css/
+  │       │   └── dataTables.bootstrap4.min.css
+  │       └── js/
+  │           ├── jquery.dataTables.min.js
+  │           └── dataTables.bootstrap4.min.js
+  ├── images/
+  │   ├── logo.png
+  │   ├── favicon.ico
+  │   └── login-bg.jpg
+  └── plugins/  <-- Folder untuk plugin tambahan
 ├── system/
 ├── uploads/
 │   ├── images/

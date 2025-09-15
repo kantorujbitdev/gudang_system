@@ -1,31 +1,29 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class Dashboard extends CI_Controller
+class Dashboard extends MY_Controller
 {
 
     public function __construct()
     {
         parent::__construct();
-        $this->load->library('auth');
-        $this->load->model('dashboard_model');
-
-        if (!$this->auth->is_logged_in()) {
-            redirect('auth');
-        }
+        $this->load->model(['Stok_model', 'Auth_model']);
     }
 
     public function index()
     {
-        $data['title'] = 'Dashboard';
-        $data['content'] = 'dashboard/index';
-        $data['total_barang'] = $this->dashboard_model->get_total_barang();
-        $data['total_stok'] = $this->dashboard_model->get_total_stok();
-        $data['total_penjualan'] = $this->dashboard_model->get_total_penjualan();
-        $data['total_pembelian'] = $this->dashboard_model->get_total_pembelian();
-        $data['recent_transactions'] = $this->dashboard_model->get_recent_transactions();
-        $data['low_stock_items'] = $this->dashboard_model->get_low_stock_items();
+        $this->data['title'] = 'Dashboard';
 
-        $this->load->view('template/template', $data);
+        // Get data dashboard
+        $this->data['total_barang'] = $this->Stok_model->get_total_barang();
+        $this->data['total_gudang'] = $this->Stok_model->get_total_gudang();
+        $this->data['stok_menipis'] = $this->Stok_model->get_stok_menipis();
+        $this->data['transaksi_hari_ini'] = $this->Stok_model->get_transaksi_hari_ini();
+
+        // Get chart data
+        $this->data['chart_stok'] = $this->Stok_model->get_chart_stok();
+        $this->data['chart_transaksi'] = $this->Stok_model->get_chart_transaksi();
+
+        $this->render_view('dashboard/index');
     }
 }

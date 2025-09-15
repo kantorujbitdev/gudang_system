@@ -1,0 +1,72 @@
+<?php
+defined('BASEPATH') or exit('No direct script access allowed');
+
+class MY_Controller extends CI_Controller
+{
+
+    protected $data = array();
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        // Load library dan helper
+        $this->load->library(array('session', 'form_validation'));
+        $this->load->helper(array('url', 'form', 'security', 'company_filter', 'menu'));
+
+        // Load custom library
+        $this->load->library('Auth');
+        $this->load->library('Menu');
+
+        // Check autentikasi (kecuali untuk halaman auth)
+        $current_controller = $this->router->fetch_class();
+        if ($current_controller != 'auth') {
+            $this->auth->check_auth();
+        }
+
+        // Set data global
+        $this->set_global_data();
+    }
+
+    private function set_global_data()
+    {
+        // Data user
+        $this->data['user'] = $this->session->all_userdata();
+
+        // Menu
+        $this->data['menu'] = $this->menu->get_menu();
+
+        // Notifikasi
+        $this->data['notifications'] = $this->get_notifications();
+
+        // Title default
+        $this->data['title'] = 'Dashboard';
+    }
+
+    private function get_notifications()
+    {
+        // Implementasi notifikasi
+        return [];
+    }
+
+    protected function render_view($view, $data = NULL)
+    {
+        if (is_null($data)) {
+            $data = $this->data;
+        } else {
+            $data = array_merge($this->data, $data);
+        }
+
+        $this->load->view('layout/header', $data);
+        $this->load->view($view, $data);
+        $this->load->view('layout/footer', $data);
+    }
+
+    protected function json_response($data, $status = 200)
+    {
+        return $this->output
+            ->set_content_type('application/json')
+            ->set_status_header($status)
+            ->set_output(json_encode($data));
+    }
+}
