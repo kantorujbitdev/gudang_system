@@ -33,6 +33,7 @@ class Auth extends CI_Controller
             $remember = $this->input->post('remember');
 
             $user = $this->Auth_model->login($username, $password);
+            $role = $this->db->get_where('role_user', ['id_role' => $user->id_role])->row();
 
             if ($user) {
                 if ($user->aktif == 1) {
@@ -41,6 +42,7 @@ class Auth extends CI_Controller
                         'nama' => $user->nama,
                         'username' => $user->username,
                         'id_role' => $user->id_role,
+                        'nama_role' => $role ? $role->nama_role : null,
                         'id_perusahaan' => $user->id_perusahaan,
                         'nama_perusahaan' => $user->nama_perusahaan,
                         'logged_in' => TRUE

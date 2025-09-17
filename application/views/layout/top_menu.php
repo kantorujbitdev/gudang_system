@@ -1,3 +1,25 @@
+<?php
+$role_id = $this->session->userdata('id_role');
+$nama_role = $this->session->userdata('nama_role');
+$nama = $this->session->userdata('nama');
+switch ($role_id) {
+    case 2:
+        $profile_img = 'undraw_profile_sales.svg';
+        break;
+    case 3:
+        $profile_img = 'undraw_profile_packing.svg';
+        break;
+    case 4:
+        $profile_img = 'undraw_profile_retur.svg';
+        break;
+    case 1:
+    case 5:
+    default:
+        $profile_img = 'undraw_profile.svg';
+        break;
+}
+?>
+
 <!-- Top Menu + User Info -->
 <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#topMenu" aria-controls="topMenu"
@@ -8,13 +30,23 @@
     <!-- Info User untuk layar kecil -->
     <ul class="navbar-nav d-block d-sm-none ml-auto">
         <li class="nav-item dropdown no-arrow">
-            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdownMobile" role="button"
+            <!-- <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdownMobile" role="button"
                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <span class="mr-2 text-gray-600 small">
                     <?php echo $this->session->userdata('nama'); ?>
                 </span>
                 <img class="img-profile rounded-circle ml-1"
                     src="<?php echo base_url('assets/images/profile/undraw_profile_packing.svg'); ?>"
+                    style="width: 32px; height: 32px;">
+            </a> -->
+
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="mr-2 text-gray-600 small">
+                    <?php echo $nama ?> <br>(<?php echo $nama_role ?>)
+                </span>
+                <img class="img-profile rounded-circle mr-1"
+                    src="<?php echo base_url('assets/images/profile/' . $profile_img) ?>"
                     style="width: 32px; height: 32px;">
             </a>
             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in bg-white"
@@ -163,16 +195,19 @@
                 </div>
             </li>
         </ul>
+
         <!-- User Info (desktop) -->
         <ul class="navbar-nav ml-auto align-items-center pr-3 d-none d-sm-flex">
             <li class="nav-item dropdown no-arrow">
                 <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button"
                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <span class="mr-2 text-gray-600 small">
-                        <?php echo $this->session->userdata('nama'); ?>
+                        Hai,
+                        <?php echo $nama ?> (<?php echo $nama_role ?>)
+
                     </span>
-                    <img class="img-profile rounded-circle ml-1"
-                        src="<?php echo base_url('assets/images/profile/undraw_profile_packing.svg'); ?>"
+                    <img class="img-profile rounded-circle mr-1"
+                        src="<?php echo base_url('assets/images/profile/' . $profile_img) ?>"
                         style="width: 32px; height: 32px;">
                 </a>
                 <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in bg-white"
