@@ -15,6 +15,7 @@
         </button>
     </div>
 <?php endif; ?>
+
 <div class="card shadow mb-4">
     <div class="card-header py-3">
         <div class="row">
@@ -23,9 +24,7 @@
             </div>
             <div class="col text-right">
                 <a href="<?php echo site_url('setup/gudang/tambah') ?>" class="btn btn-primary btn-sm">
-                    <i class="fas fa-plus">
-                    </i>
-                    Tambah Gudang
+                    <i class="fas fa-plus"></i> Tambah Gudang
                 </a>
             </div>
         </div>
@@ -37,13 +36,9 @@
                     <tr>
                         <th>No</th>
                         <th>Nama Gudang</th>
+                        <th>Perusahaan</th>
                         <th>Alamat</th>
                         <th>Telepon</th>
-                        <?php if ($this->session->userdata('id_role') == 1): ?>
-                            <th>Perusahaan</th>
-                        <?php endif; ?>
-                        <th>Total Item</th>
-                        <th>Total Stok</th>
                         <th>Status</th>
                         <th>Aksi</th>
                     </tr>
@@ -54,13 +49,9 @@
                         <tr>
                             <td><?php echo $no++; ?></td>
                             <td><?php echo $row->nama_gudang; ?></td>
+                            <td><?php echo $row->nama_perusahaan; ?></td>
                             <td><?php echo $row->alamat ?: '-'; ?></td>
                             <td><?php echo $row->telepon ?: '-'; ?></td>
-                            <?php if ($this->session->userdata('id_role') == 1): ?>
-                                <td><?php echo $row->nama_perusahaan ?? '-'; ?></td>
-                            <?php endif; ?>
-                            <td><?php echo $row->total_items ?? 0; ?></td>
-                            <td><?php echo $row->total_stok ?? 0; ?></td>
                             <td>
                                 <?php if ($row->status_aktif == 1): ?>
                                     <span class="badge badge-success">Aktif</span>
@@ -69,21 +60,28 @@
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <div class="btn-group">
-                                    <a href="<?php echo site_url('setup/gudang/detail/' . $row->id_gudang); ?>"
-                                        class="btn btn-sm btn-info" title="Detail">
-                                        <i class="fas fa-info-circle"></i>
+                                <a href="<?php echo site_url('setup/gudang/detail/' . $row->id_gudang); ?>"
+                                    class="btn btn-sm btn-info" title="Detail">
+                                    <i class="fas fa-info-circle"></i> Detail
+                                </a>
+                                <a href="<?php echo site_url('setup/gudang/edit/' . $row->id_gudang); ?>"
+                                    class="btn btn-sm btn-warning" title="Edit">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+
+                                <?php if ($row->status_aktif == '1'): ?>
+                                    <a href="<?php echo site_url('setup/gudang/nonaktif/' . $row->id_gudang) ?>"
+                                        class="btn btn-sm btn-danger"
+                                        onclick="return confirm('Apakah Anda yakin ingin menonaktifkan gudang ini?')">
+                                        <i class="fas fa-minus-square"></i> Nonaktif
                                     </a>
-                                    <a href="<?php echo site_url('setup/gudang/edit/' . $row->id_gudang); ?>"
-                                        class="btn btn-sm btn-warning" title="Edit">
-                                        <i class="fas fa-edit"></i>
+                                <?php else: ?>
+                                    <a href="<?php echo site_url('setup/gudang/aktif/' . $row->id_gudang) ?>"
+                                        class="btn btn-sm btn-success"
+                                        onclick="return confirm('Apakah Anda yakin ingin mengaktifkan kembali gudang ini?')">
+                                        <i class="fas fa-check-square"></i> Aktif
                                     </a>
-                                    <a href="<?php echo site_url('setup/gudang/hapus/' . $row->id_gudang); ?>"
-                                        class="btn btn-sm btn-danger" title="Hapus"
-                                        onclick="return confirm('Apakah Anda yakin ingin menghapus gudang ini?');">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
-                                </div>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

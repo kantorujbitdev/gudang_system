@@ -8,26 +8,51 @@ class Gudang_model extends MY_Model
         parent::__construct();
         $this->table = 'gudang';
         $this->primary_key = 'id_gudang';
-        $this->fillable = array('id_perusahaan', 'nama_gudang', 'alamat', 'telepon', 'status_aktif');
+        $this->fillable = array('id_perusahaan', 'nama_gudang', 'alamat', 'telepon', 'created_by', 'status_aktif');
         $this->timestamps = TRUE;
+        $this->soft_delete = TRUE;
     }
 
     public function get_all()
     {
-        $user_role = $this->session->userdata('id_role');
-        $user_perusahaan = $this->session->userdata('id_perusahaan');
+        $this->db->order_by('created_at', 'DESC');
+        return $this->db->get($this->table)->result();
+    }
 
+    public function get_active()
+    {
+        $this->db->where('status_aktif', 1);
+        $this->db->order_by('created_at', 'DESC');
+        return $this->db->get($this->table)->result();
+    }
+
+    public function get_with_perusahaan()
+    {
         $this->db->select('g.*, p.nama_perusahaan');
         $this->db->from('gudang g');
         $this->db->join('perusahaan p', 'g.id_perusahaan = p.id_perusahaan', 'left');
+        $this->db->order_by('g.created_at', 'DESC');
 
-        // Filter berdasarkan role user
-        if ($user_role != 1) { // Bukan Super Admin
-            $this->db->where('g.id_perusahaan', $user_perusahaan);
-        }
+        $query = $this->db->get();
 
-        $this->db->order_by('g.nama_gudang', 'ASC');
-        return $this->db->get()->result();
+        return ($query && $query->num_rows() > 0)
+            ? $query->result()
+            : [];
+    }
+
+    public function get_detail($id_gudang)
+    {
+        $this->db->select('g.*, p.nama_perusahaan, u.nama as created_by_name');
+        $this->db->from('gudang g');
+        $this->db->join('perusahaan p', 'g.id_perusahaan = p.id_perusahaan', 'left');
+        $this->db->join('user u', 'g.created_by = u.id_user', 'left');
+        $this->db->where('g.id_gudang', $id_gudang);
+
+        $query = $this->db->get();
+
+        return ($query && $query->num_rows() > 0)
+            ? $query->row()
+            : null;
     }
 
     public function get_by_perusahaan($id_perusahaan)
@@ -38,19 +63,23 @@ class Gudang_model extends MY_Model
         return $this->db->get($this->table)->result();
     }
 
-    public function get_with_stok($id_perusahaan = NULL)
+    public function update_status($id, $status)
     {
-        $this->db->select('g.*, p.nama_perusahaan, COUNT(sg.id_stok) as total_items, SUM(sg.jumlah) as total_stok');
-        $this->db->from('gudang g');
-        $this->db->join('perusahaan p', 'g.id_perusahaan = p.id_perusahaan', 'left');
-        $this->db->join('stok_gudang sg', 'g.id_gudang = sg.id_gudang', 'left');
+        $this->db->where('id_gudang', $id);
+        $data = [
+            'status_aktif' => $status,
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+        return $this->db->update('gudang', $data);
+    }
 
-        if ($id_perusahaan) {
-            $this->db->where('g.id_perusahaan', $id_perusahaan);
+    public function check_unique_name($nama_gudang, $id_perusahaan, $id_gudang = NULL)
+    {
+        $this->db->where('nama_gudang', $nama_gudang);
+        $this->db->where('id_perusahaan', $id_perusahaan);
+        if ($id_gudang) {
+            $this->db->where('id_gudang !=', $id_gudang);
         }
-
-        $this->db->group_by('g.id_gudang');
-        $this->db->order_by('g.nama_gudang', 'ASC');
-        return $this->db->get()->result();
+        return $this->db->get($this->table)->num_rows() == 0;
     }
 }

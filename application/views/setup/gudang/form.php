@@ -1,5 +1,5 @@
 <div class="form-group text-left mt-4">
-    <?php echo back_button('gudang'); ?>
+    <?php echo back_button('setup/gudang'); ?>
 </div>
 <div class="card shadow mb-4">
     <div class="card-header bg-primary text-white d-flex align-items-center">
@@ -20,23 +20,23 @@
             <?php echo form_error('nama_gudang', '<small class="text-danger">', '</small>'); ?>
         </div>
 
-        <?php if ($this->session->userdata('id_role') == 1): ?>
-            <div class="form-group">
-                <?php echo form_label('Perusahaan <span class="text-danger">*</span>', 'id_perusahaan'); ?>
-                <?php
-                $options = array();
-                if (isset($perusahaan)) {
-                    foreach ($perusahaan as $p) {
-                        $options[$p->id_perusahaan] = $p->nama_perusahaan;
-                    }
-                }
+        <div class="form-group">
+            <?php echo form_label('Perusahaan <span class="text-danger">*</span>', 'id_perusahaan'); ?>
+            <?php
+            $options = array();
+            foreach ($perusahaan as $p) {
+                $options[$p->id_perusahaan] = $p->nama_perusahaan;
+            }
 
-                $selected = isset($gudang) ? $gudang->id_perusahaan : set_value('id_perusahaan');
-                echo form_dropdown('id_perusahaan', $options, $selected, 'class="form-control select2" id="id_perusahaan" required');
-                ?>
-                <?php echo form_error('id_perusahaan', '<small class="text-danger">', '</small>'); ?>
-            </div>
-        <?php endif; ?>
+            echo form_dropdown(
+                'id_perusahaan',
+                $options,
+                set_value('id_perusahaan', isset($gudang) ? $gudang->id_perusahaan : ''),
+                array('class' => 'form-control', 'required' => '')
+            );
+            ?>
+            <?php echo form_error('id_perusahaan', '<small class="text-danger">', '</small>'); ?>
+        </div>
 
         <div class="form-group">
             <?php echo form_label('Alamat', 'alamat'); ?>
