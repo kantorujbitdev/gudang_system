@@ -4,7 +4,7 @@
 
 <div class="card shadow mb-4">
     <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Form Kategori Barang</h6>
+        <h4 class="m-0 font-weight-bold text-primary">Form Kategori Barang</h6>
     </div>
     <div class="card-body">
         <?php echo form_open(isset($kategori) ? 'setup/kategori/edit/' . $kategori->id_kategori : 'setup/kategori/tambah'); ?>
