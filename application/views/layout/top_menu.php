@@ -30,16 +30,6 @@ switch ($role_id) {
     <!-- Info User untuk layar kecil -->
     <ul class="navbar-nav d-block d-sm-none ml-auto">
         <li class="nav-item dropdown no-arrow">
-            <!-- <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdownMobile" role="button"
-                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <span class="mr-2 text-gray-600 small">
-                    <?php echo $this->session->userdata('nama'); ?>
-                </span>
-                <img class="img-profile rounded-circle ml-1"
-                    src="<?php echo base_url('assets/images/profile/undraw_profile_packing.svg'); ?>"
-                    style="width: 32px; height: 32px;">
-            </a> -->
-
             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button"
                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <span class="mr-2 text-gray-600 small">
