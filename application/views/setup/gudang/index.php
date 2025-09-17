@@ -4,7 +4,7 @@
 
 <div class="card shadow mb-4">
     <div class="card-header py-3">
-        <h3 class="h5 mb-0 text-gray-800"Daftar Gudang</h4>
+        <h3 class="h5 mb-0 text-gray-800">Daftar Gudang</h3>
     </div>
     <div class="card-body">
         <div class="alert alert-info">
