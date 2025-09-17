@@ -12,7 +12,8 @@
 
     <style>
         .login-card {
-            border-radius: 20px;
+            border-radius: 10px;
+            /* lebih kotak, nggak terlalu lonjong */
             overflow: hidden;
         }
 
@@ -26,12 +27,14 @@
         }
 
         .btn-primary {
-            border-radius: 50px;
+            border-radius: 8px;
+            /* tombol agak kotak */
         }
 
         .form-control-user {
-            border-radius: 50px;
-            padding: 1rem;
+            border-radius: 8px;
+            /* input agak kotak */
+            padding: 0.9rem;
         }
 
         .login-title {
@@ -42,7 +45,7 @@
         /* Responsive font size untuk judul */
         @media (max-width: 576px) {
             .login-title {
-                font-size: 1.0rem;
+                font-size: 1rem;
             }
 
             .login-text {
@@ -50,6 +53,7 @@
             }
         }
     </style>
+
 </head>
 
 <body class="bg-gradient-primary">
