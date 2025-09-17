@@ -42,7 +42,11 @@
         /* Responsive font size untuk judul */
         @media (max-width: 576px) {
             .login-title {
-                font-size: 1.2rem;
+                font-size: 1.0rem;
+            }
+
+            .login-text {
+                font-size: 0.85rem
             }
         }
     </style>
@@ -62,7 +66,7 @@
                             <!-- Logo -->
                             <img src="<?php echo base_url('assets/images/logo.png'); ?>" alt="Logo" class="login-logo">
                             <h1 class="h4 login-title mb-4">Sistem Manajemen Stok Gudang</h1>
-                            <p class="text-muted mb-4">Silakan login untuk melanjutkan</p>
+                            <p class="login-text mb-4">Silakan login untuk melanjutkan</p>
                         </div>
 
                         <!-- Error Message -->
