@@ -34,14 +34,19 @@ $(document).ready(function () {
 	});
 });
 
-// Initialize Datepicker
+// Initialize Datepicker - only if datepicker is loaded
 $(document).ready(function () {
-	$(".datepicker").datepicker({
-		format: "dd/mm/yyyy",
-		autoclose: true,
-		todayHighlight: true,
-		language: "id",
-	});
+	// Check if datepicker function exists
+	if (typeof $.fn.datepicker === "function") {
+		$(".datepicker").datepicker({
+			format: "dd/mm/yyyy",
+			autoclose: true,
+			todayHighlight: true,
+			language: "id",
+		});
+	} else {
+		console.log("Datepicker library not loaded");
+	}
 });
 
 // Close responsive menu

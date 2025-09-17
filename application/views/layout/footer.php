@@ -1,4 +1,6 @@
 </div>
+<!-- /.container-fluid -->
+</div>
 <!-- End of Main Content -->
 <!-- Footer -->
 <footer class="sticky-footer bg-white">
@@ -43,6 +45,12 @@
 <script src="<?php echo base_url('assets/vendor/bootstrap/js/bootstrap.bundle.min.js'); ?>"></script>
 <!-- Core plugin JavaScript-->
 <script src="<?php echo base_url('assets/vendor/jquery-easing/jquery.easing.min.js'); ?>"></script>
+<!-- Chart.js -->
+<script src="<?php echo base_url('assets/vendor/chart.js/Chart.min.js'); ?>"></script>
+<!-- Bootstrap Datepicker -->
+<script src="<?php echo base_url('assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.min.js'); ?>"></script>
+<script
+    src="<?php echo base_url('assets/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.id.min.js'); ?>"></script>
 <!-- Custom scripts for all pages-->
 <script src="<?php echo base_url('assets/js/sb-admin-2.min.js'); ?>"></script>
 <!-- Custom scripts for this template-->
