@@ -1,22 +1,55 @@
-<!-- Top Menu Horizontal -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+<!-- Top Menu + User Info -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#topMenu" aria-controls="topMenu"
         aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
+
+    <!-- Info User untuk layar kecil -->
+    <ul class="navbar-nav d-block d-sm-none ml-auto">
+        <li class="nav-item dropdown no-arrow">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdownMobile" role="button"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="mr-2 text-gray-600 small">
+                    <?php echo $this->session->userdata('nama'); ?>
+                </span>
+                <img class="img-profile rounded-circle ml-1"
+                    src="<?php echo base_url('assets/images/profile/undraw_profile_packing.svg'); ?>"
+                    style="width: 32px; height: 32px;">
+            </a>
+            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in bg-white"
+                aria-labelledby="userDropdownMobile">
+                <a class="dropdown-item" href="<?php echo site_url('setup/user/profile'); ?>">
+                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i> Profile
+                </a>
+                <a class="dropdown-item" href="<?php echo site_url('setup/user/change_password'); ?>">
+                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i> Ubah Password
+                </a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> Logout
+                </a>
+            </div>
+        </li>
+    </ul>
+
+    <!-- Menu Horizontal -->
     <div class="collapse navbar-collapse" id="topMenu">
         <ul class="navbar-nav mr-auto">
             <!-- Dashboard -->
             <li
                 class="nav-item <?php echo $this->uri->segment(1) == 'dashboard' || $this->uri->segment(1) == '' ? 'active' : ''; ?>">
                 <a class="nav-link" href="<?php echo base_url('dashboard'); ?>">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                    <img src="<?php echo base_url('assets/images/logo.png'); ?>" alt="Logo"
+                        style="width:20px; height:20px; margin-right:8px;">
+                    Dashboard
                 </a>
             </li>
 
             <!-- Setup Dropdown -->
             <li class="nav-item dropdown <?php echo $this->uri->segment(1) == 'setup' ? 'active' : ''; ?>">
-                <a class="nav-link dropdown-toggle" href="#" onclick="toggleDropdown(this); return false;">
+                <a class="nav-link dropdown-toggle" href="#" role="button"
+                    onclick="toggleDropdown(this); return false;">
                     <i class="fas fa-database"></i> Setup
                 </a>
                 <div class="dropdown-menu">
@@ -42,30 +75,10 @@
                 </div>
             </li>
 
-            <!-- Aktifitas Dropdown -->
-            <li class="nav-item dropdown <?php echo $this->uri->segment(1) == 'aktifitas' ? 'active' : ''; ?>">
-                <a class="nav-link dropdown-toggle" href="#" onclick="toggleDropdown(this); return false;">
-                    <i class="fas fa-exchange-alt"></i> Aktifitas
-                </a>
-                <div class="dropdown-menu">
-                    <a class="dropdown-item" href="<?php echo base_url('aktifitas/pemindahan'); ?>">
-                        <i class="fas fa-truck-loading"></i> Pemindahan Barang
-                    </a>
-                    <a class="dropdown-item" href="<?php echo base_url('aktifitas/penerimaan'); ?>">
-                        <i class="fas fa-clipboard-check"></i> Penerimaan Barang
-                    </a>
-                    <a class="dropdown-item" href="<?php echo base_url('aktifitas/retur_penjualan'); ?>">
-                        <i class="fas fa-undo-alt"></i> Retur Penjualan
-                    </a>
-                    <a class="dropdown-item" href="<?php echo base_url('aktifitas/retur_pembelian'); ?>">
-                        <i class="fas fa-undo"></i> Retur Pembelian
-                    </a>
-                </div>
-            </li>
-
             <!-- Daftar Dropdown -->
             <li class="nav-item dropdown <?php echo $this->uri->segment(1) == 'daftar' ? 'active' : ''; ?>">
-                <a class="nav-link dropdown-toggle" href="#" onclick="toggleDropdown(this); return false;">
+                <a class="nav-link dropdown-toggle" href="#" role="button"
+                    onclick="toggleDropdown(this); return false;">
                     <i class="fas fa-list"></i> Daftar
                 </a>
                 <div class="dropdown-menu">
@@ -84,9 +97,32 @@
                 </div>
             </li>
 
+            <!-- Aktifitas Dropdown -->
+            <li class="nav-item dropdown <?php echo $this->uri->segment(1) == 'aktifitas' ? 'active' : ''; ?>">
+                <a class="nav-link dropdown-toggle" href="#" role="button"
+                    onclick="toggleDropdown(this); return false;">
+                    <i class="fas fa-exchange-alt"></i> Aktifitas
+                </a>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="<?php echo base_url('aktifitas/pemindahan'); ?>">
+                        <i class="fas fa-truck-loading"></i> Pemindahan Barang
+                    </a>
+                    <a class="dropdown-item" href="<?php echo base_url('aktifitas/penerimaan'); ?>">
+                        <i class="fas fa-clipboard-check"></i> Penerimaan Barang
+                    </a>
+                    <a class="dropdown-item" href="<?php echo base_url('aktifitas/retur_penjualan'); ?>">
+                        <i class="fas fa-undo-alt"></i> Retur Penjualan
+                    </a>
+                    <a class="dropdown-item" href="<?php echo base_url('aktifitas/retur_pembelian'); ?>">
+                        <i class="fas fa-undo"></i> Retur Pembelian
+                    </a>
+                </div>
+            </li>
+
             <!-- Laporan Dropdown -->
             <li class="nav-item dropdown <?php echo $this->uri->segment(1) == 'laporan' ? 'active' : ''; ?>">
-                <a class="nav-link dropdown-toggle" href="#" onclick="toggleDropdown(this); return false;">
+                <a class="nav-link dropdown-toggle" href="#" role="button"
+                    onclick="toggleDropdown(this); return false;">
                     <i class="fas fa-chart-bar"></i> Laporan
                 </a>
                 <div class="dropdown-menu">
@@ -107,7 +143,8 @@
 
             <!-- Pengaturan Dropdown -->
             <li class="nav-item dropdown <?php echo $this->uri->segment(1) == 'pengaturan' ? 'active' : ''; ?>">
-                <a class="nav-link dropdown-toggle" href="#" onclick="toggleDropdown(this); return false;">
+                <a class="nav-link dropdown-toggle" href="#" role="button"
+                    onclick="toggleDropdown(this); return false;">
                     <i class="fas fa-cog"></i> Pengaturan
                 </a>
                 <div class="dropdown-menu">
@@ -126,42 +163,57 @@
                 </div>
             </li>
         </ul>
-
-        <!-- Company Info (Untuk non Super Admin) -->
-        <?php if ($this->session->userdata('id_role') != 1): ?>
-            <span class="navbar-text">
-                <i class="fas fa-building"></i>
-                <?php echo $this->session->userdata('nama_perusahaan'); ?>
-            </span>
-        <?php endif; ?>
+        <!-- User Info (desktop) -->
+        <ul class="navbar-nav ml-auto align-items-center pr-3 d-none d-sm-flex">
+            <li class="nav-item dropdown no-arrow">
+                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="mr-2 text-gray-600 small">
+                        <?php echo $this->session->userdata('nama'); ?>
+                    </span>
+                    <img class="img-profile rounded-circle ml-1"
+                        src="<?php echo base_url('assets/images/profile/undraw_profile_packing.svg'); ?>"
+                        style="width: 32px; height: 32px;">
+                </a>
+                <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in bg-white"
+                    aria-labelledby="userDropdown">
+                    <a class="dropdown-item" href="<?php echo site_url('setup/user/profile'); ?>">
+                        <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i> Profile
+                    </a>
+                    <a class="dropdown-item" href="<?php echo site_url('setup/user/change_password'); ?>">
+                        <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i> Ubah Password
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                        <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> Logout
+                    </a>
+                </div>
+            </li>
+        </ul>
     </div>
 </nav>
 
-<!-- Simple JavaScript for dropdown -->
+<!-- JS Dropdown -->
 <script>
     function toggleDropdown(element) {
-        // Close all dropdowns
-        document.querySelectorAll('.dropdown-menu').forEach(function (menu) {
-            menu.classList.remove('show');
-        });
-        document.querySelectorAll('.dropdown-toggle').forEach(function (toggle) {
-            toggle.classList.remove('show');
-        });
+        const menu = element.nextElementSibling;
+        const isOpen = menu.classList.contains('show');
 
-        // Open clicked dropdown
-        element.classList.add('show');
-        element.nextElementSibling.classList.add('show');
+        // Tutup semua dropdown dulu
+        document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+        document.querySelectorAll('.dropdown-toggle').forEach(t => t.classList.remove('show'));
+
+        // Kalau sebelumnya belum terbuka, buka dropdown yg diklik
+        if (!isOpen) {
+            element.classList.add('show');
+            menu.classList.add('show');
+        }
     }
 
-    // Close dropdowns when clicking outside
     document.addEventListener('click', function (event) {
         if (!event.target.closest('.dropdown')) {
-            document.querySelectorAll('.dropdown-menu').forEach(function (menu) {
-                menu.classList.remove('show');
-            });
-            document.querySelectorAll('.dropdown-toggle').forEach(function (toggle) {
-                toggle.classList.remove('show');
-            });
+            document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.remove('show'));
+            document.querySelectorAll('.dropdown-toggle').forEach(toggle => toggle.classList.remove('show'));
         }
     });
 </script>
