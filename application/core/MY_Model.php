@@ -85,7 +85,10 @@ class MY_Model extends CI_Model
     public function delete($id)
     {
         if ($this->soft_delete) {
-            $data = array('deleted_at' => date('Y-m-d H:i:s'));
+            $data = array(
+                'deleted_at' => date('Y-m-d H:i:s'),
+                'status_aktif' => 0
+            );
             return $this->update($id, $data);
         } else {
             $this->db->where($this->primary_key, $id);

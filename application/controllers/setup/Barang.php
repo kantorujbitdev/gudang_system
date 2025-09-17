@@ -34,7 +34,7 @@ class Barang extends MY_Controller
                 'satuan' => $this->input->post('satuan'),
                 'harga_jual' => $this->input->post('harga_jual'),
                 'harga_beli_terakhir' => $this->input->post('harga_beli_terakhir'),
-                'aktif' => 1
+                'status_aktif' => 1
             );
 
             if ($this->Barang_model->insert($data)) {

@@ -115,47 +115,36 @@ class Perusahaan extends MY_Controller
         $this->render_view('setup/perusahaan/form');
     }
 
-    public function hapus($id_perusahaan)
+    public function nonaktif($id)
     {
-        $perusahaan = $this->Perusahaan_model->get($id_perusahaan);
-
-        if (!$perusahaan) {
-            show_404();
+        // Hanya Super Admin yang bisa mengaktifkan perusahaan
+        if ($this->session->userdata('id_role') != 5) {
+            $this->session->set_flashdata('error', 'Anda tidak memiliki akses ke halaman ini');
+            redirect('dashboard');
         }
 
-        // Check if company has related data
-        $has_related_data = FALSE;
-
-        // Check users
-        $this->db->where('id_perusahaan', $id_perusahaan);
-        if ($this->db->count_all_results('user') > 0) {
-            $has_related_data = TRUE;
-        }
-
-        // Check gudang
-        $this->db->where('id_perusahaan', $id_perusahaan);
-        if ($this->db->count_all_results('gudang') > 0) {
-            $has_related_data = TRUE;
-        }
-
-        // Check barang
-        $this->db->where('id_perusahaan', $id_perusahaan);
-        if ($this->db->count_all_results('barang') > 0) {
-            $has_related_data = TRUE;
-        }
-
-        if ($has_related_data) {
-            $this->session->set_flashdata('error', 'Perusahaan tidak dapat dihapus karena masih memiliki data terkait (user, gudang, atau barang)!');
-            redirect('setup/perusahaan');
-        }
-
-        if ($this->Perusahaan_model->delete($id_perusahaan)) {
-            $this->session->set_flashdata('success', 'Perusahaan berhasil dihapus!');
+        if ($this->Perusahaan_model->update_status($id, 1)) {
+            $this->session->set_flashdata('success', 'Perusahaan berhasil diaktifkan kembali');
         } else {
-            $this->session->set_flashdata('error', 'Gagal menghapus perusahaan!');
+            $this->session->set_flashdata('error', 'Gagal mengaktifkan perusahaan');
+        }
+        redirect('perusahaan');
+    }
+
+    public function aktif($id)
+    {
+        // Hanya Super Admin yang bisa mengaktifkan perusahaan
+        if ($this->session->userdata('id_role') != 5) {
+            $this->session->set_flashdata('error', 'Anda tidak memiliki akses ke halaman ini');
+            redirect('dashboard');
         }
 
-        redirect('setup/perusahaan');
+        if ($this->Perusahaan_model->update_status($id, 1)) {
+            $this->session->set_flashdata('success', 'Perusahaan berhasil diaktifkan kembali');
+        } else {
+            $this->session->set_flashdata('error', 'Gagal mengaktifkan perusahaan');
+        }
+        redirect('perusahaan');
     }
 
     public function detail($id_perusahaan)

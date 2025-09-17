@@ -8,7 +8,7 @@ class User_model extends MY_Model
         parent::__construct();
         $this->table = 'user';
         $this->primary_key = 'id_user';
-        $this->fillable = array('nama', 'username', 'password_hash', 'id_role', 'id_perusahaan', 'email', 'telepon', 'aktif');
+        $this->fillable = array('nama', 'username', 'password_hash', 'id_role', 'id_perusahaan', 'email', 'telepon', 'status_aktif');
         $this->protected = array('password_hash');
     }
 

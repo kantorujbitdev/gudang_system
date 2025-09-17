@@ -68,21 +68,27 @@
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <div class="btn-group">
-                                    <a href="<?php echo site_url('setup/perusahaan/detail/' . $row->id_perusahaan); ?>"
-                                        class="btn btn-sm btn-info" title="Detail">
-                                        <i class="fas fa-info-circle"></i>
-                                    </a>
-                                    <a href="<?php echo site_url('setup/perusahaan/edit/' . $row->id_perusahaan); ?>"
-                                        class="btn btn-sm btn-warning" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <a href="<?php echo site_url('setup/perusahaan/hapus/' . $row->id_perusahaan); ?>"
-                                        class="btn btn-sm btn-danger" title="Hapus"
-                                        onclick="return confirm('Apakah Anda yakin ingin menghapus perusahaan ini?');">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
-                                </div>
+                                <a href="<?php echo site_url('setup/perusahaan/detail/' . $row->id_perusahaan); ?>"
+                                    class="btn btn-sm btn-info" title="Detail">
+                                    <i class="fas fa-info-circle"> Detail</i>
+                                </a>
+                                <a href="<?php echo site_url('setup/perusahaan/edit/' . $row->id_perusahaan); ?>"
+                                    class="btn btn-sm btn-warning" title="Edit">
+                                    <i class="fas fa-edit"> Edit</i>
+                                </a>
+
+                                <?php if ($row->status_aktif == '1'): ?>
+                                    <a href="<?php echo site_url('perusahaan/nonaktif/' . $row->id_perusahaan) ?>"
+                                        class="btn btn-sm btn-danger"
+                                        onclick="return confirm('Apakah Anda yakin ingin menonaktifkan perusahaan ini?')">
+                                        <i class="fas fa-minus-square"></i> Nonaktifkan</a>
+                                <?php else: ?>
+                                    <a href="<?php echo site_url('perusahaan/aktif/' . $row->id_perusahaan) ?>"
+                                        class="btn btn-sm btn-success"
+                                        onclick="return confirm('Apakah Anda yakin ingin mengaktifkan kembali perusahaan ini?')">
+                                        <i class="fas fa-check-square"></i> Aktifkan</a>
+                                <?php endif; ?>
+
                             </td>
                         </tr>
                     <?php endforeach; ?>

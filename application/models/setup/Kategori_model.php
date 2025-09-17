@@ -11,7 +11,6 @@ class Kategori_model extends MY_Model
         $this->fillable = array('id_perusahaan', 'nama_kategori', 'deskripsi', 'status_aktif', 'deleted_at');
         $this->protected = array('id_kategori');
         $this->timestamps = FALSE;
-        $this->soft_delete = TRUE;
     }
 
     public function get_all()
@@ -75,7 +74,7 @@ class Kategori_model extends MY_Model
         $this->db->join('stok_gudang sg', 'b.id_barang = sg.id_barang', 'left');
         $this->db->where('b.id_kategori', $id_kategori);
         $this->db->where('b.deleted_at IS NULL');
-        $this->db->where('b.aktif', 1);
+        $this->db->where('b.status_aktif', 1);
 
         // Filter berdasarkan role user
         if ($user_role != 1) { // Bukan Super Admin

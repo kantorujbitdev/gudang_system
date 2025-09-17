@@ -8,7 +8,7 @@ class Stok_model extends CI_Model
     {
         $filter = get_company_filter();
 
-        $this->db->where('aktif', 1);
+        $this->db->where('status_aktif', 1);
         if ($filter) {
             $this->db->where($filter);
         }
@@ -37,7 +37,7 @@ class Stok_model extends CI_Model
         $this->db->join('barang b', 'sg.id_barang = b.id_barang');
         $this->db->join('gudang g', 'sg.id_gudang = g.id_gudang');
         $this->db->where('sg.jumlah <=', 10);
-        $this->db->where('b.aktif', 1);
+        $this->db->where('b.status_aktif', 1);
         $this->db->where('g.status_aktif', 1);
 
         if ($filter) {
@@ -72,7 +72,7 @@ class Stok_model extends CI_Model
         $this->db->from('stok_gudang sg');
         $this->db->join('gudang g', 'sg.id_gudang = g.id_gudang');
         $this->db->join('barang b', 'sg.id_barang = b.id_barang');
-        $this->db->where('b.aktif', 1);
+        $this->db->where('b.status_aktif', 1);
         $this->db->where('g.status_aktif', 1);
 
         if ($filter) {

@@ -10,19 +10,27 @@ class Perusahaan_model extends MY_Model
         $this->primary_key = 'id_perusahaan';
         $this->fillable = array('nama_perusahaan', 'alamat', 'telepon', 'email', 'status_aktif');
         $this->timestamps = TRUE;
-        $this->soft_delete = FALSE;
+        $this->soft_delete = TRUE;
     }
 
     public function get_all()
     {
-        $this->db->order_by('nama_perusahaan', 'ASC');
+        $this->db->order_by('created_at', 'DESC');
         return $this->db->get($this->table)->result();
     }
-
+    public function update_status($id, $status)
+    {
+        $this->db->where('id_perusahaan', $id);
+        $data = [
+            'status_aktif' => $status,
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+        return $this->db->update('perusahaan', $data);
+    }
     public function get_active()
     {
         $this->db->where('status_aktif', 1);
-        $this->db->order_by('nama_perusahaan', 'ASC');
+        $this->db->order_by('created_at', 'DESC');
         return $this->db->get($this->table)->result();
     }
 
@@ -37,7 +45,7 @@ class Perusahaan_model extends MY_Model
         $this->db->join('gudang g', 'p.id_perusahaan = g.id_perusahaan', 'left');
         $this->db->join('barang b', 'p.id_perusahaan = b.id_perusahaan', 'left');
         $this->db->group_by('p.id_perusahaan');
-        $this->db->order_by('p.nama_perusahaan', 'ASC');
+        $this->db->order_by('p.created_at', 'DESC');
 
         $query = $this->db->get();
 
@@ -45,8 +53,6 @@ class Perusahaan_model extends MY_Model
             ? $query->result()
             : [];
     }
-
-
 
     public function check_unique_name($nama_perusahaan, $id_perusahaan = NULL)
     {
