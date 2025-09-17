@@ -1,10 +1,11 @@
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800"><?php echo isset($kategori) ? 'Edit' : 'Tambah'; ?> Kategori Barang</h1>
+    <h4 class="m-0 font-weight-bold text-primary"><?php echo isset($kategori) ? 'Edit' : 'Tambah'; ?> Kategori Barang
+    </h4>
 </div>
 
 <div class="card shadow mb-4">
     <div class="card-header py-3">
-        <h4 class="m-0 font-weight-bold text-primary">Form Kategori Barang</h6>
+        <h1 class="h5 mb-0 text-gray-800">Form Kategori Barang</h1>
     </div>
     <div class="card-body">
         <?php echo form_open(isset($kategori) ? 'setup/kategori/edit/' . $kategori->id_kategori : 'setup/kategori/tambah'); ?>

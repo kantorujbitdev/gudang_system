@@ -1,5 +1,5 @@
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+    <h4 class="m-0 font-weight-bold text-primary">Dashboard</h1>
 </div>
 <!-- Content Row -->
 <div class="row">
@@ -86,7 +86,7 @@
     <div class="col-xl-8 col-lg-7">
         <div class="card shadow mb-4">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h4 class="m-0 font-weight-bold text-primary">Grafik Stok per Gudang</h6>
+                <h4 class="m-0 font-weight-bold text-primary">Grafik Stok per Gudang</h4>
             </div>
             <div class="card-body">
                 <div class="chart-area">
@@ -99,7 +99,7 @@
     <div class="col-xl-4 col-lg-5">
         <div class="card shadow mb-4">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h4 class="m-0 font-weight-bold text-primary">Transaksi Bulan Ini</h6>
+                <h4 class="m-0 font-weight-bold text-primary">Transaksi Bulan Ini</h4>
             </div>
             <div class="card-body">
                 <div class="chart-pie pt-4 pb-2">
@@ -126,7 +126,7 @@
     <div class="col-lg-6 mb-4">
         <div class="card shadow mb-4">
             <div class="card-header py-3">
-                <h4 class="m-0 font-weight-bold text-primary">Stok Menipis</h6>
+                <h4 class="m-0 font-weight-bold text-primary">Stok Menipis</h4>
             </div>
             <div class="card-body">
                 <?php if (!empty($stok_menipis)): ?>
@@ -162,7 +162,7 @@
     <div class="col-lg-6 mb-4">
         <div class="card shadow mb-4">
             <div class="card-header py-3">
-                <h4 class="m-0 font-weight-bold text-primary">Aktivitas Terkini</h6>
+                <h4 class="m-0 font-weight-bold text-primary">Aktivitas Terkini</h4>
             </div>
             <div class="card-body">
                 <div class="timeline">

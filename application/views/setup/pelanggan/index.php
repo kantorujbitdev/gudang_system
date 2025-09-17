@@ -1,10 +1,10 @@
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Gudang</h1>
+    <h4 class="m-0 font-weight-bold text-primary">Gudang</h1>
 </div>
 
 <div class="card shadow mb-4">
     <div class="card-header py-3">
-        <h4 class="m-0 font-weight-bold text-primary">Daftar Gudang</h6>
+        <h3 class="h5 mb-0 text-gray-800">Daftar Gudang</h3>
     </div>
     <div class="card-body">
         <div class="alert alert-info">
