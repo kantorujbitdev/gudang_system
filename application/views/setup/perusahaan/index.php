@@ -1,8 +1,8 @@
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h4 class="m-0 font-weight-bold text-primary">Kategori Barang</h4>
-    <a href="<?php echo site_url('setup/kategori/tambah'); ?>"
+    <h4 class="m-0 font-weight-bold text-primary">Manajemen Perusahaan</h4>
+    <a href="<?php echo site_url('setup/perusahaan/tambah'); ?>"
         class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
-        <i class="fas fa-plus fa-sm text-white-50"></i> Tambah Kategori
+        <i class="fas fa-plus fa-sm text-white-50"></i> Tambah Perusahaan
     </a>
 </div>
 
@@ -26,7 +26,7 @@
 
 <div class="card shadow mb-4">
     <div class="card-header py-3">
-        <h1 class="h5 mb-0 text-gray-800">Daftar Kategori Barang</h1>
+        <h1 class="h5 mb-0 text-gray-800">Daftar Perusahaan</h1>
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -34,11 +34,12 @@
                 <thead>
                     <tr>
                         <th>No</th>
-                        <th>Nama Kategori</th>
-                        <th>Deskripsi</th>
-                        <?php if ($this->session->userdata('id_role') == 1): ?>
-                            <th>Perusahaan</th>
-                        <?php endif; ?>
+                        <th>Nama Perusahaan</th>
+                        <th>Alamat</th>
+                        <th>Telepon</th>
+                        <th>Email</th>
+                        <th>Total User</th>
+                        <th>Total Gudang</th>
                         <th>Total Barang</th>
                         <th>Status</th>
                         <th>Aksi</th>
@@ -46,14 +47,15 @@
                 </thead>
                 <tbody>
                     <?php $no = 1;
-                    foreach ($kategori as $row): ?>
+                    foreach ($perusahaan as $row): ?>
                         <tr>
                             <td><?php echo $no++; ?></td>
-                            <td><?php echo $row->nama_kategori; ?></td>
-                            <td><?php echo $row->deskripsi ?: '-'; ?></td>
-                            <?php if ($this->session->userdata('id_role') == 1): ?>
-                                <td><?php echo $row->nama_perusahaan ?? '-'; ?></td>
-                            <?php endif; ?>
+                            <td><?php echo $row->nama_perusahaan; ?></td>
+                            <td><?php echo $row->alamat ?: '-'; ?></td>
+                            <td><?php echo $row->telepon ?: '-'; ?></td>
+                            <td><?php echo $row->email ?: '-'; ?></td>
+                            <td><?php echo $row->total_user; ?></td>
+                            <td><?php echo $row->total_gudang; ?></td>
                             <td><?php echo $row->total_barang; ?></td>
                             <td>
                                 <?php if ($row->status_aktif == 1): ?>
@@ -64,17 +66,17 @@
                             </td>
                             <td>
                                 <div class="btn-group">
-                                    <a href="<?php echo site_url('setup/kategori/detail/' . $row->id_kategori); ?>"
+                                    <a href="<?php echo site_url('setup/perusahaan/detail/' . $row->id_perusahaan); ?>"
                                         class="btn btn-sm btn-info" title="Detail">
                                         <i class="fas fa-info-circle"></i>
                                     </a>
-                                    <a href="<?php echo site_url('setup/kategori/edit/' . $row->id_kategori); ?>"
+                                    <a href="<?php echo site_url('setup/perusahaan/edit/' . $row->id_perusahaan); ?>"
                                         class="btn btn-sm btn-warning" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="<?php echo site_url('setup/kategori/hapus/' . $row->id_kategori); ?>"
+                                    <a href="<?php echo site_url('setup/perusahaan/hapus/' . $row->id_perusahaan); ?>"
                                         class="btn btn-sm btn-danger" title="Hapus"
-                                        onclick="return confirm('Apakah Anda yakin ingin menghapus kategori ini?');">
+                                        onclick="return confirm('Apakah Anda yakin ingin menghapus perusahaan ini?');">
                                         <i class="fas fa-trash"></i>
                                     </a>
                                 </div>

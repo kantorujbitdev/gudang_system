@@ -2,8 +2,8 @@
 -- version 5.2.0
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1:3306
--- Generation Time: Sep 16, 2025 at 01:43 AM
+-- Host: 127.0.0.1
+-- Generation Time: Sep 17, 2025 at 12:42 PM
 -- Server version: 10.4.24-MariaDB
 -- PHP Version: 7.4.29
 
@@ -337,7 +337,9 @@ INSERT INTO `hak_akses_menu` (`id_hak_akses`, `id_role`, `id_menu`, `akses`) VAL
 (89, 5, 15, 1),
 (90, 5, 16, 1),
 (91, 5, 19, 1),
-(92, 5, 20, 1);
+(92, 5, 20, 1),
+(93, 1, 31, 1),
+(94, 2, 31, 1);
 
 -- --------------------------------------------------------
 
@@ -415,12 +417,12 @@ CREATE TABLE `menu` (
 INSERT INTO `menu` (`id_menu`, `nama_menu`, `url`, `icon`, `urutan`, `id_parent`, `status_aktif`) VALUES
 (1, 'Dashboard', 'dashboard', 'fas fa-tachometer-alt', 1, NULL, 1),
 (2, 'Setup', '#', 'fas fa-database', 2, NULL, 1),
-(3, 'Kategori Barang', 'setup/kategori', 'fas fa-tags', 1, 2, 1),
-(4, 'Barang', 'setup/barang', 'fas fa-box', 2, 2, 1),
-(5, 'Gudang', 'setup/gudang', 'fas fa-warehouse', 3, 2, 1),
-(6, 'Pelanggan', 'setup/pelanggan', 'fas fa-users', 4, 2, 1),
-(7, 'Supplier', 'setup/supplier', 'fas fa-truck', 5, 2, 1),
-(8, 'User Management', '#', 'fas fa-user-cog', 6, 2, 1),
+(3, 'Kategori Barang', 'setup/kategori', 'fas fa-tags', 2, 2, 1),
+(4, 'Barang', 'setup/barang', 'fas fa-box', 3, 2, 1),
+(5, 'Gudang', 'setup/gudang', 'fas fa-warehouse', 4, 2, 1),
+(6, 'Pelanggan', 'setup/pelanggan', 'fas fa-users', 5, 2, 1),
+(7, 'Supplier', 'setup/supplier', 'fas fa-truck', 6, 2, 1),
+(8, 'User Management', '#', 'fas fa-user-cog', 7, 2, 1),
 (9, 'Sales', 'setup/user/sales', 'fas fa-user-tag', 1, 8, 1),
 (10, 'Admin Packing', 'setup/user/packing', 'fas fa-user-box', 2, 8, 1),
 (11, 'Aktifitas', '#', 'fas fa-exchange-alt', 3, NULL, 1),
@@ -442,7 +444,8 @@ INSERT INTO `menu` (`id_menu`, `nama_menu`, `url`, `icon`, `urutan`, `id_parent`
 (27, 'Stok Awal', 'pengaturan/stok_awal', 'fas fa-dolly-flatbed', 1, 26, 1),
 (28, 'Hak Akses', 'pengaturan/hak_akses', 'fas fa-user-shield', 2, 26, 1),
 (29, 'Approval Flow', 'pengaturan/approval', 'fas fa-tasks', 3, 26, 1),
-(30, 'Pengaturan Sistem', 'pengaturan/sistem', 'fas fa-sliders-h', 4, 26, 1);
+(30, 'Pengaturan Sistem', 'pengaturan/sistem', 'fas fa-sliders-h', 4, 26, 1),
+(31, 'Perusahaan', 'setup/perusahaan', 'fas fa-building', 1, 2, 1);
 
 -- --------------------------------------------------------
 
@@ -573,7 +576,7 @@ CREATE TABLE `perusahaan` (
 --
 
 INSERT INTO `perusahaan` (`id_perusahaan`, `nama_perusahaan`, `alamat`, `telepon`, `email`, `status_aktif`, `created_at`, `updated_at`) VALUES
-(1, 'PT. Maju Bersama', 'Jl. Sudirman No. 10, Jakarta', '021-12345678', NULL, 1, '2025-09-15 22:53:59', NULL);
+(1, 'PT. Maju Bersama', 'Jl. Sudirman No. 10, Jakarta', '021-12345678', '', 1, '2025-09-15 22:53:59', '2025-09-17 12:09:24');
 
 -- --------------------------------------------------------
 
@@ -735,8 +738,8 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`id_user`, `nama`, `username`, `password_hash`, `id_role`, `id_perusahaan`, `email`, `telepon`, `created_by`, `aktif`, `created_at`, `updated_at`, `last_login`, `foto_profil`) VALUES
-(1, 'Super Admin', 'admin', '$2y$10$Jk0IyD8hFSY6CbpX5MJtD.3GlVjw.g9hAVM/rymsjmza2cnTl02aq', 1, NULL, 'admin@example.com', '081234567890', NULL, 1, '2025-09-16 00:13:33', NULL, '2025-09-15 19:41:11', NULL),
-(2, 'Admin Perusahaan', 'adminperusahaan', '$2y$10$Jk0IyD8hFSY6CbpX5MJtD.3GlVjw.g9hAVM/rymsjmza2cnTl02aq', 2, 1, 'admin@perusahaan.com', '081234567891', NULL, 1, '2025-09-16 00:13:33', NULL, NULL, NULL),
+(1, 'Super Admin', 'admin', '$2y$10$Jk0IyD8hFSY6CbpX5MJtD.3GlVjw.g9hAVM/rymsjmza2cnTl02aq', 1, NULL, 'admin@example.com', '081234567890', NULL, 1, '2025-09-16 00:13:33', NULL, '2025-09-17 12:38:55', NULL),
+(2, 'Admin Perusahaan', 'adminperusahaan', '$2y$10$Jk0IyD8hFSY6CbpX5MJtD.3GlVjw.g9hAVM/rymsjmza2cnTl02aq', 2, 1, 'admin@perusahaan.com', '081234567891', NULL, 1, '2025-09-16 00:13:33', NULL, '2025-09-17 12:41:16', NULL),
 (3, 'Sales Online', 'sales', '$2y$10$Jk0IyD8hFSY6CbpX5MJtD.3GlVjw.g9hAVM/rymsjmza2cnTl02aq', 3, 1, 'sales@perusahaan.com', '081234567892', NULL, 1, '2025-09-16 00:13:33', NULL, NULL, NULL),
 (4, 'Admin Packing', 'packing', '$2y$10$Jk0IyD8hFSY6CbpX5MJtD.3GlVjw.g9hAVM/rymsjmza2cnTl02aq', 4, 1, 'packing@perusahaan.com', '081234567893', NULL, 1, '2025-09-16 00:13:33', NULL, NULL, NULL),
 (5, 'Admin Return', 'return', '$2y$10$Jk0IyD8hFSY6CbpX5MJtD.3GlVjw.g9hAVM/rymsjmza2cnTl02aq', 5, 1, 'return@perusahaan.com', '081234567894', NULL, 1, '2025-09-16 00:13:33', NULL, NULL, NULL);
@@ -766,7 +769,7 @@ CREATE TABLE `v_stok_realtime` (
 --
 DROP TABLE IF EXISTS `v_stok_realtime`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_stok_realtime`  AS SELECT `sg`.`id_barang` AS `id_barang`, `sg`.`id_gudang` AS `id_gudang`, `b`.`nama_barang` AS `nama_barang`, `g`.`nama_gudang` AS `nama_gudang`, `sg`.`jumlah` AS `jumlah`, `sg`.`reserved` AS `reserved`, `sg`.`jumlah`- `sg`.`reserved` AS `stok_tersedia`, `b`.`satuan` AS `satuan`, `p`.`nama_perusahaan` AS `nama_perusahaan` FROM (((`stok_gudang` `sg` join `barang` `b` on(`sg`.`id_barang` = `b`.`id_barang`)) join `gudang` `g` on(`sg`.`id_gudang` = `g`.`id_gudang`)) join `perusahaan` `p` on(`sg`.`id_perusahaan` = `p`.`id_perusahaan`)) WHERE `b`.`aktif` = 1 AND `g`.`status_aktif` = 1 AND `p`.`status_aktif` = 1111  ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_stok_realtime`  AS SELECT `sg`.`id_barang` AS `id_barang`, `sg`.`id_gudang` AS `id_gudang`, `b`.`nama_barang` AS `nama_barang`, `g`.`nama_gudang` AS `nama_gudang`, `sg`.`jumlah` AS `jumlah`, `sg`.`reserved` AS `reserved`, `sg`.`jumlah`- `sg`.`reserved` AS `stok_tersedia`, `b`.`satuan` AS `satuan`, `p`.`nama_perusahaan` AS `nama_perusahaan` FROM (((`stok_gudang` `sg` join `barang` `b` on(`sg`.`id_barang` = `b`.`id_barang`)) join `gudang` `g` on(`sg`.`id_gudang` = `g`.`id_gudang`)) join `perusahaan` `p` on(`sg`.`id_perusahaan` = `p`.`id_perusahaan`)) WHERE `b`.`aktif` = 1 AND `g`.`status_aktif` = 1 AND `p`.`status_aktif` = 11111111  ;
 
 --
 -- Indexes for dumped tables
@@ -1091,7 +1094,7 @@ ALTER TABLE `gudang`
 -- AUTO_INCREMENT for table `hak_akses_menu`
 --
 ALTER TABLE `hak_akses_menu`
-  MODIFY `id_hak_akses` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=93;
+  MODIFY `id_hak_akses` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=95;
 
 --
 -- AUTO_INCREMENT for table `kategori`
@@ -1115,7 +1118,7 @@ ALTER TABLE `log_stok`
 -- AUTO_INCREMENT for table `menu`
 --
 ALTER TABLE `menu`
-  MODIFY `id_menu` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `id_menu` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `packing`

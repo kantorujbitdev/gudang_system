@@ -9,7 +9,10 @@ $route['logout'] = 'auth/logout';
 $route['dashboard'] = 'dashboard';
 
 // Routes untuk setup
+$route['setup/perusahaan'] = 'setup/perusahaan';
+$route['setup/perusahaan/(:any)'] = 'perusahaan/$1';
 $route['setup/kategori'] = 'setup/kategori';
+$route['setup/kategori/(:any)'] = 'kategori/$1';
 $route['setup/barang'] = 'setup/barang';
 $route['setup/gudang'] = 'setup/gudang';
 $route['setup/pelanggan'] = 'setup/pelanggan';
