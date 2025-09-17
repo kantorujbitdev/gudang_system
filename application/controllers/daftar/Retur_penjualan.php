@@ -11,7 +11,7 @@ class Retur_penjualan extends CI_Controller
         $this->load->model('retur_penjualan_model');
         $this->load->model('penjualan_model');
         $this->load->model('barang_model');
-        $this->load->model('gudang_model');
+        $this->load->model('setup/Gudang_model');
         $this->load->model('stok_model');
         $this->load->library('form_validation');
 

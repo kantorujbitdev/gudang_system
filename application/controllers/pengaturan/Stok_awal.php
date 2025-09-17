@@ -10,7 +10,7 @@ class Pengaturan_stok_awal extends CI_Controller
         $this->load->library('auth');
         $this->load->model('stok_awal_model');
         $this->load->model('barang_model');
-        $this->load->model('gudang_model');
+        $this->load->model('setup/Gudang_model');
         $this->load->library('form_validation');
 
         if (!$this->auth->is_logged_in()) {

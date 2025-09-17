@@ -1,11 +1,3 @@
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h4 class="m-0 font-weight-bold text-primary">Manajemen Perusahaan</h4>
-    <a href="<?php echo site_url('setup/perusahaan/tambah'); ?>"
-        class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
-        <i class="fas fa-plus fa-sm text-white-50"></i> Tambah Perusahaan
-    </a>
-</div>
-
 <?php if ($this->session->flashdata('success')): ?>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         <?php echo $this->session->flashdata('success'); ?>
@@ -26,11 +18,22 @@
 
 <div class="card shadow mb-4">
     <div class="card-header py-3">
-        <h1 class="h5 mb-0 text-gray-800">Daftar Perusahaan</h1>
+        <div class="row">
+            <div class="col">
+                <?php echo responsive_title_blue('Daftar Perusahaan') ?>
+            </div>
+            <div class="col text-right">
+                <a href="<?php echo site_url('setup/perusahaan/tambah') ?>" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus">
+                    </i>
+                    Tambah Perusahaan
+                </a>
+            </div>
+        </div>
     </div>
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-bordered table-striped datatable" width="100%" cellspacing="0">
+            <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
                 <thead>
                     <tr>
                         <th>No</th>

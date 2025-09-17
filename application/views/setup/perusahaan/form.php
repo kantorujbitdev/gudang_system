@@ -1,12 +1,11 @@
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h4 class="m-0 font-weight-bold text-primary"><?php echo isset($perusahaan) ? 'Edit' : 'Tambah'; ?> Perusahaan</h4>
+<div class="form-group text-left mt-4">
+    <?php echo back_button('perusahaan'); ?>
 </div>
-
 <div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h1 class="h5 mb-0 text-gray-800">Form Perusahaan</h1>
+    <div class="card-header bg-primary text-white d-flex align-items-center">
+        <?php echo responsive_title(isset($perusahaan) ? 'Edit Perusahaan' : 'Tambah Perusahaan') ?>
     </div>
-    <div class="card-body">
+    <div class="card-body px-4 py-4">
         <?php echo form_open(isset($perusahaan) ? 'setup/perusahaan/edit/' . $perusahaan->id_perusahaan : 'setup/perusahaan/tambah'); ?>
         <div class="form-group">
             <?php echo form_label('Nama Perusahaan <span class="text-danger">*</span>', 'nama_perusahaan'); ?>

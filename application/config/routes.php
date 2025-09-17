@@ -10,13 +10,19 @@ $route['dashboard'] = 'dashboard';
 
 // Routes untuk setup
 $route['setup/perusahaan'] = 'setup/perusahaan';
+$route['setup/perusahaan/tambah'] = 'setup/perusahaan/tambah';
 $route['setup/perusahaan/(:any)'] = 'perusahaan/$1';
 $route['setup/kategori'] = 'setup/kategori';
+$route['setup/kategori/tambah'] = 'setup/kategori/tambah';
 $route['setup/kategori/(:any)'] = 'kategori/$1';
 $route['setup/barang'] = 'setup/barang';
+$route['setup/barang/tambah'] = 'setup/barang/tambah';
 $route['setup/gudang'] = 'setup/gudang';
+$route['setup/gudang/tambah'] = 'setup/gudang/tambah';
 $route['setup/pelanggan'] = 'setup/pelanggan';
+$route['setup/pelanggan/tambah'] = 'setup/pelanggan/tambah';
 $route['setup/supplier'] = 'setup/supplier';
+$route['setup/supplier/tambah'] = 'setup/supplier/tambah';
 $route['setup/user'] = 'setup/user';
 
 // Routes untuk aktifitas

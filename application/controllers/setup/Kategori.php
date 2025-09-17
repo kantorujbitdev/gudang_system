@@ -27,7 +27,7 @@ class Kategori extends MY_Controller
 
         // Jika Super Admin, tampilkan pilihan perusahaan
         if ($this->session->userdata('id_role') == 1) {
-            $this->load->model('Perusahaan_model');
+            $this->load->model('setup/Perusahaan_model');
             $this->data['perusahaan'] = $this->Perusahaan_model->get_all();
         }
 
@@ -83,7 +83,7 @@ class Kategori extends MY_Controller
 
         // Jika Super Admin, tampilkan pilihan perusahaan
         if ($this->session->userdata('id_role') == 1) {
-            $this->load->model('Perusahaan_model');
+            $this->load->model('setup/Perusahaan_model');
             $this->data['perusahaan'] = $this->Perusahaan_model->get_all();
         }
 

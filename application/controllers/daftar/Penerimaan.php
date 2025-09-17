@@ -11,7 +11,7 @@ class Penerimaan extends CI_Controller
         $this->load->model('penerimaan_model');
         $this->load->model('pembelian_model');
         $this->load->model('barang_model');
-        $this->load->model('gudang_model');
+        $this->load->model('setup/Gudang_model');
         $this->load->model('stok_model');
         $this->load->library('form_validation');
 

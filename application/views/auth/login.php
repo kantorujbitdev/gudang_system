@@ -6,8 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Login - Manajemen Stok Gudang</title>
-    <link href="<?php echo base_url('assets/vendor/bootstrap/css/bootstrap.min.css'); ?>" rel="stylesheet">
-    <link href="<?php echo base_url('assets/vendor/fontawesome-free/css/all.min.css'); ?>" rel="stylesheet">
+    <link href="<?php echo base_url('assets/css/bootstrap.min.css'); ?>" rel="stylesheet">
+    <link href="<?php echo base_url('assets/fontawesome-free/css/all.min.css'); ?>" rel="stylesheet">
     <link href="<?php echo base_url('assets/css/sb-admin-2.min.css'); ?>" rel="stylesheet">
 
     <style>
@@ -101,8 +101,8 @@
 
     </div>
 
-    <script src="<?php echo base_url('assets/vendor/jquery/jquery.min.js'); ?>"></script>
-    <script src="<?php echo base_url('assets/vendor/bootstrap/js/bootstrap.bundle.min.js'); ?>"></script>
+    <script src="<?php echo base_url('assets/js/jquery.min.js'); ?>"></script>
+    <script src="<?php echo base_url('assets/js/bootstrap.bundle.min.js'); ?>"></script>
     <script src="<?php echo base_url('assets/js/sb-admin-2.min.js'); ?>"></script>
 </body>
 

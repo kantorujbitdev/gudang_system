@@ -8,13 +8,12 @@
     <title><?php echo isset($title) ? $title . ' - ' : ''; ?>Manajemen Stok Gudang</title>
 
     <!-- Custom fonts -->
-    <link href="<?php echo base_url('assets/vendor/fontawesome-free/css/all.min.css'); ?>" rel="stylesheet"
-        type="text/css">
+    <link href="<?php echo base_url('assets/fontawesome-free/css/all.min.css'); ?>" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,600,700,900" rel="stylesheet">
 
     <!-- Custom styles -->
     <link href="<?php echo base_url('assets/css/sb-admin-2.min.css'); ?>" rel="stylesheet">
-    <link href="<?php echo base_url('assets/vendor/datatables/css/dataTables.bootstrap4.min.css'); ?>" rel="stylesheet">
+    <link href="<?php echo base_url('assets/css/dataTables.bootstrap4.min.css'); ?>" rel="stylesheet">
     <link href="<?php echo base_url('assets/css/custom.css'); ?>" rel="stylesheet">
 
     <!-- Favicon -->
