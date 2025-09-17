@@ -14,15 +14,33 @@ $(document).on("input", ".currency-input", function () {
 	$(this).val(formatCurrency(value));
 });
 
-// Initialize DataTables
-$(document).ready(function () {
-	$(".datatable").DataTable({
-		responsive: true,
-		pageLength: 10,
-		language: {
-			url: "//cdn.datatables.net/plug-ins/1.10.21/i18n/Indonesian.json",
-		},
-	});
+// Fungsi untuk mengeksekusi script setelah jQuery dan Bootstrap siap
+function runAfterDependencies(callback) {
+	if (window.jQuery && typeof jQuery.fn.modal === "function") {
+		callback();
+	} else {
+		setTimeout(function () {
+			runAfterDependencies(callback);
+		}, 100);
+	}
+}
+
+// Inisialisasi DataTables
+runAfterDependencies(function () {
+	if (typeof $.fn.DataTable !== "undefined") {
+		$("#dataTable").DataTable({
+			responsive: true,
+			paging: true,
+			ordering: false,
+			info: true,
+			scrollX: true,
+			autoWidth: false,
+			dom:
+				'<"row mb-3"<"col-md-6 d-flex align-items-center"l><"col-md-6 d-flex justify-content-end"f>>' +
+				"rt" +
+				'<"row mt-3"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
+		});
+	}
 });
 
 // Initialize Select2

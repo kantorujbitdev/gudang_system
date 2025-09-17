@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Login - Sistem Manajemen Stok Gudang</title>
+    <title>Login - Manajemen Stok Gudang</title>
     <link href="<?php echo base_url('assets/vendor/bootstrap/css/bootstrap.min.css'); ?>" rel="stylesheet">
     <link href="<?php echo base_url('assets/vendor/fontawesome-free/css/all.min.css'); ?>" rel="stylesheet">
     <link href="<?php echo base_url('assets/css/sb-admin-2.min.css'); ?>" rel="stylesheet">
@@ -69,7 +69,7 @@
                         <div class="text-center">
                             <!-- Logo -->
                             <img src="<?php echo base_url('assets/images/logo.png'); ?>" alt="Logo" class="login-logo">
-                            <h1 class="h4 login-title mb-4">Sistem Manajemen Stok Gudang</h1>
+                            <h1 class="h4 login-title mb-4">Manajemen Stok Gudang</h1>
                             <p class="login-text mb-4">Silakan login untuk melanjutkan</p>
                         </div>
 

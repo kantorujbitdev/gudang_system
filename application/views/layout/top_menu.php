@@ -30,15 +30,16 @@ switch ($role_id) {
     <!-- Info User untuk layar kecil -->
     <ul class="navbar-nav d-block d-sm-none ml-auto">
         <li class="nav-item dropdown no-arrow">
-            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button"
-                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <span class="mr-2 text-gray-600 small">
+            <a class="nav-link dropdown-toggle d-flex align-items-center justify-content-end" href="#" id="userDropdown"
+                role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="mr-2 text-gray-600 small text-right">
                     <?php echo $nama ?> <br>(<?php echo $nama_role ?>)
                 </span>
-                <img class="img-profile rounded-circle mr-1"
+                <img class="img-profile rounded-circle ml-1"
                     src="<?php echo base_url('assets/images/profile/' . $profile_img) ?>"
                     style="width: 32px; height: 32px;">
             </a>
+
             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in bg-white"
                 aria-labelledby="userDropdownMobile">
                 <a class="dropdown-item" href="<?php echo site_url('setup/user/profile'); ?>">
