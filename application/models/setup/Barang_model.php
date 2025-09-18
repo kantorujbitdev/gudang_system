@@ -16,6 +16,22 @@ class Barang_model extends MY_Model
         $this->db->order_by('created_at', 'DESC');
         return $this->db->get($this->table)->result();
     }
+    public function get_by_gudang($id_gudang)
+    {
+        $this->db->select('b.*, k.nama_kategori, sg.jumlah, sg.reserved');
+        $this->db->from('barang b');
+        $this->db->join('stok_gudang sg', 'b.id_barang = sg.id_barang', 'inner');
+        $this->db->join('kategori k', 'b.id_kategori = k.id_kategori', 'left');
+        $this->db->where('sg.id_gudang', $id_gudang);
+        $this->db->where('b.status_aktif', 1);
+        $this->db->order_by('b.created_at', 'DESC');
+
+        $query = $this->db->get();
+
+        return ($query && $query->num_rows() > 0)
+            ? $query->result()
+            : [];
+    }
     public function get_by_kategori($id_kategori)
     {
         $this->db->select('b.*, g.nama_gudang');

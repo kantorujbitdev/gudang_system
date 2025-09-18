@@ -89,7 +89,8 @@
                             <th>Kode Barang</th>
                             <th>Nama Barang</th>
                             <th>Kategori</th>
-                            <th>Stok</th>
+                            <th>Stok Tersedia</th>
+                            <th>Stok Reserved</th>
                             <th>Harga Jual</th>
                             <th>Status</th>
                         </tr>
@@ -103,7 +104,8 @@
                                 <td><?php echo $b->sku; ?></td>
                                 <td><?php echo $b->nama_barang; ?></td>
                                 <td><?php echo $b->nama_kategori; ?></td>
-                                <td><?php echo $b->stok ?: 0; ?></td>
+                                <td><?php echo $b->jumlah ?: 0; ?></td>
+                                <td><?php echo $b->reserved ?: 0; ?></td>
                                 <td><?php echo number_format($b->harga_jual, 0, ',', '.'); ?></td>
                                 <td>
                                     <?php if ($b->aktif == 1): ?>
