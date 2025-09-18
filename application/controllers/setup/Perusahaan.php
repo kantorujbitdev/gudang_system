@@ -6,13 +6,10 @@ class Perusahaan extends MY_Controller
     public function __construct()
     {
         parent::__construct();
+
         $this->load->model('setup/Perusahaan_model');
         $this->load->helper('form');
         $this->load->library('form_validation');
-
-        // Debug: Cek role user
-        $user_role = $this->session->userdata('id_role');
-        log_message('debug', 'User Role: ' . $user_role);
 
         // Cek akses menu
         $this->check_menu_access('setup/perusahaan');
@@ -117,34 +114,22 @@ class Perusahaan extends MY_Controller
 
     public function nonaktif($id)
     {
-        // Hanya Super Admin yang bisa mengaktifkan perusahaan
-        if ($this->session->userdata('id_role') != 5) {
-            $this->session->set_flashdata('error', 'Anda tidak memiliki akses ke halaman ini');
-            redirect('dashboard');
-        }
-
-        if ($this->Perusahaan_model->update_status($id, 1)) {
+        if ($this->Perusahaan_model->update_status($id, 0)) {
             $this->session->set_flashdata('success', 'Perusahaan berhasil diaktifkan kembali');
         } else {
             $this->session->set_flashdata('error', 'Gagal mengaktifkan perusahaan');
         }
-        redirect('perusahaan');
+        redirect('setup/perusahaan');
     }
 
     public function aktif($id)
     {
-        // Hanya Super Admin yang bisa mengaktifkan perusahaan
-        if ($this->session->userdata('id_role') != 5) {
-            $this->session->set_flashdata('error', 'Anda tidak memiliki akses ke halaman ini');
-            redirect('dashboard');
-        }
-
         if ($this->Perusahaan_model->update_status($id, 1)) {
             $this->session->set_flashdata('success', 'Perusahaan berhasil diaktifkan kembali');
         } else {
             $this->session->set_flashdata('error', 'Gagal mengaktifkan perusahaan');
         }
-        redirect('perusahaan');
+        redirect('setup/perusahaan');
     }
 
     public function detail($id_perusahaan)
