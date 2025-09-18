@@ -76,6 +76,7 @@ CREATE TABLE `kategori` (
   `status_aktif` tinyint(1) DEFAULT 1,
   `deleted_at` datetime DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id_kategori`),
   UNIQUE KEY `uniq_kategori_perusahaan` (`id_perusahaan`,`nama_kategori`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -745,8 +746,8 @@ INSERT INTO `gudang` (`id_gudang`, `id_perusahaan`, `nama_gudang`, `alamat`, `te
 (1, 1, 'Gudang Utama', 'Alamat Gudang Utama', '02112345679', NULL, 1, NULL, '2025-09-16 00:12:08', NULL),
 (2, 1, 'Gudang Jakarta Timur', '124fhgbknlm,', '', 1, 1, NULL, '2025-09-17 19:01:45', '2025-09-17 19:18:25');
 
-INSERT INTO `kategori` (`id_kategori`, `id_perusahaan`, `nama_kategori`, `deskripsi`, `status_aktif`, `deleted_at`, `created_at`) VALUES
-(1, 1, 'asdas', 'asdnaskjd', 1, NULL, '2025-09-18 00:28:37');
+INSERT INTO `kategori` (`id_kategori`, `id_perusahaan`, `nama_kategori`, `deskripsi`, `status_aktif`, `deleted_at`, `created_at`,`updated_at`) VALUES
+(1, 1, 'asdas', 'asdnaskjd', 1, NULL, '2025-09-18 00:28:37', NULL);
 
 INSERT INTO `approval_flow` (`id_approval`, `tipe_transaksi`, `status_dari`, `status_ke`, `id_role`, `urutan`, `status_aktif`) VALUES
 (1, 'penjualan', 'Draft', 'Packing', 4, 1, 1),
