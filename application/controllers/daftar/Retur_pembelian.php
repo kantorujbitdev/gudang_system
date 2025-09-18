@@ -84,7 +84,7 @@ class Retur_pembelian extends CI_Controller
                 }
             }
 
-            $this->session->set_flashdata('success', 'Retur pembelian berhasil ditambahkan!');
+            $this->data['success'] = 'Retur pembelian berhasil ditambahkan!';
             redirect('retur/pembelian');
         }
     }
@@ -142,7 +142,7 @@ class Retur_pembelian extends CI_Controller
                 }
             }
 
-            $this->session->set_flashdata('success', 'Retur pembelian berhasil diperbarui!');
+            $this->data['success'] = 'Retur pembelian berhasil diperbarui!';
             redirect('retur/pembelian');
         }
     }
@@ -156,7 +156,7 @@ class Retur_pembelian extends CI_Controller
         }
 
         $this->retur_pembelian_model->delete_retur($id);
-        $this->session->set_flashdata('success', 'Retur pembelian berhasil dihapus!');
+        $this->data['success'] = 'Retur pembelian berhasil dihapus!';
         redirect('retur/pembelian');
     }
 
@@ -232,7 +232,7 @@ class Retur_pembelian extends CI_Controller
             }
         }
 
-        $this->session->set_flashdata('success', 'Status retur pembelian berhasil diperbarui!');
+        $this->data['success'] = 'Status retur pembelian berhasil diperbarui!';
         redirect('retur/pembelian/detail/' . $id);
     }
 

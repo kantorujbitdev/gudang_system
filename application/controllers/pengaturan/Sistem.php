@@ -55,7 +55,7 @@ class Pengaturan_stok_awal extends CI_Controller
             );
 
             $this->stok_awal_model->insert($data_stok_awal);
-            $this->session->set_flashdata('success', 'Stok awal berhasil ditambahkan!');
+            $this->data['success'] = 'Stok awal berhasil ditambahkan!';
             redirect('pengaturan/stok_awal');
         }
     }
@@ -87,7 +87,7 @@ class Pengaturan_stok_awal extends CI_Controller
             );
 
             $this->stok_awal_model->update($id, $data_stok_awal);
-            $this->session->set_flashdata('success', 'Stok awal berhasil diperbarui!');
+            $this->data['success'] = 'Stok awal berhasil diperbarui!';
             redirect('pengaturan/stok_awal');
         }
     }
@@ -101,7 +101,7 @@ class Pengaturan_stok_awal extends CI_Controller
         }
 
         $this->stok_awal_model->delete($id);
-        $this->session->set_flashdata('success', 'Stok awal berhasil dihapus!');
+        $this->data['success'] = 'Stok awal berhasil dihapus!';
         redirect('pengaturan/stok_awal');
     }
 
@@ -147,7 +147,7 @@ class Pengaturan_stok_awal extends CI_Controller
             $this->stok_awal_model->insert_log_stok($data_log_stok);
         }
 
-        $this->session->set_flashdata('success', 'Stok awal berhasil diproses!');
+        $this->data['success'] = 'Stok awal berhasil diproses!';
         redirect('pengaturan/stok_awal');
     }
 }

@@ -78,7 +78,7 @@ class Transfer extends CI_Controller
                 }
             }
 
-            $this->session->set_flashdata('success', 'Transfer stok berhasil ditambahkan!');
+            $this->data['success'] = 'Transfer stok berhasil ditambahkan!';
             redirect('transfer');
         }
     }
@@ -131,7 +131,7 @@ class Transfer extends CI_Controller
                 }
             }
 
-            $this->session->set_flashdata('success', 'Transfer stok berhasil diperbarui!');
+            $this->data['success'] = 'Transfer stok berhasil diperbarui!';
             redirect('transfer');
         }
     }
@@ -145,7 +145,7 @@ class Transfer extends CI_Controller
         }
 
         $this->transfer_model->delete_transfer($id);
-        $this->session->set_flashdata('success', 'Transfer stok berhasil dihapus!');
+        $this->data['success'] = 'Transfer stok berhasil dihapus!';
         redirect('transfer');
     }
 
@@ -259,7 +259,7 @@ class Transfer extends CI_Controller
             }
         }
 
-        $this->session->set_flashdata('success', 'Status transfer stok berhasil diperbarui!');
+        $this->data['success'] = 'Status transfer stok berhasil diperbarui!';
         redirect('transfer/detail/' . $id);
     }
 

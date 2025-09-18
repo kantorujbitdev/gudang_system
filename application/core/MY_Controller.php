@@ -62,7 +62,7 @@ class MY_Controller extends CI_Controller
         $user_role = $this->session->userdata('id_role');
 
         if (!in_array($user_role, $allowed_roles)) {
-            $this->session->set_flashdata('error', 'Anda tidak memiliki akses ke halaman ini!');
+            $this->data['error'] = 'Anda tidak memiliki akses ke halaman ini!';
             redirect('dashboard');
         }
     }
@@ -72,7 +72,7 @@ class MY_Controller extends CI_Controller
         $user_role = $this->session->userdata('id_role');
 
         if (!$this->Menu_model->check_access($user_role, $menu_url)) {
-            $this->session->set_flashdata('error', 'Anda tidak memiliki akses ke menu ini!');
+            $this->data['error'] = 'Anda tidak memiliki akses ke menu ini!';
             redirect('dashboard');
         }
     }

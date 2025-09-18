@@ -81,7 +81,7 @@ class Penerimaan extends CI_Controller
                 }
             }
 
-            $this->session->set_flashdata('success', 'Penerimaan barang berhasil ditambahkan!');
+            $this->data['success'] = 'Penerimaan barang berhasil ditambahkan!';
             redirect('penerimaan');
         }
     }
@@ -137,7 +137,7 @@ class Penerimaan extends CI_Controller
                 }
             }
 
-            $this->session->set_flashdata('success', 'Penerimaan barang berhasil diperbarui!');
+            $this->data['success'] = 'Penerimaan barang berhasil diperbarui!';
             redirect('penerimaan');
         }
     }
@@ -151,7 +151,7 @@ class Penerimaan extends CI_Controller
         }
 
         $this->penerimaan_model->delete_penerimaan($id);
-        $this->session->set_flashdata('success', 'Penerimaan barang berhasil dihapus!');
+        $this->data['success'] = 'Penerimaan barang berhasil dihapus!';
         redirect('penerimaan');
     }
 
@@ -236,7 +236,7 @@ class Penerimaan extends CI_Controller
             }
         }
 
-        $this->session->set_flashdata('success', 'Status penerimaan barang berhasil diperbarui!');
+        $this->data['success'] = 'Status penerimaan barang berhasil diperbarui!';
         redirect('penerimaan/detail/' . $id);
     }
 

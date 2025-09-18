@@ -82,7 +82,7 @@ class Penjualan extends CI_Controller
                 }
             }
 
-            $this->session->set_flashdata('success', 'Penjualan berhasil ditambahkan!');
+            $this->data['success'] = 'Penjualan berhasil ditambahkan!';
             redirect('penjualan');
         }
     }
@@ -138,7 +138,7 @@ class Penjualan extends CI_Controller
                 }
             }
 
-            $this->session->set_flashdata('success', 'Penjualan berhasil diperbarui!');
+            $this->data['success'] = 'Penjualan berhasil diperbarui!';
             redirect('penjualan');
         }
     }
@@ -152,7 +152,7 @@ class Penjualan extends CI_Controller
         }
 
         $this->penjualan_model->delete_penjualan($id);
-        $this->session->set_flashdata('success', 'Penjualan berhasil dihapus!');
+        $this->data['success'] = 'Penjualan berhasil dihapus!';
         redirect('penjualan');
     }
 
@@ -228,7 +228,7 @@ class Penjualan extends CI_Controller
             }
         }
 
-        $this->session->set_flashdata('success', 'Status penjualan berhasil diperbarui!');
+        $this->data['success'] = 'Status penjualan berhasil diperbarui!';
         redirect('penjualan/detail/' . $id);
     }
 

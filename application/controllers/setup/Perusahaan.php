@@ -41,7 +41,7 @@ class Perusahaan extends MY_Controller
 
                 // Check unique name
                 if (!$this->Perusahaan_model->check_unique_name($nama_perusahaan)) {
-                    $this->session->set_flashdata('error', 'Nama perusahaan sudah ada!');
+                    $this->data['error'] = 'Nama perusahaan sudah ada!';
                     $this->render_view('setup/perusahaan/form');
                     return;
                 }
@@ -55,10 +55,10 @@ class Perusahaan extends MY_Controller
                 );
 
                 if ($this->Perusahaan_model->insert($data)) {
-                    $this->session->set_flashdata('success', 'Perusahaan berhasil ditambahkan!');
+                    $this->data['success'] = 'Perusahaan berhasil ditambahkan!';
                     redirect('setup/perusahaan');
                 } else {
-                    $this->session->set_flashdata('error', 'Gagal menambahkan perusahaan!');
+                    $this->data['error'] = 'Gagal menambahkan perusahaan!';
                 }
             }
         }
@@ -87,7 +87,7 @@ class Perusahaan extends MY_Controller
 
                 // Check unique name (excluding current record)
                 if (!$this->Perusahaan_model->check_unique_name($nama_perusahaan, $id_perusahaan)) {
-                    $this->session->set_flashdata('error', 'Nama perusahaan sudah ada!');
+                    $this->data['error'] = 'Nama perusahaan sudah ada!';
                     $this->render_view('setup/perusahaan/form');
                     return;
                 }
@@ -101,10 +101,10 @@ class Perusahaan extends MY_Controller
                 );
 
                 if ($this->Perusahaan_model->update($id_perusahaan, $data)) {
-                    $this->session->set_flashdata('success', 'Perusahaan berhasil diperbarui!');
+                    $this->data['success'] = 'Perusahaan berhasil diperbarui!';
                     redirect('setup/perusahaan');
                 } else {
-                    $this->session->set_flashdata('error', 'Gagal memperbarui perusahaan!');
+                    $this->data['error'] = 'Gagal memperbarui perusahaan!';
                 }
             }
         }
@@ -115,9 +115,9 @@ class Perusahaan extends MY_Controller
     public function nonaktif($id)
     {
         if ($this->Perusahaan_model->update_status($id, 0)) {
-            $this->session->set_flashdata('success', 'Perusahaan berhasil diaktifkan kembali');
+            $this->data['success'] = 'Perusahaan berhasil diaktifkan kembali';
         } else {
-            $this->session->set_flashdata('error', 'Gagal mengaktifkan perusahaan');
+            $this->data['error'] = 'Gagal mengaktifkan perusahaan';
         }
         redirect('setup/perusahaan');
     }
@@ -125,9 +125,9 @@ class Perusahaan extends MY_Controller
     public function aktif($id)
     {
         if ($this->Perusahaan_model->update_status($id, 1)) {
-            $this->session->set_flashdata('success', 'Perusahaan berhasil diaktifkan kembali');
+            $this->data['success'] = 'Perusahaan berhasil diaktifkan kembali';
         } else {
-            $this->session->set_flashdata('error', 'Gagal mengaktifkan perusahaan');
+            $this->data['error'] = 'Gagal mengaktifkan perusahaan';
         }
         redirect('setup/perusahaan');
     }

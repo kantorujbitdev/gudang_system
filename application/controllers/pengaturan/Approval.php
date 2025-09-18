@@ -56,7 +56,7 @@ class Pengaturan_approval extends CI_Controller
             );
 
             $this->approval_model->insert($data_approval);
-            $this->session->set_flashdata('success', 'Approval flow berhasil ditambahkan!');
+            $this->data['success'] = 'Approval flow berhasil ditambahkan!';
             redirect('pengaturan/approval');
         }
     }
@@ -91,7 +91,7 @@ class Pengaturan_approval extends CI_Controller
             );
 
             $this->approval_model->update($id, $data_approval);
-            $this->session->set_flashdata('success', 'Approval flow berhasil diperbarui!');
+            $this->data['success'] = 'Approval flow berhasil diperbarui!';
             redirect('pengaturan/approval');
         }
     }
@@ -105,7 +105,7 @@ class Pengaturan_approval extends CI_Controller
         }
 
         $this->approval_model->delete($id);
-        $this->session->set_flashdata('success', 'Approval flow berhasil dihapus!');
+        $this->data['success'] = 'Approval flow berhasil dihapus!';
         redirect('pengaturan/approval');
     }
 }

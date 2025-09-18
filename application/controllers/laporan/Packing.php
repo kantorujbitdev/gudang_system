@@ -72,7 +72,7 @@ class Packing extends CI_Controller
                 }
             }
 
-            $this->session->set_flashdata('success', 'Packing berhasil ditambahkan!');
+            $this->data['success'] = 'Packing berhasil ditambahkan!';
             redirect('packing');
         }
     }
@@ -125,7 +125,7 @@ class Packing extends CI_Controller
                 }
             }
 
-            $this->session->set_flashdata('success', 'Packing berhasil diperbarui!');
+            $this->data['success'] = 'Packing berhasil diperbarui!';
             redirect('packing');
         }
     }
@@ -139,7 +139,7 @@ class Packing extends CI_Controller
         }
 
         $this->packing_model->delete_packing($id);
-        $this->session->set_flashdata('success', 'Packing berhasil dihapus!');
+        $this->data['success'] = 'Packing berhasil dihapus!';
         redirect('packing');
     }
 
@@ -191,7 +191,7 @@ class Packing extends CI_Controller
             }
         }
 
-        $this->session->set_flashdata('success', 'Status packing berhasil diperbarui!');
+        $this->data['success'] = 'Status packing berhasil diperbarui!';
         redirect('packing/detail/' . $id);
     }
 

@@ -52,10 +52,10 @@ class Kategori extends MY_Controller
                 );
 
                 if ($this->Kategori_model->insert($data)) {
-                    $this->session->set_flashdata('success', 'Kategori berhasil ditambahkan!');
+                    $this->data['success'] = 'Kategori berhasil ditambahkan!';
                     redirect('setup/kategori');
                 } else {
-                    $this->session->set_flashdata('error', 'Gagal menambahkan kategori!');
+                    $this->data['error'] = 'Gagal menambahkan kategori!';
                 }
             }
         }
@@ -66,9 +66,9 @@ class Kategori extends MY_Controller
     public function nonaktif($id)
     {
         if ($this->Kategori_model->update_status($id, 0)) {
-            $this->session->set_flashdata('success', 'Kategori berhasil dinonaktifkan');
+            $this->data['success'] = 'Kategori berhasil dinonaktifkan';
         } else {
-            $this->session->set_flashdata('error', 'Gagal menonaktifkan kategori');
+            $this->data['error'] = 'Gagal menonaktifkan kategori';
         }
         redirect('setup/kategori');
     }
@@ -76,9 +76,9 @@ class Kategori extends MY_Controller
     public function aktif($id)
     {
         if ($this->Kategori_model->update_status($id, 1)) {
-            $this->session->set_flashdata('success', 'Kategori berhasil diaktifkan kembali');
+            $this->data['success'] = 'Kategori berhasil diaktifkan kembali';
         } else {
-            $this->session->set_flashdata('error', 'Gagal mengaktifkan kategori');
+            $this->data['error'] = 'Gagal mengaktifkan kategori';
         }
         redirect('setup/kategori');
     }
@@ -116,7 +116,7 @@ class Kategori extends MY_Controller
 
                 // Check unique name (excluding current record)
                 if (!$this->Kategori_model->check_unique_name($nama_kategori, $id_perusahaan, $id_kategori)) {
-                    $this->session->set_flashdata('error', 'Nama kategori sudah ada untuk perusahaan ini!');
+                    $this->data['error'] = 'Nama kategori sudah ada untuk perusahaan ini!';
                     $this->render_view('setup/kategori/form');
                     return;
                 }
@@ -133,10 +133,10 @@ class Kategori extends MY_Controller
                 }
 
                 if ($this->Kategori_model->update($id_kategori, $data)) {
-                    $this->session->set_flashdata('success', 'Kategori barang berhasil diperbarui!');
+                    $this->data['success'] = 'Kategori barang berhasil diperbarui!';
                     redirect('setup/kategori');
                 } else {
-                    $this->session->set_flashdata('error', 'Gagal memperbarui kategori barang!');
+                    $this->data['error'] = 'Gagal memperbarui kategori barang!';
                 }
             }
         }
@@ -158,14 +158,14 @@ class Kategori extends MY_Controller
         $product_count = $this->db->count_all_results('barang');
 
         if ($product_count > 0) {
-            $this->session->set_flashdata('error', 'Kategori tidak dapat dihapus karena masih memiliki produk terkait!');
+            $this->data['error'] = 'Kategori tidak dapat dihapus karena masih memiliki produk terkait!';
             redirect('setup/kategori');
         }
 
         if ($this->Kategori_model->delete($id_kategori)) {
-            $this->session->set_flashdata('success', 'Kategori barang berhasil dihapus!');
+            $this->data['success'] = 'Kategori barang berhasil dihapus!';
         } else {
-            $this->session->set_flashdata('error', 'Gagal menghapus kategori barang!');
+            $this->data['error'] = 'Gagal menghapus kategori barang!';
         }
 
         redirect('setup/kategori');

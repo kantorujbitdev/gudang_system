@@ -38,10 +38,10 @@ class Barang extends MY_Controller
             );
 
             if ($this->Barang_model->insert($data)) {
-                $this->session->set_flashdata('success', 'Barang berhasil ditambahkan!');
+                $this->data['success'] = 'Barang berhasil ditambahkan!';
                 redirect('setup/barang');
             } else {
-                $this->session->set_flashdata('error', 'Gagal menambahkan barang!');
+                $this->data['error'] = 'Gagal menambahkan barang!';
             }
         }
 
@@ -70,10 +70,10 @@ class Barang extends MY_Controller
             );
 
             if ($this->Barang_model->update($id_barang, $data)) {
-                $this->session->set_flashdata('success', 'Barang berhasil diperbarui!');
+                $this->data['success'] = 'Barang berhasil diperbarui!';
                 redirect('setup/barang');
             } else {
-                $this->session->set_flashdata('error', 'Gagal memperbarui barang!');
+                $this->data['error'] = 'Gagal memperbarui barang!';
             }
         }
 
@@ -89,9 +89,9 @@ class Barang extends MY_Controller
         }
 
         if ($this->Barang_model->delete($id_barang)) {
-            $this->session->set_flashdata('success', 'Barang berhasil dihapus!');
+            $this->data['success'] = 'Barang berhasil dihapus!';
         } else {
-            $this->session->set_flashdata('error', 'Gagal menghapus barang!');
+            $this->data['error'] = 'Gagal menghapus barang!';
         }
 
         redirect('setup/barang');

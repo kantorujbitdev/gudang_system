@@ -52,7 +52,7 @@ class Pengaturan_hak_akses extends CI_Controller
             $this->hak_akses_model->insert($data);
         }
 
-        $this->session->set_flashdata('success', 'Hak akses berhasil disimpan!');
+        $this->data['success'] = 'Hak akses berhasil disimpan!';
         redirect('pengaturan/hak_akses');
     }
 }

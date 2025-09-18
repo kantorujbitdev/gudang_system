@@ -80,7 +80,7 @@ class Pembelian extends CI_Controller
                 }
             }
 
-            $this->session->set_flashdata('success', 'Pembelian berhasil ditambahkan!');
+            $this->data['success'] = 'Pembelian berhasil ditambahkan!';
             redirect('pembelian');
         }
     }
@@ -135,7 +135,7 @@ class Pembelian extends CI_Controller
                 }
             }
 
-            $this->session->set_flashdata('success', 'Pembelian berhasil diperbarui!');
+            $this->data['success'] = 'Pembelian berhasil diperbarui!';
             redirect('pembelian');
         }
     }
@@ -149,7 +149,7 @@ class Pembelian extends CI_Controller
         }
 
         $this->pembelian_model->delete_pembelian($id);
-        $this->session->set_flashdata('success', 'Pembelian berhasil dihapus!');
+        $this->data['success'] = 'Pembelian berhasil dihapus!';
         redirect('pembelian');
     }
 
@@ -191,7 +191,7 @@ class Pembelian extends CI_Controller
 
         $this->pembelian_model->insert_log_status_pembelian($data_log);
 
-        $this->session->set_flashdata('success', 'Status pembelian berhasil diperbarui!');
+        $this->data['success'] = 'Status pembelian berhasil diperbarui!';
         redirect('pembelian/detail/' . $id);
     }
 }

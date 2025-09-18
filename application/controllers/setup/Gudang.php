@@ -40,7 +40,7 @@ class Gudang extends MY_Controller
 
                 // Check unique name per company
                 if (!$this->Gudang_model->check_unique_name($nama_gudang, $id_perusahaan)) {
-                    $this->session->set_flashdata('error', 'Nama gudang sudah ada di perusahaan yang sama!');
+                    $this->data['error'] = 'Nama gudang sudah ada di perusahaan yang sama!';
                     $this->render_view('setup/gudang/form');
                     return;
                 }
@@ -55,10 +55,10 @@ class Gudang extends MY_Controller
                 );
 
                 if ($this->Gudang_model->insert($data)) {
-                    $this->session->set_flashdata('success', 'Gudang berhasil ditambahkan!');
+                    $this->data['success'] = 'Gudang berhasil ditambahkan!';
                     redirect('setup/gudang');
                 } else {
-                    $this->session->set_flashdata('error', 'Gagal menambahkan gudang!');
+                    $this->data['error'] = 'Gagal menambahkan gudang!';
                 }
             }
         }
@@ -89,7 +89,7 @@ class Gudang extends MY_Controller
 
                 // Check unique name per company (excluding current record)
                 if (!$this->Gudang_model->check_unique_name($nama_gudang, $id_perusahaan, $id_gudang)) {
-                    $this->session->set_flashdata('error', 'Nama gudang sudah ada di perusahaan yang sama!');
+                    $this->data['error'] = 'Nama gudang sudah ada di perusahaan yang sama!';
                     $this->render_view('setup/gudang/form');
                     return;
                 }
@@ -103,10 +103,10 @@ class Gudang extends MY_Controller
                 );
 
                 if ($this->Gudang_model->update($id_gudang, $data)) {
-                    $this->session->set_flashdata('success', 'Gudang berhasil diperbarui!');
+                    $this->data['success'] = 'Gudang berhasil diperbarui!';
                     redirect('setup/gudang');
                 } else {
-                    $this->session->set_flashdata('error', 'Gagal memperbarui gudang!');
+                    $this->data['error'] = 'Gagal memperbarui gudang!';
                 }
             }
         }
@@ -117,9 +117,9 @@ class Gudang extends MY_Controller
     public function nonaktif($id)
     {
         if ($this->Gudang_model->update_status($id, 0)) {
-            $this->session->set_flashdata('success', 'Gudang berhasil dinonaktifkan');
+            $this->data['success'] = 'Gudang berhasil dinonaktifkan';
         } else {
-            $this->session->set_flashdata('error', 'Gagal menonaktifkan gudang');
+            $this->data['error'] = 'Gagal menonaktifkan gudang';
         }
         redirect('setup/gudang');
     }
@@ -127,9 +127,9 @@ class Gudang extends MY_Controller
     public function aktif($id)
     {
         if ($this->Gudang_model->update_status($id, 1)) {
-            $this->session->set_flashdata('success', 'Gudang berhasil diaktifkan kembali');
+            $this->data['success'] = 'Gudang berhasil diaktifkan kembali';
         } else {
-            $this->session->set_flashdata('error', 'Gagal mengaktifkan gudang');
+            $this->data['error'] = 'Gagal mengaktifkan gudang';
         }
         redirect('setup/gudang');
     }
