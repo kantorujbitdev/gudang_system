@@ -24,9 +24,7 @@
             </div>
             <div class="col text-right">
                 <a href="<?php echo site_url('setup/kategori/tambah') ?>" class="btn btn-primary btn-sm">
-                    <i class="fas fa-plus">
-                    </i>
-                    Tambah Kategori
+                    <i class="fas fa-plus"></i> Tambah Kategori
                 </a>
             </div>
         </div>
@@ -38,11 +36,8 @@
                     <tr>
                         <th>No</th>
                         <th>Nama Kategori</th>
+                        <th>Perusahaan</th>
                         <th>Deskripsi</th>
-                        <?php if ($this->session->userdata('id_role') == 1): ?>
-                            <th>Perusahaan</th>
-                        <?php endif; ?>
-                        <th>Total Barang</th>
                         <th>Status</th>
                         <th>Aksi</th>
                     </tr>
@@ -53,11 +48,8 @@
                         <tr>
                             <td><?php echo $no++; ?></td>
                             <td><?php echo $row->nama_kategori; ?></td>
+                            <td><?php echo $row->nama_perusahaan; ?></td>
                             <td><?php echo $row->deskripsi ?: '-'; ?></td>
-                            <?php if ($this->session->userdata('id_role') == 1): ?>
-                                <td><?php echo $row->nama_perusahaan ?? '-'; ?></td>
-                            <?php endif; ?>
-                            <td><?php echo $row->total_barang; ?></td>
                             <td>
                                 <?php if ($row->status_aktif == 1): ?>
                                     <span class="badge badge-success">Aktif</span>
@@ -66,21 +58,28 @@
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <div class="btn-group">
-                                    <a href="<?php echo site_url('setup/kategori/detail/' . $row->id_kategori); ?>"
-                                        class="btn btn-sm btn-info" title="Detail">
-                                        <i class="fas fa-info-circle"></i>
+                                <a href="<?php echo site_url('setup/kategori/detail/' . $row->id_kategori); ?>"
+                                    class="btn btn-sm btn-info" title="Detail">
+                                    <i class="fas fa-info-circle"></i> Detail
+                                </a>
+                                <a href="<?php echo site_url('setup/kategori/edit/' . $row->id_kategori); ?>"
+                                    class="btn btn-sm btn-warning" title="Edit">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+
+                                <?php if ($row->status_aktif == '1'): ?>
+                                    <a href="<?php echo site_url('setup/kategori/nonaktif/' . $row->id_kategori) ?>"
+                                        class="btn btn-sm btn-danger"
+                                        onclick="return confirm('Apakah Anda yakin ingin menonaktifkan kategori ini?')">
+                                        <i class="fas fa-minus-square"></i> Nonaktif
                                     </a>
-                                    <a href="<?php echo site_url('setup/kategori/edit/' . $row->id_kategori); ?>"
-                                        class="btn btn-sm btn-warning" title="Edit">
-                                        <i class="fas fa-edit"></i>
+                                <?php else: ?>
+                                    <a href="<?php echo site_url('setup/kategori/aktif/' . $row->id_kategori) ?>"
+                                        class="btn btn-sm btn-success"
+                                        onclick="return confirm('Apakah Anda yakin ingin mengaktifkan kembali kategori ini?')">
+                                        <i class="fas fa-check-square"></i> Aktif
                                     </a>
-                                    <a href="<?php echo site_url('setup/kategori/hapus/' . $row->id_kategori); ?>"
-                                        class="btn btn-sm btn-danger" title="Hapus"
-                                        onclick="return confirm('Apakah Anda yakin ingin menghapus kategori ini?');">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
-                                </div>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -89,3 +88,16 @@
         </div>
     </div>
 </div>
+
+<script>
+    $(document).ready(function () {
+        $('#dataTable').DataTable({
+            responsive: true,
+            language: {
+                url: "//cdn.datatables.net/plug-ins/1.10.21/i18n/Indonesian.json"
+            },
+            pageLength: 10,
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Semua"]]
+        });
+    });
+</script>

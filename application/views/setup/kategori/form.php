@@ -1,12 +1,11 @@
 <div class="form-group text-left mt-4">
-    <?php echo back_button('kategori'); ?>
+    <?php echo back_button('setup/kategori'); ?>
 </div>
 <div class="card shadow mb-4">
     <div class="card-header bg-primary text-white d-flex align-items-center">
-        <?php echo responsive_title(isset($kategori) ? 'Edit Kategori Barang' : 'Tambah Kategori Barang') ?>
+        <?php echo responsive_title(isset($kategori) ? 'Edit Kategori' : 'Tambah Kategori') ?>
     </div>
     <div class="card-body px-4 py-4">
-
         <?php echo form_open(isset($kategori) ? 'setup/kategori/edit/' . $kategori->id_kategori : 'setup/kategori/tambah'); ?>
         <div class="form-group">
             <?php echo form_label('Nama Kategori <span class="text-danger">*</span>', 'nama_kategori'); ?>
@@ -21,23 +20,23 @@
             <?php echo form_error('nama_kategori', '<small class="text-danger">', '</small>'); ?>
         </div>
 
-        <?php if ($this->session->userdata('id_role') == 1): ?>
-            <div class="form-group">
-                <?php echo form_label('Perusahaan <span class="text-danger">*</span>', 'id_perusahaan'); ?>
-                <?php
-                $options = array();
-                if (isset($perusahaan)) {
-                    foreach ($perusahaan as $p) {
-                        $options[$p->id_perusahaan] = $p->nama_perusahaan;
-                    }
-                }
+        <div class="form-group">
+            <?php echo form_label('Perusahaan <span class="text-danger">*</span>', 'id_perusahaan'); ?>
+            <?php
+            $options = array();
+            foreach ($perusahaan as $p) {
+                $options[$p->id_perusahaan] = $p->nama_perusahaan;
+            }
 
-                $selected = isset($kategori) ? $kategori->id_perusahaan : set_value('id_perusahaan');
-                echo form_dropdown('id_perusahaan', $options, $selected, 'class="form-control select2" id="id_perusahaan" required');
-                ?>
-                <?php echo form_error('id_perusahaan', '<small class="text-danger">', '</small>'); ?>
-            </div>
-        <?php endif; ?>
+            echo form_dropdown(
+                'id_perusahaan',
+                $options,
+                set_value('id_perusahaan', isset($kategori) ? $kategori->id_perusahaan : ''),
+                array('class' => 'form-control', 'required' => '')
+            );
+            ?>
+            <?php echo form_error('id_perusahaan', '<small class="text-danger">', '</small>'); ?>
+        </div>
 
         <div class="form-group">
             <?php echo form_label('Deskripsi', 'deskripsi'); ?>
@@ -46,11 +45,9 @@
                 'id' => 'deskripsi',
                 'class' => 'form-control',
                 'rows' => 3,
-                'value' => set_value('deskripsi', isset($kategori) ? $kategori->deskripsi : ''),
-                'maxlength' => '255'
+                'value' => set_value('deskripsi', isset($kategori) ? $kategori->deskripsi : '')
             )); ?>
             <?php echo form_error('deskripsi', '<small class="text-danger">', '</small>'); ?>
-            <small class="form-text text-muted">Maksimal 255 karakter</small>
         </div>
 
         <?php if (isset($kategori)): ?>

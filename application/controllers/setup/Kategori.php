@@ -7,6 +7,7 @@ class Kategori extends MY_Controller
     {
         parent::__construct();
         $this->load->model('setup/Kategori_model');
+        $this->load->model('setup/Perusahaan_model');
         $this->load->helper('form');
         $this->load->library('form_validation');
 
@@ -16,60 +17,70 @@ class Kategori extends MY_Controller
 
     public function index()
     {
-        $this->data['title'] = 'Kategori Barang';
-        $this->data['kategori'] = $this->Kategori_model->get_all();
+        $this->data['title'] = 'Manajemen Kategori';
+        $this->data['kategori'] = $this->Kategori_model->get_with_perusahaan();
+
         $this->render_view('setup/kategori/index');
     }
 
     public function tambah()
     {
-        $this->data['title'] = 'Tambah Kategori Barang';
-
-        // Jika Super Admin, tampilkan pilihan perusahaan
-        if ($this->session->userdata('id_role') == 1) {
-            $this->load->model('setup/Perusahaan_model');
-            $this->data['perusahaan'] = $this->Perusahaan_model->get_all();
-        }
+        $this->data['title'] = 'Tambah Kategori';
+        $this->data['perusahaan'] = $this->Perusahaan_model->get_active();
 
         if ($this->input->post()) {
             $this->form_validation->set_rules('nama_kategori', 'Nama Kategori', 'required|trim|max_length[50]');
-            $this->form_validation->set_rules('deskripsi', 'Deskripsi', 'trim|max_length[255]');
-
-            // Jika Super Admin, validasi perusahaan
-            if ($this->session->userdata('id_role') == 1) {
-                $this->form_validation->set_rules('id_perusahaan', 'Perusahaan', 'required');
-            }
+            $this->form_validation->set_rules('id_perusahaan', 'Perusahaan', 'required');
+            $this->form_validation->set_rules('deskripsi', 'Deskripsi', 'trim');
 
             if ($this->form_validation->run() == TRUE) {
                 $nama_kategori = $this->input->post('nama_kategori');
-                $id_perusahaan = $this->session->userdata('id_role') == 1 ?
-                    $this->input->post('id_perusahaan') :
-                    $this->session->userdata('id_perusahaan');
+                $id_perusahaan = $this->input->post('id_perusahaan');
 
-                // Check unique name
+                // Check unique name per company
                 if (!$this->Kategori_model->check_unique_name($nama_kategori, $id_perusahaan)) {
-                    $this->session->set_flashdata('error', 'Nama kategori sudah ada untuk perusahaan ini!');
+                    $this->session->set_flashdata('error', 'Nama kategori sudah ada di perusahaan yang sama!');
                     $this->render_view('setup/kategori/form');
                     return;
                 }
 
                 $data = array(
-                    'id_perusahaan' => $id_perusahaan,
                     'nama_kategori' => $nama_kategori,
+                    'id_perusahaan' => $id_perusahaan,
                     'deskripsi' => $this->input->post('deskripsi'),
                     'status_aktif' => 1
                 );
 
                 if ($this->Kategori_model->insert($data)) {
-                    $this->session->set_flashdata('success', 'Kategori barang berhasil ditambahkan!');
+                    $this->session->set_flashdata('success', 'Kategori berhasil ditambahkan!');
                     redirect('setup/kategori');
                 } else {
-                    $this->session->set_flashdata('error', 'Gagal menambahkan kategori barang!');
+                    $this->session->set_flashdata('error', 'Gagal menambahkan kategori!');
                 }
             }
         }
 
         $this->render_view('setup/kategori/form');
+    }
+
+    public function nonaktif($id)
+    {
+        if ($this->Kategori_model->update_status($id, 0)) {
+            $this->session->set_flashdata('success', 'Kategori berhasil dinonaktifkan');
+        } else {
+            $this->session->set_flashdata('error', 'Gagal menonaktifkan kategori');
+        }
+        redirect('setup/kategori');
+    }
+
+    public function aktif($id)
+    {
+        if ($this->Kategori_model->update_status($id, 1)) {
+            $this->session->set_flashdata('success', 'Kategori berhasil diaktifkan kembali');
+        } else {
+            $this->session->set_flashdata('error', 'Gagal mengaktifkan kategori');
+        }
+        redirect('setup/kategori');
     }
 
     public function edit($id_kategori)

@@ -8,30 +8,60 @@ class Kategori_model extends MY_Model
         parent::__construct();
         $this->table = 'kategori';
         $this->primary_key = 'id_kategori';
-        $this->fillable = array('id_perusahaan', 'nama_kategori', 'deskripsi', 'status_aktif', 'deleted_at');
-        $this->protected = array('id_kategori');
-        $this->timestamps = FALSE;
+        $this->fillable = array('id_perusahaan', 'nama_kategori', 'deskripsi', 'status_aktif');
+        $this->timestamps = TRUE;
+        $this->soft_delete = TRUE;
     }
 
     public function get_all()
     {
-        $user_role = $this->session->userdata('id_role');
-        $user_perusahaan = $this->session->userdata('id_perusahaan');
+        $this->db->order_by('created_at', 'DESC');
+        return $this->db->get($this->table)->result();
+    }
 
-        $this->db->select('k.*, p.nama_perusahaan, COUNT(b.id_barang) as total_barang');
+    public function get_active()
+    {
+        $this->db->where('status_aktif', 1);
+        $this->db->order_by('nama_kategori', 'ASC');
+        return $this->db->get($this->table)->result();
+    }
+
+    public function get_with_perusahaan()
+    {
+        $this->db->select('k.*, p.nama_perusahaan');
         $this->db->from('kategori k');
         $this->db->join('perusahaan p', 'k.id_perusahaan = p.id_perusahaan', 'left');
-        $this->db->join('barang b', 'k.id_kategori = b.id_kategori AND b.deleted_at IS NULL', 'left');
+        $this->db->order_by('k.created_at', 'DESC');
 
-        // Filter berdasarkan role user
-        if ($user_role != 1) { // Bukan Super Admin
-            $this->db->where('k.id_perusahaan', $user_perusahaan);
-        }
+        $query = $this->db->get();
 
-        $this->db->where('k.deleted_at IS NULL');
-        $this->db->group_by('k.id_kategori');
-        $this->db->order_by('k.nama_kategori', 'ASC');
-        return $this->db->get()->result();
+        return ($query && $query->num_rows() > 0)
+            ? $query->result()
+            : [];
+    }
+
+    public function get_detail($id_kategori)
+    {
+        $this->db->select('k.*, p.nama_perusahaan');
+        $this->db->from('kategori k');
+        $this->db->join('perusahaan p', 'k.id_perusahaan = p.id_perusahaan', 'left');
+        $this->db->where('k.id_kategori', $id_kategori);
+
+        $query = $this->db->get();
+
+        return ($query && $query->num_rows() > 0)
+            ? $query->row()
+            : null;
+    }
+
+    public function update_status($id, $status)
+    {
+        $this->db->where('id_kategori', $id);
+        $data = [
+            'status_aktif' => $status,
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+        return $this->db->update('kategori', $data);
     }
 
     public function get($id_kategori)
