@@ -39,7 +39,7 @@ class Kategori extends MY_Controller
 
                 // Check unique name per company
                 if (!$this->Kategori_model->check_unique_name($nama_kategori, $id_perusahaan)) {
-                    $this->session->set_flashdata('error', 'Nama kategori sudah ada di perusahaan yang sama!');
+                    $this->data['error'] = 'Nama kategori sudah ada di perusahaan yang sama!';
                     $this->render_view('setup/kategori/form');
                     return;
                 }

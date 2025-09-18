@@ -32,33 +32,22 @@
         </div>
     </div>
 </div>
-<?php $this->load->view('layout/js') ?>
 
-<!-- Modal Global -->
+<?php $this->load->view('layout/js') ?>
 <?php $this->load->view('layout/modal'); ?>
 
 <!-- Core JS -->
 <script src="<?php echo base_url('assets/js/jquery.min.js'); ?>"></script>
 <script src="<?php echo base_url('assets/js/bootstrap.bundle.min.js'); ?>"></script>
 <script src="<?php echo base_url('assets/js/jquery.easing.min.js'); ?>"></script>
-<!-- <script src="<?php echo base_url('assets/js/Chart.min.js'); ?>"></script> -->
-<!-- <script src="<?php echo base_url('assets/js/bootstrap-datepicker.min.js'); ?>"></script> -->
-<!-- <script src="<?php echo base_url('assets/js/bootstrap-datepicker.id.min.js'); ?>"></script> -->
+
+<!-- DataTables -->
+<script src="<?php echo base_url('assets/js/jquery.dataTables.min.js'); ?>"></script>
+<script src="<?php echo base_url('assets/js/dataTables.bootstrap4.min.js'); ?>"></script>
 
 <!-- Template & Custom -->
 <script src="<?php echo base_url('assets/js/sb-admin-2.min.js'); ?>"></script>
-<!-- <script src="<?php echo base_url('assets/js/custom.js'); ?>"></script> -->
 <script src="<?php echo base_url('assets/js/menu.js'); ?>"></script>
-
-<!-- DataTables JS -->
-<!-- <script src="<?php echo base_url('assets/js/jquery.dataTables.min.js'); ?>"></script> -->
-<!-- <script src="<?php echo base_url('assets/js/dataTables.bootstrap4.min.js'); ?>"></script> -->
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<!-- DataTables -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css">
-<script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
 
 <script>
     // Auto hide alerts

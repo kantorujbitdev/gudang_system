@@ -44,6 +44,7 @@ class MY_Controller extends CI_Controller
             $data = array_merge($this->data, $data);
         }
         $this->load->view('layout/header', $data);
+        $this->load->view('layout/wording', $data);
         $this->load->view($view, $data);
         $this->load->view('layout/footer', $data);
     }
