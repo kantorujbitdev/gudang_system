@@ -41,3 +41,105 @@ public function get_by_pelanggan($id_pelanggan, $limit = NULL)
     
     return $this->db->get('penjualan')->result();
 }
+
+Prioritas Pengembangan Selanjutnya
+1. CRUD Barang (Prioritas Utama)
+Alasan:
+
+Barang adalah entitas pusat yang akan digunakan di semua transaksi
+Dibutuhkan sebelum membuat fitur transaksi (penerimaan, penjualan, transfer)
+Sudah ada relasi ke kategori dan perusahaan
+2. User Management (Sales & Admin Packing)
+Alasan:
+
+User-user ini akan menjadi pelaku utama dalam transaksi
+Dibutuhkan sebelum membuat fitur transaksi
+Sudah ada struktur role dan tabel user
+3. Penerimaan Barang
+Alasan:
+
+Ini adalah titik awal alur barang masuk ke sistem
+Relasinya sudah jelas: pembelian → penerimaan → stok gudang
+Lebih sederhana daripada penjualan yang memiliki lebih banyak status
+4. Pemindahan Barang (Transfer Stok)
+Alasan:
+
+Fitur ini penting untuk mengelola perpindahan antar gudang
+Alur statusnya sudah jelas (Draft → Packing → Shipping → Delivered)
+Dibutuhkan untuk manajemen multi gudang
+Alasan Prioritas Ini
+Ketergantungan Data: Barang harus ada sebelum transaksi bisa dibuat
+Alur Bisnis: Penerimaan barang adalah awal siklus (barang masuk → disimpan → dipindah/dijual)
+Kompleksitas: Mulai dari yang lebih sederhana (penerimaan) sebelum ke yang lebih kompleks (penjualan dengan retur)
+Kelengkapan Setup: Menu Setup akan lengkap dengan adanya Barang dan User Management
+File yang Perlu Dilihat/Dibuat
+Untuk melanjutkan pengembangan, saya perlu melihat file-file berikut:
+
+Model Barang (application/models/setup/Barang_model.php) - jika sudah ada
+Controller Barang (application/controllers/setup/Barang.php) - jika sudah ada
+View untuk Barang (index, form, detail)
+Model User (application/models/User_model.php) - untuk user management
+Struktur tabel barang untuk memastikan kolom-kolom yang ada
+Dengan prioritas ini, kita bisa membangun sistem secara bertahap dengan fondasi yang kuat sebelum melangkah ke fitur transaksi yang lebih kompleks.
+
+
+
+
+
+
+
+
+
+gw akan informasikan beberapa hal
+1. pada view kode 
+
+<script>
+$(document).ready(function() {
+    $('#dataTable').DataTable({
+        responsive: true,
+        language: {
+            url: "//cdn.datatables.net/plug-ins/1.10.21/i18n/Indonesian.json"
+        },
+        pageLength: 10,
+        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Semua"]]
+    });
+});
+</script>
+
+dan juga
+<?php if ($this->session->flashdata('success')): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <?php echo $this->session->flashdata('success'); ?>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+<?php endif; ?>
+
+<?php if ($this->session->flashdata('error')): ?>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <?php echo $this->session->flashdata('error'); ?>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+<?php endif; ?>
+
+
+sudah tidak perlu sebab sudah ada file pembantu jadi tidak perlu di tulis tiap halaman lagi 
+
+2. pada kontroler
+jangan gunakan 
+$this->session->set_flashdata('success', 'PESAN XXX!');
+$this->session->set_flashdata('error', 'PESAN XXX!');
+tapi gunakan ini ya
+$this->data['success'] = 'PESAN XXXX';
+$this->data['error'] = 'PESAN XXXX';
+
+jangan gunakan redirect(view) tapi gunakan render_view(view)
+
+
+seperti apa mekanisme stok nya bro?
+kita ada mene pengaturan -> stok awal.
+sebaiknya bagaiaman?
+dan bagaimana selanjutnya?
