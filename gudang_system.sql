@@ -127,6 +127,7 @@ CREATE TABLE `supplier` (
   `status_aktif` tinyint(1) DEFAULT 1,
   `deleted_at` datetime DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id_supplier`),
   KEY `supplier_ibfk_1` (`id_perusahaan`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
