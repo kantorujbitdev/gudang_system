@@ -2,12 +2,11 @@
     <div class="card-header py-3">
         <div class="row">
             <div class="col">
-                <h6 class="m-0 font-weight-bold text-primary">Detail Retur Pembelian:
-                    <?php echo $retur->no_retur_beli; ?>
+                <h6 class="m-0 font-weight-bold text-primary">Detail Retur Penjualan: <?php echo $retur->no_retur; ?>
                 </h6>
             </div>
             <div class="col text-right">
-                <a href="<?php echo site_url('aktifitas/retur_pembelian'); ?>" class="btn btn-secondary btn-sm">
+                <a href="<?php echo site_url('aktifitas/retur_penjualan'); ?>" class="btn btn-secondary btn-sm">
                     <i class="fas fa-arrow-left"></i> Kembali
                 </a>
             </div>
@@ -19,19 +18,19 @@
                 <table class="table table-sm">
                     <tr>
                         <th width="30%">No Retur</th>
-                        <td><?php echo $retur->no_retur_beli; ?></td>
+                        <td><?php echo $retur->no_retur; ?></td>
                     </tr>
                     <tr>
                         <th>Tanggal</th>
                         <td><?php echo date('d-m-Y H:i', strtotime($retur->tanggal_retur)); ?></td>
                     </tr>
                     <tr>
-                        <th>No Pembelian</th>
-                        <td><?php echo $retur->no_pembelian ?: '-'; ?></td>
+                        <th>No Invoice</th>
+                        <td><?php echo $retur->no_invoice; ?></td>
                     </tr>
                     <tr>
-                        <th>Supplier</th>
-                        <td><?php echo $retur->nama_supplier; ?></td>
+                        <th>Pelanggan</th>
+                        <td><?php echo $retur->nama_pelanggan; ?></td>
                     </tr>
                 </table>
             </div>

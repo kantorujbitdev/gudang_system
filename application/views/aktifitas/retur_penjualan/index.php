@@ -2,11 +2,11 @@
     <div class="card-header py-3">
         <div class="row">
             <div class="col">
-                <?php echo responsive_title_blue('Retur Pembelian') ?>
+                <?php echo responsive_title_blue('Retur Penjualan') ?>
             </div>
             <?php if ($can_create): ?>
                 <div class="col text-right">
-                    <a href="<?php echo site_url('aktifitas/retur_pembelian/tambah'); ?>" class="btn btn-primary btn-sm">
+                    <a href="<?php echo site_url('aktifitas/retur_penjualan/tambah'); ?>" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus"></i> Tambah Retur
                     </a>
                 </div>
@@ -21,7 +21,8 @@
                         <th>No</th>
                         <th>No Retur</th>
                         <th>Tanggal</th>
-                        <th>Supplier</th>
+                        <th>No Invoice</th>
+                        <th>Pelanggan</th>
                         <th>User</th>
                         <th>Status</th>
                         <th>Aksi</th>
@@ -32,9 +33,10 @@
                     foreach ($retur as $row): ?>
                         <tr>
                             <td><?php echo $no++; ?></td>
-                            <td><?php echo $row->no_retur_beli; ?></td>
+                            <td><?php echo $row->no_retur; ?></td>
                             <td><?php echo date('d-m-Y H:i', strtotime($row->tanggal_retur)); ?></td>
-                            <td><?php echo $row->nama_supplier; ?></td>
+                            <td><?php echo $row->no_invoice; ?></td>
+                            <td><?php echo $row->nama_pelanggan; ?></td>
                             <td><?php echo $row->user_nama; ?></td>
                             <td>
                                 <?php
@@ -60,18 +62,18 @@
                                 <span class="badge <?php echo $status_class; ?>"><?php echo $row->status; ?></span>
                             </td>
                             <td>
-                                <a href="<?php echo site_url('aktifitas/retur_pembelian/detail/' . $row->id_retur_beli); ?>"
+                                <a href="<?php echo site_url('aktifitas/retur_penjualan/detail/' . $row->id_retur); ?>"
                                     class="btn btn-sm btn-info" title="Detail">
                                     <i class="fas fa-info-circle"></i>
                                 </a>
                                 <?php if ($row->status == 'Requested' && $can_edit): ?>
-                                    <a href="<?php echo site_url('aktifitas/retur_pembelian/verifikasi/' . $row->id_retur_beli); ?>"
+                                    <a href="<?php echo site_url('aktifitas/retur_penjualan/verifikasi/' . $row->id_retur); ?>"
                                         class="btn btn-sm btn-warning" title="Verifikasi">
                                         <i class="fas fa-check-circle"></i> Verifikasi
                                     </a>
                                 <?php endif; ?>
                                 <?php if ($row->status == 'Requested' && $can_delete): ?>
-                                    <a href="<?php echo site_url('aktifitas/retur_pembelian/hapus/' . $row->id_retur_beli); ?>"
+                                    <a href="<?php echo site_url('aktifitas/retur_penjualan/hapus/' . $row->id_retur); ?>"
                                         class="btn btn-sm btn-danger" title="Hapus"
                                         onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
                                         <i class="fas fa-trash"></i>

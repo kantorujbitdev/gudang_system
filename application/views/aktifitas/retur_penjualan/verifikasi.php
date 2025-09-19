@@ -2,12 +2,12 @@
     <div class="card-header py-3">
         <div class="row">
             <div class="col">
-                <h6 class="m-0 font-weight-bold text-primary">Verifikasi Retur Pembelian:
-                    <?php echo $retur->no_retur_beli; ?>
+                <h6 class="m-0 font-weight-bold text-primary">Verifikasi Retur Penjualan:
+                    <?php echo $retur->no_retur; ?>
                 </h6>
             </div>
             <div class="col text-right">
-                <a href="<?php echo site_url('aktifitas/retur_pembelian'); ?>" class="btn btn-secondary btn-sm">
+                <a href="<?php echo site_url('aktifitas/retur_penjualan'); ?>" class="btn btn-secondary btn-sm">
                     <i class="fas fa-arrow-left"></i> Kembali
                 </a>
             </div>
@@ -20,19 +20,19 @@
                 <table class="table table-sm">
                     <tr>
                         <th width="30%">No Retur</th>
-                        <td><?php echo $retur->no_retur_beli; ?></td>
+                        <td><?php echo $retur->no_retur; ?></td>
                     </tr>
                     <tr>
                         <th>Tanggal</th>
                         <td><?php echo date('d-m-Y H:i', strtotime($retur->tanggal_retur)); ?></td>
                     </tr>
                     <tr>
-                        <th>No Pembelian</th>
-                        <td><?php echo $retur->no_pembelian ?: '-'; ?></td>
+                        <th>No Invoice</th>
+                        <td><?php echo $retur->no_invoice; ?></td>
                     </tr>
                     <tr>
-                        <th>Supplier</th>
-                        <td><?php echo $retur->nama_supplier; ?></td>
+                        <th>Pelanggan</th>
+                        <td><?php echo $retur->nama_pelanggan; ?></td>
                     </tr>
                 </table>
             </div>
@@ -100,8 +100,7 @@
                             <td><?php echo $row->nama_gudang; ?></td>
                             <td><?php echo $row->jumlah_retur; ?></td>
                             <td>
-                                <input type="hidden" name="id_detail_retur[]"
-                                    value="<?php echo $row->id_detail_retur_beli; ?>">
+                                <input type="hidden" name="id_detail_retur[]" value="<?php echo $row->id_detail_retur; ?>">
                                 <input type="number" class="form-control" name="jumlah_disetujui[]"
                                     value="<?php echo $row->jumlah_disetujui; ?>" min="0"
                                     max="<?php echo $row->jumlah_retur; ?>">
@@ -125,7 +124,7 @@
 
         <div class="form-group">
             <button type="submit" class="btn btn-primary">Simpan</button>
-            <a href="<?php echo site_url('aktifitas/retur_pembelian'); ?>" class="btn btn-secondary">Batal</a>
+            <a href="<?php echo site_url('aktifitas/retur_penjualan'); ?>" class="btn btn-secondary">Batal</a>
         </div>
         <?php echo form_close(); ?>
     </div>
