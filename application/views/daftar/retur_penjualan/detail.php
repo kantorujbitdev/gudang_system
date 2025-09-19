@@ -6,8 +6,12 @@
                 </h6>
             </div>
             <div class="col text-right">
-                <a href="<?php echo site_url('aktifitas/retur_penjualan'); ?>" class="btn btn-secondary btn-sm">
+                <a href="<?php echo site_url('daftar/retur_penjualan'); ?>" class="btn btn-secondary btn-sm">
                     <i class="fas fa-arrow-left"></i> Kembali
+                </a>
+                <a href="<?php echo site_url('daftar/retur_penjualan/cetak/' . $retur->id_retur); ?>"
+                    class="btn btn-primary btn-sm" target="_blank">
+                    <i class="fas fa-print"></i> Cetak
                 </a>
             </div>
         </div>

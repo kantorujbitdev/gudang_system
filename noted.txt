@@ -130,7 +130,7 @@ sudah tidak perlu sebab sudah ada file pembantu jadi tidak perlu di tulis tiap h
 
 2. pada kontroler
 jangan gunakan 
-$this->session->set_flashdata('success', 'PESAN XXX!');
+$this->data['success'] = 'PESAN XXX!');
 $this->session->set_flashdata('error', 'PESAN XXX!');
 tapi gunakan ini ya
 $this->data['success'] = 'PESAN XXXX';

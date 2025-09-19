@@ -2,12 +2,17 @@
     <div class="card-header py-3">
         <div class="row">
             <div class="col">
-                <h6 class="m-0 font-weight-bold text-primary">Detail Retur Penjualan: <?php echo $retur->no_retur; ?>
+                <h6 class="m-0 font-weight-bold text-primary">Detail Pemindahan Barang:
+                    <?php echo $pemindahan->no_transfer; ?>
                 </h6>
             </div>
             <div class="col text-right">
-                <a href="<?php echo site_url('aktifitas/retur_penjualan'); ?>" class="btn btn-secondary btn-sm">
+                <a href="<?php echo site_url('daftar/pemindahan'); ?>" class="btn btn-secondary btn-sm">
                     <i class="fas fa-arrow-left"></i> Kembali
+                </a>
+                <a href="<?php echo site_url('daftar/pemindahan/cetak/' . $pemindahan->id_transfer); ?>"
+                    class="btn btn-primary btn-sm" target="_blank">
+                    <i class="fas fa-print"></i> Cetak
                 </a>
             </div>
         </div>
@@ -17,20 +22,28 @@
             <div class="col-md-6">
                 <table class="table table-sm">
                     <tr>
-                        <th width="30%">No Retur</th>
-                        <td><?php echo $retur->no_retur; ?></td>
+                        <th width="30%">No Transfer</th>
+                        <td><?php echo $pemindahan->no_transfer; ?></td>
                     </tr>
                     <tr>
                         <th>Tanggal</th>
-                        <td><?php echo date('d-m-Y H:i', strtotime($retur->tanggal_retur)); ?></td>
+                        <td><?php echo date('d-m-Y H:i', strtotime($pemindahan->tanggal)); ?></td>
                     </tr>
                     <tr>
-                        <th>No Invoice</th>
-                        <td><?php echo $retur->no_invoice; ?></td>
+                        <th>Gudang Asal</th>
+                        <td><?php echo $pemindahan->gudang_asal; ?></td>
                     </tr>
                     <tr>
-                        <th>Pelanggan</th>
-                        <td><?php echo $retur->nama_pelanggan; ?></td>
+                        <th>Tujuan</th>
+                        <td>
+                            <?php if ($pemindahan->id_gudang_tujuan): ?>
+                                <?php echo $pemindahan->gudang_tujuan; ?>
+                            <?php elseif ($pemindahan->id_pelanggan): ?>
+                                <?php echo $pemindahan->nama_pelanggan; ?>
+                            <?php else: ?>
+                                -
+                            <?php endif; ?>
+                        </td>
                     </tr>
                 </table>
             </div>
@@ -38,37 +51,37 @@
                 <table class="table table-sm">
                     <tr>
                         <th width="30%">User</th>
-                        <td><?php echo $retur->user_nama; ?></td>
+                        <td><?php echo $pemindahan->user_nama; ?></td>
                     </tr>
                     <tr>
                         <th>Status</th>
                         <td>
                             <?php
                             $status_class = '';
-                            switch ($retur->status) {
-                                case 'Requested':
+                            switch ($pemindahan->status) {
+                                case 'Draft':
                                     $status_class = 'badge-secondary';
                                     break;
-                                case 'Verification':
+                                case 'Packing':
                                     $status_class = 'badge-info';
                                     break;
-                                case 'Approved':
+                                case 'Shipping':
                                     $status_class = 'badge-warning';
                                     break;
-                                case 'Rejected':
-                                    $status_class = 'badge-danger';
-                                    break;
-                                case 'Completed':
+                                case 'Delivered':
                                     $status_class = 'badge-success';
+                                    break;
+                                case 'Cancelled':
+                                    $status_class = 'badge-danger';
                                     break;
                             }
                             ?>
-                            <span class="badge <?php echo $status_class; ?>"><?php echo $retur->status; ?></span>
+                            <span class="badge <?php echo $status_class; ?>"><?php echo $pemindahan->status; ?></span>
                         </td>
                     </tr>
                     <tr>
-                        <th>Alasan Retur</th>
-                        <td><?php echo $retur->alasan_retur; ?></td>
+                        <th>Keterangan</th>
+                        <td><?php echo $pemindahan->keterangan ?: '-'; ?></td>
                     </tr>
                 </table>
             </div>
@@ -84,10 +97,7 @@
                         <th>No</th>
                         <th>Nama Barang</th>
                         <th>Satuan</th>
-                        <th>Gudang</th>
-                        <th>Jumlah Retur</th>
-                        <th>Jumlah Disetujui</th>
-                        <th>Alasan</th>
+                        <th>Jumlah</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -97,10 +107,7 @@
                             <td><?php echo $no++; ?></td>
                             <td><?php echo $row->nama_barang; ?></td>
                             <td><?php echo $row->satuan; ?></td>
-                            <td><?php echo $row->nama_gudang; ?></td>
-                            <td><?php echo $row->jumlah_retur; ?></td>
-                            <td><?php echo $row->jumlah_disetujui; ?></td>
-                            <td><?php echo $row->alasan_barang ?: '-'; ?></td>
+                            <td><?php echo $row->jumlah; ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

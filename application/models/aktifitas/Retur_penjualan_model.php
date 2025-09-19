@@ -1,0 +1,132 @@
+<?php
+defined('BASEPATH') or exit('No direct script access allowed');
+
+class Retur_penjualan_model extends CI_Model
+{
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
+    public function get_all()
+    {
+        $id_perusahaan = $this->session->userdata('id_perusahaan');
+
+        $this->db->select('rp.*, u.nama as user_nama, p.no_invoice, pl.nama_pelanggan');
+        $this->db->from('retur_penjualan rp');
+        $this->db->join('user u', 'rp.id_user = u.id_user');
+        $this->db->join('penjualan p', 'rp.id_penjualan = p.id_penjualan');
+        $this->db->join('pelanggan pl', 'p.id_pelanggan = pl.id_pelanggan');
+        $this->db->where('p.id_perusahaan', $id_perusahaan);
+        $this->db->order_by('rp.created_at', 'DESC');
+        return $this->db->get()->result();
+    }
+
+    public function get($id_retur)
+    {
+        $this->db->select('rp.*, u.nama as user_nama, p.no_invoice, pl.nama_pelanggan');
+        $this->db->from('retur_penjualan rp');
+        $this->db->join('user u', 'rp.id_user = u.id_user');
+        $this->db->join('penjualan p', 'rp.id_penjualan = p.id_penjualan');
+        $this->db->join('pelanggan pl', 'p.id_pelanggan = pl.id_pelanggan');
+        $this->db->where('rp.id_retur', $id_retur);
+        return $this->db->get()->row();
+    }
+
+    public function get_detail($id_retur)
+    {
+        $this->db->select('dr.*, b.nama_barang, b.satuan, g.nama_gudang');
+        $this->db->from('detail_retur_penjualan dr');
+        $this->db->join('barang b', 'dr.id_barang = b.id_barang');
+        $this->db->join('gudang g', 'dr.id_gudang = g.id_gudang');
+        $this->db->where('dr.id_retur', $id_retur);
+        return $this->db->get()->result();
+    }
+
+    public function get_penjualan()
+    {
+        $id_perusahaan = $this->session->userdata('id_perusahaan');
+
+        $this->db->select('p.id_penjualan, p.no_invoice, pl.nama_pelanggan');
+        $this->db->from('penjualan p');
+        $this->db->join('pelanggan pl', 'p.id_pelanggan = pl.id_pelanggan');
+        $this->db->where('p.id_perusahaan', $id_perusahaan);
+        $this->db->where('p.status', 'Delivered');
+        $this->db->order_by('p.created_at', 'DESC');
+        return $this->db->get()->result();
+    }
+
+    public function get_detail_penjualan($id_penjualan)
+    {
+        $this->db->select('dp.*, b.nama_barang, b.satuan, g.nama_gudang, g.id_gudang');
+        $this->db->from('detail_penjualan dp');
+        $this->db->join('barang b', 'dp.id_barang = b.id_barang');
+        $this->db->join('gudang g', 'dp.id_gudang = g.id_gudang');
+        $this->db->where('dp.id_penjualan', $id_penjualan);
+        return $this->db->get()->result();
+    }
+
+    public function insert($data)
+    {
+        $this->db->insert('retur_penjualan', $data);
+        return $this->db->insert_id();
+    }
+
+    public function insert_detail($data)
+    {
+        $this->db->insert('detail_retur_penjualan', $data);
+        return $this->db->insert_id();
+    }
+
+    public function update_status($id_retur, $status)
+    {
+        $this->db->where('id_retur', $id_retur);
+        $data = [
+            'status' => $status,
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+        return $this->db->update('retur_penjualan', $data);
+    }
+
+    public function update_detail($id_detail, $data)
+    {
+        $this->db->where('id_detail_retur', $id_detail);
+        return $this->db->update('detail_retur_penjualan', $data);
+    }
+
+    public function delete($id_retur)
+    {
+        $this->db->where('id_retur', $id_retur);
+        return $this->db->delete('retur_penjualan');
+    }
+
+    public function get_stok_barang($id_gudang, $id_barang)
+    {
+        $this->db->where('id_gudang', $id_gudang);
+        $this->db->where('id_barang', $id_barang);
+        return $this->db->get('stok_gudang')->row();
+    }
+
+    public function update_stok($id_gudang, $id_barang, $jumlah)
+    {
+        $this->db->where('id_gudang', $id_gudang);
+        $this->db->where('id_barang', $id_barang);
+        $data = [
+            'jumlah' => $jumlah,
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+        return $this->db->update('stok_gudang', $data);
+    }
+
+    public function insert_log_stok($data)
+    {
+        $this->db->insert('log_stok', $data);
+        return $this->db->insert_id();
+    }
+
+    public function insert_log_status($data)
+    {
+        $this->db->insert('log_status_transaksi', $data);
+        return $this->db->insert_id();
+    }
+}
