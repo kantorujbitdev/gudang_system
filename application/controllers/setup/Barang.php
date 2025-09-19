@@ -58,8 +58,7 @@ class Barang extends MY_Controller
                 // Check unique SKU per company
                 if (!$this->Barang_model->check_unique_sku($sku, $id_perusahaan)) {
                     $this->data['error'] = 'SKU sudah ada di perusahaan yang sama!';
-                    $this->render_view('setup/barang/form');
-                    return;
+                    redirect('setup/barang/tambah');
                 }
 
                 // Handle upload gambar
@@ -77,8 +76,7 @@ class Barang extends MY_Controller
                         $gambar = $upload_data['file_name'];
                     } else {
                         $this->data['error'] = $this->upload->display_errors();
-                        $this->render_view('setup/barang/form');
-                        return;
+                        redirect('setup/barang/tambah');
                     }
                 }
 
@@ -97,9 +95,10 @@ class Barang extends MY_Controller
 
                 if ($this->Barang_model->insert($data)) {
                     $this->data['success'] = 'Barang berhasil ditambahkan!';
-                    $this->render_view('setup/barang');
+                    redirect('setup/barang');
                 } else {
                     $this->data['error'] = 'Gagal menambahkan barang!';
+                    redirect('setup/barang/tambah');
                 }
             }
         }
@@ -146,8 +145,7 @@ class Barang extends MY_Controller
                 // Check unique SKU (excluding current record)
                 if (!$this->Barang_model->check_unique_sku($sku, $id_perusahaan, $id_barang)) {
                     $this->data['error'] = 'SKU sudah ada di perusahaan yang sama!';
-                    $this->render_view('setup/barang/form');
-                    return;
+                    redirect('setup/barang/edit/' . $id_barang);
                 }
 
                 // Handle upload gambar
@@ -170,8 +168,7 @@ class Barang extends MY_Controller
                         }
                     } else {
                         $this->data['error'] = $this->upload->display_errors();
-                        $this->render_view('setup/barang/form');
-                        return;
+                        redirect('setup/barang/edit/' . $id_barang);
                     }
                 }
 
@@ -190,9 +187,10 @@ class Barang extends MY_Controller
 
                 if ($this->Barang_model->update($id_barang, $data)) {
                     $this->data['success'] = 'Barang berhasil diperbarui!';
-                    $this->render_view('setup/barang');
+                    redirect('setup/barang');
                 } else {
                     $this->data['error'] = 'Gagal memperbarui barang!';
+                    redirect('setup/barang/edit/' . $id_barang);
                 }
             }
         }
@@ -207,7 +205,7 @@ class Barang extends MY_Controller
         } else {
             $this->data['error'] = 'Gagal menonaktifkan barang';
         }
-        $this->render_view('setup/barang');
+        redirect('setup/barang');
     }
 
     public function aktif($id)
@@ -217,7 +215,7 @@ class Barang extends MY_Controller
         } else {
             $this->data['error'] = 'Gagal mengaktifkan barang';
         }
-        $this->render_view('setup/barang');
+        redirect('setup/barang');
     }
 
     public function hapus($id_barang)
@@ -234,7 +232,7 @@ class Barang extends MY_Controller
 
         if ($stok_count > 0) {
             $this->data['error'] = 'Barang tidak dapat dihapus karena masih memiliki stok terkait!';
-            $this->render_view('setup/barang');
+            redirect('setup/barang');
         }
 
         // Hapus gambar jika ada
@@ -248,7 +246,7 @@ class Barang extends MY_Controller
             $this->data['error'] = 'Gagal menghapus barang!';
         }
 
-        $this->render_view('setup/barang');
+        redirect('setup/barang');
     }
 
     public function detail($id_barang)
@@ -265,5 +263,29 @@ class Barang extends MY_Controller
         $this->data['total_stok'] = $this->Barang_model->get_total_stok($id_barang);
 
         $this->render_view('setup/barang/detail');
+    }
+
+    public function get_kategori_by_perusahaan()
+    {
+        // Check if this is an AJAX request
+        if (!$this->input->is_ajax_request()) {
+            show_404();
+        }
+
+        // Validate CSRF token
+        if (!$this->security->csrf_verify()) {
+            echo json_encode([]);
+            return;
+        }
+
+        $id_perusahaan = $this->input->post('id_perusahaan');
+
+        if (!$id_perusahaan) {
+            echo json_encode([]);
+            return;
+        }
+
+        $kategori = $this->Kategori_model->get_by_perusahaan_id($id_perusahaan);
+        echo json_encode($kategori);
     }
 }

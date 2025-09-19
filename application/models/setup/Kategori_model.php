@@ -12,7 +12,14 @@ class Kategori_model extends MY_Model
         $this->timestamps = TRUE;
         $this->soft_delete = TRUE;
     }
-
+    public function get_by_perusahaan_id($id_perusahaan)
+    {
+        $this->db->where('id_perusahaan', $id_perusahaan);
+        $this->db->where('status_aktif', 1);
+        $this->db->where('deleted_at IS NULL');
+        $this->db->order_by('nama_kategori', 'ASC');
+        return $this->db->get($this->table)->result();
+    }
     public function get_all()
     {
         $this->db->order_by('created_at', 'DESC');

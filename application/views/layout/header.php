@@ -16,6 +16,22 @@
     <link href="<?php echo base_url('assets/css/dataTables.bootstrap4.min.css'); ?>" rel="stylesheet">
     <link href="<?php echo base_url('assets/css/custom.css'); ?>" rel="stylesheet">
 
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="<?php echo base_url('assets/js/bootstrap.bundle.min.js'); ?>"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="<?php echo base_url('assets/js/jquery.easing.min.js'); ?>"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="<?php echo base_url('assets/js/sb-admin-2.min.js'); ?>"></script>
+
+    <!-- Page level plugins -->
+    <script src="<?php echo base_url('assets/js/jquery.dataTables.min.js'); ?>"></script>
+    <script src="<?php echo base_url('assets/js/dataTables.bootstrap4.min.js'); ?>"></script>
+
     <!-- Favicon -->
     <link rel="icon" href="<?php echo base_url('assets/images/logo.png'); ?>" type="image/x-icon">
 </head>
