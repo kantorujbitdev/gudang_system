@@ -5,22 +5,49 @@
                 <?php echo responsive_title_blue('Manajemen User') ?>
             </div>
             <div class="col text-right">
-                <a href="<?php echo site_url('setup/user/sales'); ?>" class="btn btn-info btn-sm">
-                    <i class="fas fa-user-tag"></i> Sales
-                </a>
-                <a href="<?php echo site_url('setup/user/packing'); ?>" class="btn btn-warning btn-sm ml-2">
-                    <i class="fas fa-user-box"></i> Admin Packing
-                </a>
+                <?php if ($can_create): ?>
+                    <div class="dropdown d-inline">
+                        <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-plus"></i> Tambah User
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <a class="dropdown-item" href="<?php echo site_url('setup/user/tambah/3'); ?>">
+                                <i class="fas fa-user-tag"></i> Sales Online
+                            </a>
+                            <a class="dropdown-item" href="<?php echo site_url('setup/user/tambah/4'); ?>">
+                                <i class="fas fa-user-box"></i> Admin Packing
+                            </a>
+                        </div>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
     <div class="card-body">
+        <?php if ($this->session->flashdata('success')): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <?php echo $this->session->flashdata('success'); ?>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($this->session->flashdata('error')): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <?php echo $this->session->flashdata('error'); ?>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        <?php endif; ?>
+
         <div class="table-responsive">
             <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
                 <thead>
                     <tr>
                         <th>No</th>
-                        <th>Foto</th>
                         <th>Nama</th>
                         <th>Username</th>
                         <th>Role</th>
@@ -32,28 +59,33 @@
                 </thead>
                 <tbody>
                     <?php $no = 1;
-                    foreach ($user as $row): ?>
+                    foreach ($users as $row): ?>
                         <tr>
                             <td><?php echo $no++; ?></td>
-                            <td>
-                                <?php if ($row->foto_profil): ?>
-                                    <img src="<?php echo base_url('uploads/user/' . $row->foto_profil); ?>"
-                                        class="img-thumbnail" style="max-width: 50px;" alt="Foto Profil">
-                                <?php else: ?>
-                                    <img src="<?php echo base_url('assets/images/user-default.png'); ?>" class="img-thumbnail"
-                                        style="max-width: 50px;" alt="Foto Default">
-                                <?php endif; ?>
-                            </td>
                             <td><?php echo $row->nama; ?></td>
                             <td><?php echo $row->username; ?></td>
                             <td>
-                                <?php if ($row->id_role == 3): ?>
-                                    <span class="badge badge-info">Sales</span>
-                                <?php elseif ($row->id_role == 4): ?>
-                                    <span class="badge badge-warning">Admin Packing</span>
-                                <?php else: ?>
-                                    <span class="badge badge-secondary"><?php echo $row->nama_role; ?></span>
-                                <?php endif; ?>
+                                <?php
+                                $role_class = '';
+                                switch ($row->id_role) {
+                                    case 1:
+                                        $role_class = 'badge-danger';
+                                        break;
+                                    case 2:
+                                        $role_class = 'badge-primary';
+                                        break;
+                                    case 3:
+                                        $role_class = 'badge-success';
+                                        break;
+                                    case 4:
+                                        $role_class = 'badge-info';
+                                        break;
+                                    case 5:
+                                        $role_class = 'badge-warning';
+                                        break;
+                                }
+                                ?>
+                                <span class="badge <?php echo $role_class; ?>"><?php echo $row->nama_role; ?></span>
                             </td>
                             <td><?php echo $row->nama_perusahaan ?: '-'; ?></td>
                             <td><?php echo $row->email; ?></td>
@@ -65,31 +97,39 @@
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <a href="<?php echo site_url('setup/user/detail/' . $row->id_user); ?>"
-                                    class="btn btn-sm btn-info" title="Detail">
-                                    <i class="fas fa-info-circle"></i>
-                                </a>
-                                <a href="<?php echo site_url('setup/user/edit/' . $row->id_user); ?>"
-                                    class="btn btn-sm btn-warning" title="Edit">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <a href="<?php echo site_url('setup/user/reset_password/' . $row->id_user); ?>"
-                                    class="btn btn-sm btn-secondary" title="Reset Password">
-                                    <i class="fas fa-key"></i>
-                                </a>
+                                <?php if ($can_edit): ?>
+                                    <a href="<?php echo site_url('setup/user/edit/' . $row->id_user); ?>"
+                                        class="btn btn-sm btn-warning" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                <?php endif; ?>
 
-                                <?php if ($row->aktif == '1'): ?>
-                                    <a href="<?php echo site_url('setup/user/nonaktif/' . $row->id_user) ?>"
-                                        class="btn btn-sm btn-danger"
-                                        onclick="return confirm('Apakah Anda yakin ingin menonaktifkan user ini?')">
-                                        <i class="fas fa-user-slash"></i>
-                                    </a>
-                                <?php else: ?>
-                                    <a href="<?php echo site_url('setup/user/aktif/' . $row->id_user) ?>"
-                                        class="btn btn-sm btn-success"
-                                        onclick="return confirm('Apakah Anda yakin ingin mengaktifkan user ini?')">
-                                        <i class="fas fa-user-check"></i>
-                                    </a>
+                                <?php if ($row->id_user != $this->session->userdata('id_user')): ?>
+                                    <?php if ($row->aktif == 1): ?>
+                                        <?php if ($can_edit): ?>
+                                            <a href="<?php echo site_url('setup/user/nonaktif/' . $row->id_user); ?>"
+                                                class="btn btn-sm btn-danger" title="Nonaktifkan"
+                                                onclick="return confirm('Apakah Anda yakin ingin menonaktifkan user ini?')">
+                                                <i class="fas fa-user-slash"></i>
+                                            </a>
+                                        <?php endif; ?>
+                                    <?php else: ?>
+                                        <?php if ($can_edit): ?>
+                                            <a href="<?php echo site_url('setup/user/aktif/' . $row->id_user); ?>"
+                                                class="btn btn-sm btn-success" title="Aktifkan"
+                                                onclick="return confirm('Apakah Anda yakin ingin mengaktifkan user ini?')">
+                                                <i class="fas fa-user-check"></i>
+                                            </a>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+
+                                    <?php if ($can_delete): ?>
+                                        <a href="<?php echo site_url('setup/user/hapus/' . $row->id_user); ?>"
+                                            class="btn btn-sm btn-danger" title="Hapus"
+                                            onclick="return confirm('Apakah Anda yakin ingin menghapus user ini?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                             </td>
                         </tr>

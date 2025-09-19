@@ -10,11 +10,14 @@
     </div>
 </footer>
 <!-- End of Footer -->
+
 </div> <!-- End of Content Wrapper -->
 </div> <!-- End of Page Wrapper -->
 
 <!-- Scroll to Top -->
-<a class="scroll-to-top rounded" href="#page-top"><i class="fas fa-angle-up"></i></a>
+<a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+</a>
 
 <!-- Logout Modal -->
 <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutLabel" aria-hidden="true">
@@ -33,10 +36,7 @@
     </div>
 </div>
 
-<?php $this->load->view('layout/js') ?>
-<?php $this->load->view('layout/modal'); ?>
-
-<!-- Core JS -->
+<!-- Global JS (Load urutannya benar) -->
 <script src="<?php echo base_url('assets/js/jquery.min.js'); ?>"></script>
 <script src="<?php echo base_url('assets/js/bootstrap.bundle.min.js'); ?>"></script>
 <script src="<?php echo base_url('assets/js/jquery.easing.min.js'); ?>"></script>
@@ -49,12 +49,17 @@
 <script src="<?php echo base_url('assets/js/sb-admin-2.min.js'); ?>"></script>
 <script src="<?php echo base_url('assets/js/menu.js'); ?>"></script>
 
+<!-- Script tambahan -->
+<?php $this->load->view('layout/js'); ?>
+<?php $this->load->view('layout/modal'); ?>
+
 <script>
     // Auto hide alerts
     setTimeout(function () {
         $(".alert").fadeOut('slow');
     }, 3000);
 </script>
+
 </body>
 
 </html>
