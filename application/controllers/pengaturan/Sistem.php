@@ -1,153 +1,165 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class Pengaturan_stok_awal extends CI_Controller
+class Sistem extends MY_Controller
 {
-
     public function __construct()
     {
         parent::__construct();
-        $this->load->library('auth');
-        $this->load->model('stok_awal_model');
-        $this->load->model('barang_model');
-        $this->load->model('setup/Gudang_model');
+        $this->load->model('Pengaturan/Sistem_model', 'sistem');
+        $this->load->helper('form');
         $this->load->library('form_validation');
 
-        if (!$this->auth->is_logged_in()) {
-            redirect('auth');
-        }
-
-        if (!$this->auth->has_permission('pengaturan/stok_awal')) {
-            show_error('Anda tidak memiliki akses ke halaman ini', 403);
-        }
+        // Cek akses menu
+        $this->check_menu_access('pengaturan/sistem');
     }
 
     public function index()
     {
-        $data['title'] = 'Stok Awal';
-        $data['content'] = 'pengaturan/stok_awal/index';
-        $data['stok_awal'] = $this->stok_awal_model->get_all();
+        $this->data['title'] = 'Pengaturan Sistem';
+        $this->data['pengaturan'] = $this->sistem->get_all_pengaturan();
+        $this->data['can_edit'] = $this->check_permission('pengaturan/sistem', 'edit');
 
-        $this->load->view('template/template', $data);
+        $this->render_view('pengaturan/sistem/index');
     }
 
-    public function tambah()
+    public function update()
     {
-        $data['title'] = 'Tambah Stok Awal';
-        $data['content'] = 'pengaturan/stok_awal/tambah';
-        $data['barang'] = $this->barang_model->get_all();
-        $data['gudang'] = $this->gudang_model->get_all();
-
-        $this->form_validation->set_rules('id_barang', 'Barang', 'required');
-        $this->form_validation->set_rules('id_gudang', 'Gudang', 'required');
-        $this->form_validation->set_rules('qty_awal', 'Qty Awal', 'required|numeric');
-
-        if ($this->form_validation->run() == FALSE) {
-            $this->load->view('template/template', $data);
-        } else {
-            $data_stok_awal = array(
-                'id_barang' => $this->input->post('id_barang'),
-                'id_gudang' => $this->input->post('id_gudang'),
-                'id_perusahaan' => $this->session->userdata('id_perusahaan'),
-                'qty_awal' => $this->input->post('qty_awal'),
-                'keterangan' => $this->input->post('keterangan'),
-                'created_by' => $this->session->userdata('id_user')
-            );
-
-            $this->stok_awal_model->insert($data_stok_awal);
-            $this->data['success'] = 'Stok awal berhasil ditambahkan!';
-            redirect('pengaturan/stok_awal');
-        }
-    }
-
-    public function edit($id)
-    {
-        $data['title'] = 'Edit Stok Awal';
-        $data['content'] = 'pengaturan/stok_awal/edit';
-        $data['stok_awal'] = $this->stok_awal_model->get_by_id($id);
-        $data['barang'] = $this->barang_model->get_all();
-        $data['gudang'] = $this->gudang_model->get_all();
-
-        if (!$data['stok_awal']) {
-            show_404();
+        // Check permission
+        if (!$this->check_permission('pengaturan/sistem', 'edit')) {
+            $this->data['error'] = 'Anda tidak memiliki izin untuk mengubah pengaturan sistem!';
+            $this->render_view('pengaturan/sistem');
         }
 
-        $this->form_validation->set_rules('id_barang', 'Barang', 'required');
-        $this->form_validation->set_rules('id_gudang', 'Gudang', 'required');
-        $this->form_validation->set_rules('qty_awal', 'Qty Awal', 'required|numeric');
+        if ($this->input->post()) {
+            $keys = $this->input->post('key');
+            $values = $this->input->post('value');
 
-        if ($this->form_validation->run() == FALSE) {
-            $this->load->view('template/template', $data);
-        } else {
-            $data_stok_awal = array(
-                'id_barang' => $this->input->post('id_barang'),
-                'id_gudang' => $this->input->post('id_gudang'),
-                'qty_awal' => $this->input->post('qty_awal'),
-                'keterangan' => $this->input->post('keterangan')
-            );
+            foreach ($keys as $index => $key) {
+                if (!empty($key)) {
+                    $data = [
+                        'value' => $values[$index]
+                    ];
 
-            $this->stok_awal_model->update($id, $data_stok_awal);
-            $this->data['success'] = 'Stok awal berhasil diperbarui!';
-            redirect('pengaturan/stok_awal');
-        }
-    }
-
-    public function hapus($id)
-    {
-        $stok_awal = $this->stok_awal_model->get_by_id($id);
-
-        if (!$stok_awal) {
-            show_404();
-        }
-
-        $this->stok_awal_model->delete($id);
-        $this->data['success'] = 'Stok awal berhasil dihapus!';
-        redirect('pengaturan/stok_awal');
-    }
-
-    public function proses()
-    {
-        $stok_awal = $this->stok_awal_model->get_all();
-
-        foreach ($stok_awal as $row) {
-            // Check if stock exists
-            $stok = $this->stok_awal_model->get_stok_by_barang_gudang($row->id_barang, $row->id_gudang);
-
-            if ($stok) {
-                // Update existing stock
-                $data_stok = array(
-                    'jumlah' => $stok->jumlah + $row->qty_awal
-                );
-                $this->stok_awal_model->update_stok($stok->id_stok, $data_stok);
-            } else {
-                // Insert new stock
-                $data_stok = array(
-                    'id_perusahaan' => $row->id_perusahaan,
-                    'id_gudang' => $row->id_gudang,
-                    'id_barang' => $row->id_barang,
-                    'jumlah' => $row->qty_awal
-                );
-                $this->stok_awal_model->insert_stok($data_stok);
+                    $this->sistem->update_pengaturan($key, $data);
+                }
             }
 
-            // Log stock movement
-            $data_log_stok = array(
-                'id_barang' => $row->id_barang,
-                'id_user' => $this->session->userdata('id_user'),
-                'id_perusahaan' => $row->id_perusahaan,
-                'id_gudang' => $row->id_gudang,
-                'jenis' => 'masuk',
-                'jumlah' => $row->qty_awal,
-                'sisa_stok' => $stok ? ($stok->jumlah + $row->qty_awal) : $row->qty_awal,
-                'keterangan' => 'Stok awal',
-                'id_referensi' => $row->id_stok_awal,
-                'tipe_referensi' => 'penyesuaian'
-            );
+            $this->data['success'] = 'Pengaturan sistem berhasil diperbarui';
+            $this->render_view('pengaturan/sistem');
+        }
+    }
 
-            $this->stok_awal_model->insert_log_stok($data_log_stok);
+    public function backup()
+    {
+        // Check permission
+        if (!$this->check_permission('pengaturan/sistem', 'edit')) {
+            $this->data['error'] = 'Anda tidak memiliki izin untuk melakukan backup!';
+            $this->render_view('pengaturan/sistem');
         }
 
-        $this->data['success'] = 'Stok awal berhasil diproses!';
-        redirect('pengaturan/stok_awal');
+        $this->load->dbutil();
+
+        $prefs = [
+            'format' => 'zip',
+            'filename' => 'backup_' . date('Y-m-d_H-i-s'),
+            'add_drop' => TRUE,
+            'add_insert' => TRUE,
+            'newline' => "\n"
+        ];
+
+        $backup = $this->dbutil->backup($prefs);
+
+        $db_name = 'backup_on_' . date('Y-m-d_H-i-s') . '.zip';
+        $save = './uploads/backup/' . $db_name;
+
+        write_file($save, $backup);
+
+        $this->data['success'] = 'Backup database berhasil dibuat. File disimpan di: ' . $save;
+        $this->render_view('pengaturan/sistem');
+    }
+
+    public function log()
+    {
+        // Check permission
+        if (!$this->check_permission('pengaturan/sistem', 'edit')) {
+            $this->data['error'] = 'Anda tidak memiliki izin untuk melihat log sistem!';
+            $this->render_view('pengaturan/sistem');
+        }
+
+        $this->data['title'] = 'Log Sistem';
+
+        // Get log files
+        $log_files = [];
+        $log_path = APPPATH . 'logs/';
+
+        if (is_dir($log_path)) {
+            $files = scandir($log_path);
+
+            foreach ($files as $file) {
+                if ($file != '.' && $file != '..' && pathinfo($file, PATHINFO_EXTENSION) == 'log') {
+                    $log_files[] = [
+                        'name' => $file,
+                        'path' => $log_path . $file,
+                        'size' => filesize($log_path . $file),
+                        'modified' => filemtime($log_path . $file)
+                    ];
+                }
+            }
+
+            // Sort by modified date
+            usort($log_files, function ($a, $b) {
+                return $b['modified'] - $a['modified'];
+            });
+        }
+
+        $this->data['log_files'] = $log_files;
+
+        $this->render_view('pengaturan/sistem/log');
+    }
+
+    public function view_log($filename)
+    {
+        // Check permission
+        if (!$this->check_permission('pengaturan/sistem', 'edit')) {
+            $this->data['error'] = 'Anda tidak memiliki izin untuk melihat log sistem!';
+            $this->render_view('pengaturan/sistem');
+        }
+
+        $log_path = APPPATH . 'logs/' . $filename;
+
+        if (!file_exists($log_path)) {
+            show_404();
+        }
+
+        $this->data['title'] = 'View Log - ' . $filename;
+        $this->data['filename'] = $filename;
+        $this->data['log_content'] = file_get_contents($log_path);
+
+        $this->render_view('pengaturan/sistem/view_log');
+    }
+
+    public function clear_log()
+    {
+        // Check permission
+        if (!$this->check_permission('pengaturan/sistem', 'edit')) {
+            $this->data['error'] = 'Anda tidak memiliki izin untuk membersihkan log sistem!';
+            $this->render_view('pengaturan/sistem/log');
+        }
+
+        $log_path = APPPATH . 'logs/';
+
+        if (is_dir($log_path)) {
+            $files = glob($log_path . '*.log');
+
+            foreach ($files as $file) {
+                if (is_file($file)) {
+                    unlink($file);
+                }
+            }
+        }
+
+        $this->data['success'] = 'Log sistem berhasil dibersihkan';
+        $this->render_view('pengaturan/sistem/log');
     }
 }

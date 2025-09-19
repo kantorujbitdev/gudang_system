@@ -1,111 +1,89 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class Pengaturan_approval extends CI_Controller
+class Approval extends MY_Controller
 {
-
     public function __construct()
     {
         parent::__construct();
-        $this->load->library('auth');
-        $this->load->model('approval_model');
-        $this->load->model('role_model');
+        $this->load->model('Pengaturan/Approval_model', 'approval');
+        $this->load->model('Menu_model');
+        $this->load->helper('form');
         $this->load->library('form_validation');
 
-        if (!$this->auth->is_logged_in()) {
-            redirect('auth');
-        }
-
-        if (!$this->auth->has_permission('pengaturan/approval')) {
-            show_error('Anda tidak memiliki akses ke halaman ini', 403);
-        }
+        // Cek akses menu
+        $this->check_menu_access('pengaturan/approval');
     }
 
     public function index()
     {
-        $data['title'] = 'Approval Flow';
-        $data['content'] = 'pengaturan/approval/index';
-        $data['approval'] = $this->approval_model->get_all();
-        $data['roles'] = $this->role_model->get_all();
+        $this->data['title'] = 'Approval Flow';
+        $this->data['approval_flows'] = $this->approval->get_all_approval_flows();
+        $this->data['can_edit'] = $this->check_permission('pengaturan/approval', 'edit');
 
-        $this->load->view('template/template', $data);
+        $this->render_view('pengaturan/approval/index');
     }
 
-    public function tambah()
+    public function diagram()
     {
-        $data['title'] = 'Tambah Approval Flow';
-        $data['content'] = 'pengaturan/approval/tambah';
-        $data['roles'] = $this->role_model->get_all();
+        $this->data['title'] = 'Diagram Approval Flow';
+        $this->data['approval_flows'] = $this->approval->get_all_approval_flows();
 
-        $this->form_validation->set_rules('tipe_transaksi', 'Tipe Transaksi', 'required');
-        $this->form_validation->set_rules('status_dari', 'Status Dari', 'required');
-        $this->form_validation->set_rules('status_ke', 'Status Ke', 'required');
-        $this->form_validation->set_rules('id_role', 'Role', 'required');
-        $this->form_validation->set_rules('urutan', 'Urutan', 'required|numeric');
+        $this->render_view('pengaturan/approval/diagram');
+    }
 
-        if ($this->form_validation->run() == FALSE) {
-            $this->load->view('template/template', $data);
-        } else {
-            $data_approval = array(
-                'tipe_transaksi' => $this->input->post('tipe_transaksi'),
-                'status_dari' => $this->input->post('status_dari'),
-                'status_ke' => $this->input->post('status_ke'),
-                'id_role' => $this->input->post('id_role'),
-                'urutan' => $this->input->post('urutan'),
-                'status_aktif' => 1
-            );
-
-            $this->approval_model->insert($data_approval);
-            $this->data['success'] = 'Approval flow berhasil ditambahkan!';
+    public function edit($tipe_transaksi)
+    {
+        // Check permission
+        if (!$this->check_permission('pengaturan/approval', 'edit')) {
+            $this->data['error'] = 'Anda tidak memiliki izin untuk mengubah approval flow!';
             redirect('pengaturan/approval');
         }
+
+        $this->data['title'] = 'Edit Approval Flow - ' . ucfirst(str_replace('_', ' ', $tipe_transaksi));
+        $this->data['tipe_transaksi'] = $tipe_transaksi;
+        $this->data['approval_flows'] = $this->approval->get_approval_flow_by_tipe($tipe_transaksi);
+        $this->data['roles'] = $this->approval->get_all_roles();
+
+        $this->render_view('pengaturan/approval/form');
     }
 
-    public function edit($id)
+    public function update()
     {
-        $data['title'] = 'Edit Approval Flow';
-        $data['content'] = 'pengaturan/approval/edit';
-        $data['approval'] = $this->approval_model->get_by_id($id);
-        $data['roles'] = $this->role_model->get_all();
-
-        if (!$data['approval']) {
-            show_404();
-        }
-
-        $this->form_validation->set_rules('tipe_transaksi', 'Tipe Transaksi', 'required');
-        $this->form_validation->set_rules('status_dari', 'Status Dari', 'required');
-        $this->form_validation->set_rules('status_ke', 'Status Ke', 'required');
-        $this->form_validation->set_rules('id_role', 'Role', 'required');
-        $this->form_validation->set_rules('urutan', 'Urutan', 'required|numeric');
-
-        if ($this->form_validation->run() == FALSE) {
-            $this->load->view('template/template', $data);
-        } else {
-            $data_approval = array(
-                'tipe_transaksi' => $this->input->post('tipe_transaksi'),
-                'status_dari' => $this->input->post('status_dari'),
-                'status_ke' => $this->input->post('status_ke'),
-                'id_role' => $this->input->post('id_role'),
-                'urutan' => $this->input->post('urutan'),
-                'status_aktif' => $this->input->post('status_aktif')
-            );
-
-            $this->approval_model->update($id, $data_approval);
-            $this->data['success'] = 'Approval flow berhasil diperbarui!';
+        // Check permission
+        if (!$this->check_permission('pengaturan/approval', 'edit')) {
+            $this->data['error'] = 'Anda tidak memiliki izin untuk mengubah approval flow!';
             redirect('pengaturan/approval');
         }
-    }
 
-    public function hapus($id)
-    {
-        $approval = $this->approval_model->get_by_id($id);
+        if ($this->input->post()) {
+            $tipe_transaksi = $this->input->post('tipe_transaksi');
+            $status_daris = $this->input->post('status_dari');
+            $status_kes = $this->input->post('status_ke');
+            $id_roles = $this->input->post('id_role');
+            $urutans = $this->input->post('urutan');
 
-        if (!$approval) {
-            show_404();
+            // Delete existing approval flow for this transaction type
+            $this->approval->delete_by_tipe($tipe_transaksi);
+
+            // Insert new approval flow
+            foreach ($status_daris as $key => $status_dari) {
+                if (!empty($status_dari) && !empty($status_kes[$key]) && !empty($id_roles[$key])) {
+                    $data = [
+                        'tipe_transaksi' => $tipe_transaksi,
+                        'status_dari' => $status_dari,
+                        'status_ke' => $status_kes[$key],
+                        'id_role' => $id_roles[$key],
+                        'urutan' => $urutans[$key] ?: 0,
+                        'status_aktif' => 1
+                    ];
+
+                    $this->approval->insert($data);
+                }
+            }
+
+            $this->data['success'] = 'Approval flow berhasil diperbarui';
+            redirect('pengaturan/approval');
         }
-
-        $this->approval_model->delete($id);
-        $this->data['success'] = 'Approval flow berhasil dihapus!';
-        redirect('pengaturan/approval');
     }
 }

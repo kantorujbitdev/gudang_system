@@ -1,46 +1,50 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class Approval_flow_model extends MY_Model
+class Approval_model extends CI_Model
 {
     public function __construct()
     {
         parent::__construct();
-        $this->table = 'approval_flow';
-        $this->primary_key = 'id_approval';
-        $this->fillable = array('tipe_transaksi', 'status_dari', 'status_ke', 'id_role', 'urutan', 'status_aktif');
-        $this->timestamps = FALSE;
     }
 
-    public function get_by_tipe_transaksi($tipe_transaksi)
+    public function get_all_approval_flows()
     {
-        $this->db->where('tipe_transaksi', $tipe_transaksi);
-        $this->db->where('status_aktif', 1);
-        $this->db->order_by('urutan', 'ASC');
-
-        $query = $this->db->get($this->table);
-        return ($query && $query->num_rows() > 0) ? $query->result() : [];
+        $this->db->select('af.*, r.nama_role');
+        $this->db->from('approval_flow af');
+        $this->db->join('role_user r', 'af.id_role = r.id_role');
+        $this->db->where('af.status_aktif', 1);
+        $this->db->order_by('af.tipe_transaksi, af.urutan');
+        return $this->db->get()->result();
     }
 
-    public function get_next_approval($tipe_transaksi, $current_status)
+    public function get_approval_flow_by_tipe($tipe_transaksi)
     {
-        $this->db->where('tipe_transaksi', $tipe_transaksi);
-        $this->db->where('status_dari', $current_status);
-        $this->db->where('status_aktif', 1);
-        $this->db->order_by('urutan', 'ASC');
-
-        $query = $this->db->get($this->table);
-        return ($query && $query->num_rows() > 0) ? $query->row() : NULL;
+        $this->db->select('af.*, r.nama_role');
+        $this->db->from('approval_flow af');
+        $this->db->join('role_user r', 'af.id_role = r.id_role');
+        $this->db->where('af.tipe_transaksi', $tipe_transaksi);
+        $this->db->where('af.status_aktif', 1);
+        $this->db->order_by('af.urutan');
+        return $this->db->get()->result();
     }
 
-    public function can_change_status($tipe_transaksi, $current_status, $new_status, $id_role)
+    public function get_all_roles()
+    {
+        $this->db->where('status_aktif', 1);
+        $this->db->order_by('nama_role', 'ASC');
+        return $this->db->get('role_user')->result();
+    }
+
+    public function insert($data)
+    {
+        $this->db->insert('approval_flow', $data);
+        return $this->db->insert_id();
+    }
+
+    public function delete_by_tipe($tipe_transaksi)
     {
         $this->db->where('tipe_transaksi', $tipe_transaksi);
-        $this->db->where('status_dari', $current_status);
-        $this->db->where('status_ke', $new_status);
-        $this->db->where('id_role', $id_role);
-        $this->db->where('status_aktif', 1);
-
-        return $this->db->count_all_results($this->table) > 0;
+        return $this->db->delete('approval_flow');
     }
 }
