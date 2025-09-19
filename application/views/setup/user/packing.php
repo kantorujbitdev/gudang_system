@@ -2,14 +2,14 @@
     <div class="card-header py-3">
         <div class="row">
             <div class="col">
-                <?php echo responsive_title_blue('Manajemen User') ?>
+                <?php echo responsive_title_blue('Manajemen Admin Packing') ?>
             </div>
             <div class="col text-right">
-                <a href="<?php echo site_url('setup/user/sales'); ?>" class="btn btn-info btn-sm">
-                    <i class="fas fa-user-tag"></i> Sales
+                <a href="<?php echo site_url('setup/user/tambah_packing'); ?>" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Tambah Admin Packing
                 </a>
-                <a href="<?php echo site_url('setup/user/packing'); ?>" class="btn btn-warning btn-sm ml-2">
-                    <i class="fas fa-user-box"></i> Admin Packing
+                <a href="<?php echo site_url('setup/user'); ?>" class="btn btn-secondary btn-sm ml-2">
+                    <i class="fas fa-arrow-left"></i> Kembali
                 </a>
             </div>
         </div>
@@ -23,9 +23,9 @@
                         <th>Foto</th>
                         <th>Nama</th>
                         <th>Username</th>
-                        <th>Role</th>
-                        <th>Perusahaan</th>
                         <th>Email</th>
+                        <th>Telepon</th>
+                        <th>Perusahaan</th>
                         <th>Status</th>
                         <th>Aksi</th>
                     </tr>
@@ -46,17 +46,9 @@
                             </td>
                             <td><?php echo $row->nama; ?></td>
                             <td><?php echo $row->username; ?></td>
-                            <td>
-                                <?php if ($row->id_role == 3): ?>
-                                    <span class="badge badge-info">Sales</span>
-                                <?php elseif ($row->id_role == 4): ?>
-                                    <span class="badge badge-warning">Admin Packing</span>
-                                <?php else: ?>
-                                    <span class="badge badge-secondary"><?php echo $row->nama_role; ?></span>
-                                <?php endif; ?>
-                            </td>
-                            <td><?php echo $row->nama_perusahaan ?: '-'; ?></td>
                             <td><?php echo $row->email; ?></td>
+                            <td><?php echo $row->telepon ?: '-'; ?></td>
+                            <td><?php echo $row->nama_perusahaan; ?></td>
                             <td>
                                 <?php if ($row->aktif == 1): ?>
                                     <span class="badge badge-success">Aktif</span>
