@@ -31,7 +31,7 @@ class User extends MY_Controller
     {
         // Check permission
         if (!$this->check_permission('setup/user/sales', 'create')) {
-            $this->session->set_flashdata('error', 'Anda tidak memiliki izin untuk menambah user!');
+            $this->data['error'] = 'Anda tidak memiliki izin untuk menambah user!';
             redirect('setup/user');
         }
 
@@ -71,10 +71,10 @@ class User extends MY_Controller
             ];
 
             if ($this->user->insert($data_insert)) {
-                $this->session->set_flashdata('success', 'User berhasil ditambahkan');
+                $this->data['success'] = 'User berhasil ditambahkan';
                 redirect('setup/user');
             } else {
-                $this->session->set_flashdata('error', 'Gagal menambahkan user!');
+                $this->data['error'] = 'Gagal menambahkan user!';
                 $this->render_view('setup/user/form');
             }
         }
@@ -84,7 +84,7 @@ class User extends MY_Controller
     {
         // Check permission
         if (!$this->check_permission('setup/user/sales', 'edit')) {
-            $this->session->set_flashdata('error', 'Anda tidak memiliki izin untuk mengubah data user!');
+            $this->data['error'] = 'Anda tidak memiliki izin untuk mengubah data user!';
             redirect('setup/user');
         }
 
@@ -128,10 +128,10 @@ class User extends MY_Controller
             }
 
             if ($this->user->update($id_user, $data_update)) {
-                $this->session->set_flashdata('success', 'User berhasil diperbarui');
+                $this->data['success'] = 'User berhasil diperbarui';
                 redirect('setup/user');
             } else {
-                $this->session->set_flashdata('error', 'Gagal memperbarui user!');
+                $this->data['error'] = 'Gagal memperbarui user!';
                 $this->render_view('setup/user/form_edit');
             }
         }
@@ -140,9 +140,9 @@ class User extends MY_Controller
     public function aktif($id_user)
     {
         if ($this->user->update_status($id_user, 1)) {
-            $this->session->set_flashdata('success', 'User berhasil diaktifkan');
+            $this->data['success'] = 'User berhasil diaktifkan';
         } else {
-            $this->session->set_flashdata('error', 'Gagal mengaktifkan user');
+            $this->data['error'] = 'Gagal mengaktifkan user';
         }
         redirect('setup/user');
     }
@@ -185,10 +185,10 @@ class User extends MY_Controller
                 // Update session data
                 $this->session->set_userdata('nama', $data_update['nama']);
 
-                $this->session->set_flashdata('success', 'Profil berhasil diperbarui');
+                $this->data['success'] = 'Profil berhasil diperbarui';
                 redirect('setup/user/profile');
             } else {
-                $this->session->set_flashdata('error', 'Gagal memperbarui profil!');
+                $this->data['error'] = 'Gagal memperbarui profil!';
                 $this->render_view('setup/user/profile');
             }
         }
@@ -217,10 +217,10 @@ class User extends MY_Controller
             ];
 
             if ($this->user->update($id_user, $data_update)) {
-                $this->session->set_flashdata('success', 'Password berhasil diubah');
+                $this->data['success'] = 'Password berhasil diubah';
                 redirect('setup/user/change_password');
             } else {
-                $this->session->set_flashdata('error', 'Gagal mengubah password!');
+                $this->data['error'] = 'Gagal mengubah password!';
                 $this->render_view('setup/user/change_password');
             }
         }

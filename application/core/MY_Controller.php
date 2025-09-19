@@ -69,11 +69,14 @@ class MY_Controller extends CI_Controller
 
     protected function check_menu_access($menu_url)
     {
-        $user_role = $this->session->userdata('id_role');
-
-        if (!$this->Menu_model->check_access($user_role, $menu_url)) {
+        if (!$this->auth->has_permission($menu_url, 'view')) {
             $this->data['error'] = 'Anda tidak memiliki akses ke menu ini!';
             redirect('dashboard');
         }
+    }
+
+    protected function check_permission($menu_url, $permission = 'view')
+    {
+        return $this->auth->has_permission($menu_url, $permission);
     }
 }

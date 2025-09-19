@@ -38,6 +38,7 @@ class Auth
                     'id_role' => $user->id_role,
                     'id_perusahaan' => $user->id_perusahaan,
                     'nama_perusahaan' => $user->nama_perusahaan,
+                    'nama_role' => $user->nama_role,
                     'logged_in' => TRUE
                 );
 
@@ -73,22 +74,29 @@ class Auth
         return $this->CI->session->userdata('id_role') == 5;
     }
 
-    public function has_permission($menu_url)
+    public function has_permission($menu_url, $permission = 'view')
     {
         $id_role = $this->CI->session->userdata('id_role');
 
-        $this->CI->db->select('ham.akses');
-        $this->CI->db->from('hak_akses_menu ham');
-        $this->CI->db->join('menu m', 'ham.id_menu = m.id_menu');
-        $this->CI->db->where('ham.id_role', $id_role);
-        $this->CI->db->where('m.url', $menu_url);
-
-        $query = $this->CI->db->get();
-
-        if ($query->num_rows() > 0) {
-            return $query->row()->akses == 1;
+        // Super Admin memiliki akses penuh
+        if ($id_role == 1) {
+            return TRUE;
         }
 
-        return FALSE;
+        $this->CI->load->model('Menu_model');
+        $perm = $this->CI->Menu_model->get_permission($id_role, $menu_url);
+
+        switch ($permission) {
+            case 'view':
+                return $perm->can_view == 1;
+            case 'create':
+                return $perm->can_create == 1;
+            case 'edit':
+                return $perm->can_edit == 1;
+            case 'delete':
+                return $perm->can_delete == 1;
+            default:
+                return FALSE;
+        }
     }
 }
