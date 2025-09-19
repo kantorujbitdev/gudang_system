@@ -1,239 +1,135 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class Packing extends CI_Controller
+class Packing extends MY_Controller
 {
-
     public function __construct()
     {
         parent::__construct();
-        $this->load->library('auth');
-        $this->load->model('packing_model');
-        $this->load->model('penjualan_model');
-        $this->load->model('transfer_model');
+        $this->load->model('Laporan/Packing_model', 'packing');
+        $this->load->model('setup/User_model', 'user');
+        $this->load->helper('form');
         $this->load->library('form_validation');
 
-        if (!$this->auth->is_logged_in()) {
-            redirect('auth');
-        }
-
-        if (!$this->auth->has_permission('packing')) {
-            show_error('Anda tidak memiliki akses ke halaman ini', 403);
-        }
+        // Cek akses menu
+        $this->check_menu_access('laporan/packing');
     }
 
     public function index()
     {
-        $data['title'] = 'Packing';
-        $data['content'] = 'packing/index';
-        $data['packing'] = $this->packing_model->get_all();
+        $this->data['title'] = 'Laporan Packing';
+        $this->data['user'] = $this->user->get_by_role(4); // Admin Packing
 
-        $this->load->view('template/template', $data);
+        // Set filter default
+        $filter = [
+            'tanggal_awal' => date('Y-m-01'),
+            'tanggal_akhir' => date('Y-m-d'),
+            'id_user' => '',
+            'status' => ''
+        ];
+
+        $this->data['filter'] = $filter;
+        $this->data['packing'] = $this->packing->get_filtered($filter);
+
+        $this->render_view('laporan/packing/index');
     }
 
-    public function tambah()
+    public function filter()
     {
-        $data['title'] = 'Tambah Packing';
-        $data['content'] = 'packing/tambah';
-        $data['penjualan'] = $this->penjualan_model->get_penjualan_for_packing();
-        $data['transfer'] = $this->transfer_model->get_transfer_for_packing();
+        $this->data['title'] = 'Laporan Packing';
+        $this->data['user'] = $this->user->get_by_role(4); // Admin Packing
 
-        $this->form_validation->set_rules('tipe_referensi', 'Tipe Referensi', 'required');
-        $this->form_validation->set_rules('id_referensi', 'Referensi', 'required');
-        $this->form_validation->set_rules('tanggal_packing', 'Tanggal Packing', 'required');
+        // Get filter from POST
+        $filter = [
+            'tanggal_awal' => $this->input->post('tanggal_awal') ?: date('Y-m-01'),
+            'tanggal_akhir' => $this->input->post('tanggal_akhir') ?: date('Y-m-d'),
+            'id_user' => $this->input->post('id_user'),
+            'status' => $this->input->post('status')
+        ];
 
-        if ($this->form_validation->run() == FALSE) {
-            $this->load->view('template/template', $data);
-        } else {
-            $data_packing = array(
-                'id_referensi' => $this->input->post('id_referensi'),
-                'tipe_referensi' => $this->input->post('tipe_referensi'),
-                'id_user' => $this->session->userdata('id_user'),
-                'tanggal_packing' => $this->input->post('tanggal_packing'),
-                'catatan' => $this->input->post('catatan'),
-                'status' => 'Draft'
-            );
+        $this->data['filter'] = $filter;
+        $this->data['packing'] = $this->packing->get_filtered($filter);
 
-            $id_packing = $this->packing_model->insert_packing($data_packing);
-
-            // Insert detail packing
-            $id_barang = $this->input->post('id_barang');
-            $jumlah = $this->input->post('jumlah');
-
-            for ($i = 0; $i < count($id_barang); $i++) {
-                if (!empty($id_barang[$i]) && !empty($jumlah[$i])) {
-                    $data_detail = array(
-                        'id_packing' => $id_packing,
-                        'id_barang' => $id_barang[$i],
-                        'jumlah' => $jumlah[$i]
-                    );
-
-                    $this->packing_model->insert_detail_packing($data_detail);
-                }
-            }
-
-            $this->data['success'] = 'Packing berhasil ditambahkan!';
-            redirect('packing');
-        }
+        $this->render_view('laporan/packing/index');
     }
 
-    public function edit($id)
+    public function detail($id_packing)
     {
-        $data['title'] = 'Edit Packing';
-        $data['content'] = 'packing/edit';
-        $data['packing'] = $this->packing_model->get_by_id($id);
-        $data['detail_packing'] = $this->packing_model->get_detail_by_packing($id);
-        $data['penjualan'] = $this->penjualan_model->get_penjualan_for_packing();
-        $data['transfer'] = $this->transfer_model->get_transfer_for_packing();
+        $this->data['title'] = 'Detail Packing';
+        $this->data['packing'] = $this->packing->get_packing($id_packing);
+        $this->data['detail'] = $this->packing->get_detail_packing($id_packing);
 
-        if (!$data['packing']) {
+        if (!$this->data['packing']) {
             show_404();
         }
 
-        $this->form_validation->set_rules('tipe_referensi', 'Tipe Referensi', 'required');
-        $this->form_validation->set_rules('id_referensi', 'Referensi', 'required');
-        $this->form_validation->set_rules('tanggal_packing', 'Tanggal Packing', 'required');
-
-        if ($this->form_validation->run() == FALSE) {
-            $this->load->view('template/template', $data);
-        } else {
-            $data_packing = array(
-                'id_referensi' => $this->input->post('id_referensi'),
-                'tipe_referensi' => $this->input->post('tipe_referensi'),
-                'tanggal_packing' => $this->input->post('tanggal_packing'),
-                'catatan' => $this->input->post('catatan')
-            );
-
-            $this->packing_model->update_packing($id, $data_packing);
-
-            // Delete existing detail
-            $this->packing_model->delete_detail_packing($id);
-
-            // Insert new detail
-            $id_barang = $this->input->post('id_barang');
-            $jumlah = $this->input->post('jumlah');
-
-            for ($i = 0; $i < count($id_barang); $i++) {
-                if (!empty($id_barang[$i]) && !empty($jumlah[$i])) {
-                    $data_detail = array(
-                        'id_packing' => $id,
-                        'id_barang' => $id_barang[$i],
-                        'jumlah' => $jumlah[$i]
-                    );
-
-                    $this->packing_model->insert_detail_packing($data_detail);
-                }
-            }
-
-            $this->data['success'] = 'Packing berhasil diperbarui!';
-            redirect('packing');
-        }
+        $this->render_view('laporan/packing/detail');
     }
 
-    public function hapus($id)
+    public function export()
     {
-        $packing = $this->packing_model->get_by_id($id);
+        // Get filter from POST
+        $filter = [
+            'tanggal_awal' => $this->input->post('tanggal_awal') ?: date('Y-m-01'),
+            'tanggal_akhir' => $this->input->post('tanggal_akhir') ?: date('Y-m-d'),
+            'id_user' => $this->input->post('id_user'),
+            'status' => $this->input->post('status')
+        ];
 
-        if (!$packing) {
-            show_404();
+        $packing = $this->packing->get_filtered($filter);
+
+        // Create new PHPExcel object
+        $this->load->library('PHPExcel');
+        $objPHPExcel = new PHPExcel();
+
+        // Set properties
+        $objPHPExcel->getProperties()->setTitle("Laporan Packing")
+            ->setSubject("Laporan Packing")
+            ->setDescription("Laporan Packing");
+
+        // Add header
+        $objPHPExcel->setActiveSheetIndex(0)
+            ->setCellValue('A1', 'No')
+            ->setCellValue('B1', 'No Packing')
+            ->setCellValue('C1', 'Tanggal')
+            ->setCellValue('D1', 'User')
+            ->setCellValue('E1', 'Referensi')
+            ->setCellValue('F1', 'Barang')
+            ->setCellValue('G1', 'Jumlah')
+            ->setCellValue('H1', 'Status');
+
+        // Add data
+        $row = 2;
+        $no = 1;
+        foreach ($packing as $item) {
+            $objPHPExcel->setActiveSheetIndex(0)
+                ->setCellValue('A' . $row, $no++)
+                ->setCellValue('B' . $row, $item->id_packing)
+                ->setCellValue('C' . $row, date('d-m-Y H:i', strtotime($item->tanggal_packing)))
+                ->setCellValue('D' . $row, $item->user_nama)
+                ->setCellValue('E' . $row, $item->tipe_referensi . ' #' . $item->id_referensi)
+                ->setCellValue('F' . $row, $item->nama_barang)
+                ->setCellValue('G' . $row, $item->jumlah)
+                ->setCellValue('H' . $row, $item->status);
+
+            $row++;
         }
 
-        $this->packing_model->delete_packing($id);
-        $this->data['success'] = 'Packing berhasil dihapus!';
-        redirect('packing');
-    }
-
-    public function detail($id)
-    {
-        $data['title'] = 'Detail Packing';
-        $data['content'] = 'packing/detail';
-        $data['packing'] = $this->packing_model->get_by_id($id);
-        $data['detail_packing'] = $this->packing_model->get_detail_by_packing($id);
-
-        if (!$data['packing']) {
-            show_404();
+        // Auto size columns
+        foreach (range('A', 'H') as $column) {
+            $objPHPExcel->getActiveSheet()->getColumnDimension($column)->setAutoSize(true);
         }
 
-        $this->load->view('template/template', $data);
-    }
+        // Set active sheet index to the first sheet
+        $objPHPExcel->setActiveSheetIndex(0);
 
-    public function update_status($id, $status)
-    {
-        $packing = $this->packing_model->get_by_id($id);
+        // Redirect output to client browser
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="Laporan_Packing_' . date('YmdHis') . '.xlsx"');
+        header('Cache-Control: max-age=0');
 
-        if (!$packing) {
-            show_404();
-        }
-
-        $data_packing = array(
-            'status' => $status
-        );
-
-        $this->packing_model->update_packing($id, $data_packing);
-
-        // Log status change
-        $data_log = array(
-            'id_transaksi' => $id,
-            'tipe_transaksi' => 'packing',
-            'id_user' => $this->session->userdata('id_user'),
-            'status' => $status,
-            'keterangan' => $this->input->post('keterangan')
-        );
-
-        $this->packing_model->insert_log_status_transaksi($data_log);
-
-        // Update status referensi (penjualan/transfer) if status is Completed
-        if ($status == 'Completed') {
-            if ($packing->tipe_referensi == 'penjualan') {
-                $this->penjualan_model->update_status($packing->id_referensi, 'Packing');
-            } elseif ($packing->tipe_referensi == 'transfer') {
-                $this->transfer_model->update_status($packing->id_referensi, 'Packing');
-            }
-        }
-
-        $this->data['success'] = 'Status packing berhasil diperbarui!';
-        redirect('packing/detail/' . $id);
-    }
-
-    public function get_referensi_detail()
-    {
-        $tipe_referensi = $this->input->post('tipe_referensi');
-        $id_referensi = $this->input->post('id_referensi');
-
-        if ($tipe_referensi == 'penjualan') {
-            $detail = $this->penjualan_model->get_detail_by_penjualan($id_referensi);
-        } elseif ($tipe_referensi == 'transfer') {
-            $detail = $this->transfer_model->get_detail_by_transfer($id_referensi);
-        }
-
-        echo json_encode($detail);
-    }
-    public function get_penjualan_options()
-    {
-        $id_perusahaan = $this->session->userdata('id_perusahaan');
-
-        $this->db->select('penjualan.id_penjualan, penjualan.no_invoice, pelanggan.nama_pelanggan');
-        $this->db->from('penjualan');
-        $this->db->join('pelanggan', 'pelanggan.id_pelanggan = penjualan.id_pelanggan');
-        $this->db->where('penjualan.id_perusahaan', $id_perusahaan);
-        $this->db->where('penjualan.status', 'Draft');
-        $this->db->order_by('penjualan.tanggal_penjualan', 'DESC');
-        $penjualan = $this->db->get()->result();
-
-        echo json_encode($penjualan);
-    }
-
-    public function get_transfer_options()
-    {
-        $id_perusahaan = $this->session->userdata('id_perusahaan');
-
-        $this->db->select('transfer_stok.id_transfer, transfer_stok.no_transfer');
-        $this->db->from('transfer_stok');
-        $this->db->where('transfer_stok.id_perusahaan', $id_perusahaan);
-        $this->db->where('transfer_stok.status', 'Draft');
-        $this->db->order_by('transfer_stok.tanggal', 'DESC');
-        $transfer = $this->db->get()->result();
-
-        echo json_encode($transfer);
+        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+        $objWriter->save('php://output');
+        exit;
     }
 }

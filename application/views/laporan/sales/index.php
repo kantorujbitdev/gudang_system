@@ -1,0 +1,267 @@
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <div class="row">
+            <div class="col">
+                <?php echo responsive_title_blue('Laporan Sales') ?>
+            </div>
+            <div class="col text-right">
+                <button class="btn btn-info btn-sm" data-toggle="collapse" data-target="#filterCollapse">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+                <button class="btn btn-success btn-sm" data-toggle="collapse" data-target="#summaryCollapse">
+                    <i class="fas fa-chart-pie"></i> Summary
+                </button>
+                <button class="btn btn-primary btn-sm" data-toggle="collapse" data-target="#exportCollapse">
+                    <i class="fas fa-file-excel"></i> Export
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Filter Form -->
+        <div class="collapse <?php echo $this->input->post() ? 'show' : ''; ?>" id="filterCollapse">
+            <div class="card card-body mb-4">
+                <?php echo form_open('laporan/sales/filter'); ?>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="tanggal_awal">Tanggal Awal</label>
+                            <input type="date" class="form-control" id="tanggal_awal" name="tanggal_awal"
+                                value="<?php echo set_value('tanggal_awal', $filter['tanggal_awal']); ?>">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="tanggal_akhir">Tanggal Akhir</label>
+                            <input type="date" class="form-control" id="tanggal_akhir" name="tanggal_akhir"
+                                value="<?php echo set_value('tanggal_akhir', $filter['tanggal_akhir']); ?>">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="id_pelanggan">Pelanggan</label>
+                            <select class="form-control" id="id_pelanggan" name="id_pelanggan">
+                                <option value="">Semua Pelanggan</option>
+                                <?php foreach ($pelanggan as $row): ?>
+                                    <option value="<?php echo $row->id_pelanggan; ?>" <?php echo ($filter['id_pelanggan'] == $row->id_pelanggan) ? 'selected' : ''; ?>>
+                                        <?php echo $row->nama_pelanggan; ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="id_barang">Barang</label>
+                            <select class="form-control" id="id_barang" name="id_barang">
+                                <option value="">Semua Barang</option>
+                                <?php foreach ($barang as $row): ?>
+                                    <option value="<?php echo $row->id_barang; ?>" <?php echo ($filter['id_barang'] == $row->id_barang) ? 'selected' : ''; ?>>
+                                        <?php echo $row->nama_barang; ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Terapkan Filter</button>
+                    <a href="<?php echo site_url('laporan/sales'); ?>" class="btn btn-secondary">Reset</a>
+                </div>
+                <?php echo form_close(); ?>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="collapse <?php echo $this->input->post() ? 'show' : ''; ?>" id="summaryCollapse">
+            <div class="card card-body mb-4">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Transaksi</h5>
+                                <h3 class="card-text">
+                                    <?php echo $this->sales->get_summary($filter)->total_transaksi ?: 0; ?>
+                                </h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Penjualan</h5>
+                                <h3 class="card-text">Rp
+                                    <?php echo number_format($this->sales->get_summary($filter)->total_penjualan ?: 0, 0, ',', '.'); ?>
+                                </h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Rata-rata</h5>
+                                <h3 class="card-text">Rp
+                                    <?php echo number_format(($this->sales->get_summary($filter)->total_penjualan ?: 0) / ($this->sales->get_summary($filter)->total_transaksi ?: 1), 0, ',', '.'); ?>
+                                </h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <h6>Top 5 Pelanggan</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Pelanggan</th>
+                                        <th>Transaksi</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php $no = 1;
+                                    $top_pelanggan = array_slice($this->sales->get_sales_by_pelanggan($filter), 0, 5); ?>
+                                    <?php foreach ($top_pelanggan as $row): ?>
+                                        <tr>
+                                            <td><?php echo $no++; ?></td>
+                                            <td><?php echo $row->nama_pelanggan; ?></td>
+                                            <td><?php echo $row->total_transaksi; ?></td>
+                                            <td>Rp <?php echo number_format($row->total_penjualan, 0, ',', '.'); ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Top 5 Barang</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Barang</th>
+                                        <th>Jumlah</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php $no = 1;
+                                    $top_barang = array_slice($this->sales->get_sales_by_barang($filter), 0, 5); ?>
+                                    <?php foreach ($top_barang as $row): ?>
+                                        <tr>
+                                            <td><?php echo $no++; ?></td>
+                                            <td><?php echo $row->nama_barang; ?></td>
+                                            <td><?php echo $row->total_jumlah; ?>     <?php echo $row->satuan; ?></td>
+                                            <td>Rp <?php echo number_format($row->total_penjualan, 0, ',', '.'); ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export -->
+        <div class="collapse <?php echo $this->input->post() ? 'show' : ''; ?>" id="exportCollapse">
+            <div class="card card-body mb-4">
+                <?php echo form_open('laporan/sales/export'); ?>
+                <input type="hidden" name="tanggal_awal" value="<?php echo $filter['tanggal_awal']; ?>">
+                <input type="hidden" name="tanggal_akhir" value="<?php echo $filter['tanggal_akhir']; ?>">
+                <input type="hidden" name="id_pelanggan" value="<?php echo $filter['id_pelanggan']; ?>">
+                <input type="hidden" name="id_barang" value="<?php echo $filter['id_barang']; ?>">
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Format Export</label>
+                            <select class="form-control" name="format">
+                                <option value="excel">Excel (.xlsx)</option>
+                                <option value="pdf">PDF</option>
+                                <option value="csv">CSV</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-download"></i> Download Laporan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <?php echo form_close(); ?>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>No Invoice</th>
+                        <th>Tanggal</th>
+                        <th>Pelanggan</th>
+                        <th>Barang</th>
+                        <th>Jumlah</th>
+                        <th>Harga</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php $no = 1;
+                    foreach ($sales as $row): ?>
+                        <tr>
+                            <td><?php echo $no++; ?></td>
+                            <td><?php echo $row->no_invoice; ?></td>
+                            <td><?php echo date('d-m-Y H:i', strtotime($row->tanggal_penjualan)); ?></td>
+                            <td><?php echo $row->nama_pelanggan; ?></td>
+                            <td><?php echo $row->nama_barang; ?></td>
+                            <td><?php echo $row->jumlah; ?></td>
+                            <td>Rp <?php echo number_format($row->harga_jual, 0, ',', '.'); ?></td>
+                            <td>Rp <?php echo number_format($row->total, 0, ',', '.'); ?></td>
+                            <td>
+                                <?php
+                                $status_class = '';
+                                switch ($row->status) {
+                                    case 'Draft':
+                                        $status_class = 'badge-secondary';
+                                        break;
+                                    case 'Packing':
+                                        $status_class = 'badge-info';
+                                        break;
+                                    case 'Shipping':
+                                        $status_class = 'badge-warning';
+                                        break;
+                                    case 'Delivered':
+                                        $status_class = 'badge-success';
+                                        break;
+                                    case 'Cancelled':
+                                        $status_class = 'badge-danger';
+                                        break;
+                                }
+                                ?>
+                                <span class="badge <?php echo $status_class; ?>"><?php echo $row->status; ?></span>
+                            </td>
+                            <td>
+                                <a href="<?php echo site_url('laporan/sales/detail/' . $row->id_penjualan); ?>"
+                                    class="btn btn-sm btn-info" title="Detail">
+                                    <i class="fas fa-info-circle"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

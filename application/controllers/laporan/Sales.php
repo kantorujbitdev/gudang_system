@@ -1,197 +1,140 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class Pembelian extends CI_Controller
+class Sales extends MY_Controller
 {
-
     public function __construct()
     {
         parent::__construct();
-        $this->load->library('auth');
-        $this->load->model('pembelian_model');
-        $this->load->model('supplier_model');
-        $this->load->model('barang_model');
-        $this->load->model('setup/Gudang_model');
+        $this->load->model('laporan/Sales_model', 'sales');
+        $this->load->model('setup/Pelanggan_model', 'pelanggan');
+        $this->load->model('setup/Barang_model', 'barang');
+        $this->load->helper('form');
         $this->load->library('form_validation');
 
-        if (!$this->auth->is_logged_in()) {
-            redirect('auth');
-        }
-
-        if (!$this->auth->has_permission('pembelian')) {
-            show_error('Anda tidak memiliki akses ke halaman ini', 403);
-        }
+        // Cek akses menu
+        $this->check_menu_access('laporan/sales');
     }
 
     public function index()
     {
-        $data['title'] = 'Pembelian';
-        $data['content'] = 'pembelian/index';
-        $data['pembelian'] = $this->pembelian_model->get_all();
+        $this->data['title'] = 'Laporan Sales';
+        $this->data['pelanggan'] = $this->pelanggan->get_all();
+        $this->data['barang'] = $this->barang->get_all();
 
-        $this->load->view('template/template', $data);
+        // Set filter default
+        $filter = [
+            'tanggal_awal' => date('Y-m-01'),
+            'tanggal_akhir' => date('Y-m-d'),
+            'id_pelanggan' => '',
+            'id_barang' => ''
+        ];
+
+        $this->data['filter'] = $filter;
+        $this->data['sales'] = $this->sales->get_filtered($filter);
+
+        $this->render_view('laporan/sales/index');
     }
 
-    public function tambah()
+    public function filter()
     {
-        $data['title'] = 'Tambah Pembelian';
-        $data['content'] = 'pembelian/tambah';
-        $data['supplier'] = $this->supplier_model->get_all();
-        $data['barang'] = $this->barang_model->get_all();
-        $data['gudang'] = $this->gudang_model->get_all();
+        $this->data['title'] = 'Laporan Sales';
+        $this->data['pelanggan'] = $this->pelanggan->get_all();
+        $this->data['barang'] = $this->barang->get_all();
 
-        $this->form_validation->set_rules('id_supplier', 'Supplier', 'required');
-        $this->form_validation->set_rules('tanggal_pembelian', 'Tanggal Pembelian', 'required');
+        // Get filter from POST
+        $filter = [
+            'tanggal_awal' => $this->input->post('tanggal_awal') ?: date('Y-m-01'),
+            'tanggal_akhir' => $this->input->post('tanggal_akhir') ?: date('Y-m-d'),
+            'id_pelanggan' => $this->input->post('id_pelanggan'),
+            'id_barang' => $this->input->post('id_barang')
+        ];
 
-        if ($this->form_validation->run() == FALSE) {
-            $this->load->view('template/template', $data);
-        } else {
-            // Generate nomor pembelian
-            $no_pembelian = 'PO-' . date('YmdHis');
+        $this->data['filter'] = $filter;
+        $this->data['sales'] = $this->sales->get_filtered($filter);
 
-            $data_pembelian = array(
-                'id_perusahaan' => $this->session->userdata('id_perusahaan'),
-                'no_pembelian' => $no_pembelian,
-                'id_user' => $this->session->userdata('id_user'),
-                'id_supplier' => $this->input->post('id_supplier'),
-                'tanggal_pembelian' => $this->input->post('tanggal_pembelian'),
-                'tanggal_estimasi' => $this->input->post('tanggal_estimasi'),
-                'keterangan' => $this->input->post('keterangan'),
-                'status' => 'Draft'
-            );
-
-            $id_pembelian = $this->pembelian_model->insert_pembelian($data_pembelian);
-
-            // Insert detail pembelian
-            $id_barang = $this->input->post('id_barang');
-            $jumlah = $this->input->post('jumlah');
-            $harga_beli = $this->input->post('harga_beli');
-
-            for ($i = 0; $i < count($id_barang); $i++) {
-                if (!empty($id_barang[$i]) && !empty($jumlah[$i])) {
-                    $data_detail = array(
-                        'id_pembelian' => $id_pembelian,
-                        'id_barang' => $id_barang[$i],
-                        'jumlah' => $jumlah[$i],
-                        'harga_beli' => $harga_beli[$i]
-                    );
-
-                    $this->pembelian_model->insert_detail_pembelian($data_detail);
-                }
-            }
-
-            $this->data['success'] = 'Pembelian berhasil ditambahkan!';
-            redirect('pembelian');
-        }
+        $this->render_view('laporan/sales/index');
     }
 
-    public function edit($id)
+    public function detail($id_penjualan)
     {
-        $data['title'] = 'Edit Pembelian';
-        $data['content'] = 'pembelian/edit';
-        $data['pembelian'] = $this->pembelian_model->get_by_id($id);
-        $data['detail_pembelian'] = $this->pembelian_model->get_detail_by_pembelian($id);
-        $data['supplier'] = $this->supplier_model->get_all();
-        $data['barang'] = $this->barang_model->get_all();
-        $data['gudang'] = $this->gudang_model->get_all();
+        $this->data['title'] = 'Detail Penjualan';
+        $this->data['penjualan'] = $this->sales->get_penjualan($id_penjualan);
+        $this->data['detail'] = $this->sales->get_detail_penjualan($id_penjualan);
 
-        if (!$data['pembelian']) {
+        if (!$this->data['penjualan']) {
             show_404();
         }
 
-        $this->form_validation->set_rules('id_supplier', 'Supplier', 'required');
-        $this->form_validation->set_rules('tanggal_pembelian', 'Tanggal Pembelian', 'required');
-
-        if ($this->form_validation->run() == FALSE) {
-            $this->load->view('template/template', $data);
-        } else {
-            $data_pembelian = array(
-                'id_supplier' => $this->input->post('id_supplier'),
-                'tanggal_pembelian' => $this->input->post('tanggal_pembelian'),
-                'tanggal_estimasi' => $this->input->post('tanggal_estimasi'),
-                'keterangan' => $this->input->post('keterangan')
-            );
-
-            $this->pembelian_model->update_pembelian($id, $data_pembelian);
-
-            // Delete existing detail
-            $this->pembelian_model->delete_detail_pembelian($id);
-
-            // Insert new detail
-            $id_barang = $this->input->post('id_barang');
-            $jumlah = $this->input->post('jumlah');
-            $harga_beli = $this->input->post('harga_beli');
-
-            for ($i = 0; $i < count($id_barang); $i++) {
-                if (!empty($id_barang[$i]) && !empty($jumlah[$i])) {
-                    $data_detail = array(
-                        'id_pembelian' => $id,
-                        'id_barang' => $id_barang[$i],
-                        'jumlah' => $jumlah[$i],
-                        'harga_beli' => $harga_beli[$i]
-                    );
-
-                    $this->pembelian_model->insert_detail_pembelian($data_detail);
-                }
-            }
-
-            $this->data['success'] = 'Pembelian berhasil diperbarui!';
-            redirect('pembelian');
-        }
+        $this->render_view('laporan/sales/detail');
     }
 
-    public function hapus($id)
+    public function export()
     {
-        $pembelian = $this->pembelian_model->get_by_id($id);
+        // Get filter from POST
+        $filter = [
+            'tanggal_awal' => $this->input->post('tanggal_awal') ?: date('Y-m-01'),
+            'tanggal_akhir' => $this->input->post('tanggal_akhir') ?: date('Y-m-d'),
+            'id_pelanggan' => $this->input->post('id_pelanggan'),
+            'id_barang' => $this->input->post('id_barang')
+        ];
 
-        if (!$pembelian) {
-            show_404();
+        $sales = $this->sales->get_filtered($filter);
+
+        // Create new PHPExcel object
+        $this->load->library('PHPExcel');
+        $objPHPExcel = new PHPExcel();
+
+        // Set properties
+        $objPHPExcel->getProperties()->setTitle("Laporan Sales")
+            ->setSubject("Laporan Sales")
+            ->setDescription("Laporan Sales");
+
+        // Add header
+        $objPHPExcel->setActiveSheetIndex(0)
+            ->setCellValue('A1', 'No')
+            ->setCellValue('B1', 'No Invoice')
+            ->setCellValue('C1', 'Tanggal')
+            ->setCellValue('D1', 'Pelanggan')
+            ->setCellValue('E1', 'Barang')
+            ->setCellValue('F1', 'Jumlah')
+            ->setCellValue('G1', 'Harga')
+            ->setCellValue('H1', 'Total')
+            ->setCellValue('I1', 'Status');
+
+        // Add data
+        $row = 2;
+        $no = 1;
+        foreach ($sales as $item) {
+            $objPHPExcel->setActiveSheetIndex(0)
+                ->setCellValue('A' . $row, $no++)
+                ->setCellValue('B' . $row, $item->no_invoice)
+                ->setCellValue('C' . $row, date('d-m-Y', strtotime($item->tanggal_penjualan)))
+                ->setCellValue('D' . $row, $item->nama_pelanggan)
+                ->setCellValue('E' . $row, $item->nama_barang)
+                ->setCellValue('F' . $row, $item->jumlah)
+                ->setCellValue('G' . $row, $item->harga_jual)
+                ->setCellValue('H' . $row, $item->total)
+                ->setCellValue('I' . $row, $item->status);
+
+            $row++;
         }
 
-        $this->pembelian_model->delete_pembelian($id);
-        $this->data['success'] = 'Pembelian berhasil dihapus!';
-        redirect('pembelian');
-    }
-
-    public function detail($id)
-    {
-        $data['title'] = 'Detail Pembelian';
-        $data['content'] = 'pembelian/detail';
-        $data['pembelian'] = $this->pembelian_model->get_by_id($id);
-        $data['detail_pembelian'] = $this->pembelian_model->get_detail_by_pembelian($id);
-
-        if (!$data['pembelian']) {
-            show_404();
+        // Auto size columns
+        foreach (range('A', 'I') as $column) {
+            $objPHPExcel->getActiveSheet()->getColumnDimension($column)->setAutoSize(true);
         }
 
-        $this->load->view('template/template', $data);
-    }
+        // Set active sheet index to the first sheet
+        $objPHPExcel->setActiveSheetIndex(0);
 
-    public function update_status($id, $status)
-    {
-        $pembelian = $this->pembelian_model->get_by_id($id);
+        // Redirect output to client browser
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="Laporan_Sales_' . date('YmdHis') . '.xlsx"');
+        header('Cache-Control: max-age=0');
 
-        if (!$pembelian) {
-            show_404();
-        }
-
-        $data_pembelian = array(
-            'status' => $status
-        );
-
-        $this->pembelian_model->update_pembelian($id, $data_pembelian);
-
-        // Log status change
-        $data_log = array(
-            'id_pembelian' => $id,
-            'id_user' => $this->session->userdata('id_user'),
-            'status' => $status,
-            'keterangan' => $this->input->post('keterangan')
-        );
-
-        $this->pembelian_model->insert_log_status_pembelian($data_log);
-
-        $this->data['success'] = 'Status pembelian berhasil diperbarui!';
-        redirect('pembelian/detail/' . $id);
+        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+        $objWriter->save('php://output');
+        exit;
     }
 }

@@ -6,7 +6,7 @@ class Pemindahan extends MY_Controller
     public function __construct()
     {
         parent::__construct();
-        $this->load->model('Aktifitas/Pemindahan_model', 'pemindahan');
+        $this->load->model('aktifitas/Pemindahan_model', 'pemindahan');
         $this->load->model('setup/Barang_model', 'barang');
         $this->load->model('setup/Gudang_model', 'gudang');
         $this->load->model('setup/Pelanggan_model', 'pelanggan');

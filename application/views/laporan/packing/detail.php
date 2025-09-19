@@ -2,11 +2,10 @@
     <div class="card-header py-3">
         <div class="row">
             <div class="col">
-                <h6 class="m-0 font-weight-bold text-primary">Detail Penjualan: <?php echo $penjualan->no_invoice; ?>
-                </h6>
+                <h6 class="m-0 font-weight-bold text-primary">Detail Packing: <?php echo $packing->id_packing; ?></h6>
             </div>
             <div class="col text-right">
-                <a href="<?php echo site_url('laporan/sales'); ?>" class="btn btn-secondary btn-sm">
+                <a href="<?php echo site_url('laporan/packing'); ?>" class="btn btn-secondary btn-sm">
                     <i class="fas fa-arrow-left"></i> Kembali
                 </a>
             </div>
@@ -17,49 +16,38 @@
             <div class="col-md-6">
                 <table class="table table-sm">
                     <tr>
-                        <th width="30%">No Invoice</th>
-                        <td><?php echo $penjualan->no_invoice; ?></td>
+                        <th width="30%">No Packing</th>
+                        <td><?php echo $packing->id_packing; ?></td>
                     </tr>
                     <tr>
                         <th>Tanggal</th>
-                        <td><?php echo date('d-m-Y H:i', strtotime($penjualan->tanggal_penjualan)); ?></td>
+                        <td><?php echo date('d-m-Y H:i', strtotime($packing->tanggal_packing)); ?></td>
                     </tr>
                     <tr>
-                        <th>Pelanggan</th>
-                        <td><?php echo $penjualan->nama_pelanggan; ?></td>
+                        <th>User</th>
+                        <td><?php echo $packing->user_nama; ?></td>
                     </tr>
                     <tr>
-                        <th>Alamat</th>
-                        <td><?php echo $penjualan->alamat ?: '-'; ?></td>
-                    </tr>
-                    <tr>
-                        <th>Telepon</th>
-                        <td><?php echo $penjualan->telepon ?: '-'; ?></td>
+                        <th>Referensi</th>
+                        <td><?php echo $packing->tipe_referensi . ' #' . $packing->id_referensi; ?></td>
                     </tr>
                 </table>
             </div>
             <div class="col-md-6">
                 <table class="table table-sm">
                     <tr>
-                        <th width="30%">User</th>
-                        <td><?php echo $penjualan->user_nama; ?></td>
-                    </tr>
-                    <tr>
-                        <th>Status</th>
+                        <th width="30%">Status</th>
                         <td>
                             <?php
                             $status_class = '';
-                            switch ($penjualan->status) {
+                            switch ($packing->status) {
                                 case 'Draft':
                                     $status_class = 'badge-secondary';
                                     break;
                                 case 'Packing':
                                     $status_class = 'badge-info';
                                     break;
-                                case 'Shipping':
-                                    $status_class = 'badge-warning';
-                                    break;
-                                case 'Delivered':
+                                case 'Completed':
                                     $status_class = 'badge-success';
                                     break;
                                 case 'Cancelled':
@@ -67,12 +55,12 @@
                                     break;
                             }
                             ?>
-                            <span class="badge <?php echo $status_class; ?>"><?php echo $penjualan->status; ?></span>
+                            <span class="badge <?php echo $status_class; ?>"><?php echo $packing->status; ?></span>
                         </td>
                     </tr>
                     <tr>
-                        <th>Keterangan</th>
-                        <td><?php echo $penjualan->keterangan ?: '-'; ?></td>
+                        <th>Catatan</th>
+                        <td><?php echo $packing->catatan ?: '-'; ?></td>
                     </tr>
                 </table>
             </div>
@@ -88,10 +76,7 @@
                         <th>No</th>
                         <th>Nama Barang</th>
                         <th>Satuan</th>
-                        <th>Gudang</th>
                         <th>Jumlah</th>
-                        <th>Harga</th>
-                        <th>Total</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -102,16 +87,13 @@
                             <td><?php echo $no++; ?></td>
                             <td><?php echo $row->nama_barang; ?></td>
                             <td><?php echo $row->satuan; ?></td>
-                            <td><?php echo $row->nama_gudang; ?></td>
                             <td><?php echo $row->jumlah; ?></td>
-                            <td>Rp <?php echo number_format($row->harga_jual, 0, ',', '.'); ?></td>
-                            <td>Rp <?php echo number_format($row->jumlah * $row->harga_jual, 0, ',', '.'); ?></td>
                         </tr>
-                        <?php $total += ($row->jumlah * $row->harga_jual); ?>
+                        <?php $total += $row->jumlah; ?>
                     <?php endforeach; ?>
                     <tr>
-                        <td colspan="6" class="text-right font-weight-bold">Total</td>
-                        <td class="font-weight-bold">Rp <?php echo number_format($total, 0, ',', '.'); ?></td>
+                        <td colspan="3" class="text-right font-weight-bold">Total</td>
+                        <td class="font-weight-bold"><?php echo $total; ?></td>
                     </tr>
                 </tbody>
             </table>
