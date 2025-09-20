@@ -63,6 +63,11 @@ class User_model extends MY_Model
         return $this->get_by_role(4, $id_perusahaan); // Role ID 4 = Admin Packing
     }
 
+    public function get_retur($id_perusahaan = NULL)
+    {
+        return $this->get_by_role(5, $id_perusahaan); // Role ID 5 = Admin Retur
+    }
+
     public function get($id_user)
     {
         $user_role = $this->session->userdata('id_role');

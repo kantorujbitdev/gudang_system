@@ -170,6 +170,20 @@ class User extends MY_Controller
 
         $this->render_view('setup/user/packing');
     }
+    public function retur()
+    {
+        $this->data['title'] = 'Manajemen Admin PaReturcking';
+
+        // Hanya Super Admin dan Admin Perusahaan yang bisa akses
+        if ($this->session->userdata('id_role') != 1 && $this->session->userdata('id_role') != 2) {
+            show_404();
+        }
+
+        // Ambil data user dengan role Admin Packing (id_role = 4)
+        $this->data['users'] = $this->User_model->get_by_role(5);
+
+        $this->render_view('setup/user/retur');
+    }
 
     /** ====================
      * Helper Rules
