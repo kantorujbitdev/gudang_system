@@ -102,9 +102,8 @@ class Sales extends MY_Controller
             ->setCellValue('D1', 'Pelanggan')
             ->setCellValue('E1', 'Barang')
             ->setCellValue('F1', 'Jumlah')
-            ->setCellValue('G1', 'Harga')
-            ->setCellValue('H1', 'Total')
-            ->setCellValue('I1', 'Status');
+            ->setCellValue('G1', 'Total')
+            ->setCellValue('H1', 'Status');
 
         // Add data
         $row = 2;
@@ -117,9 +116,8 @@ class Sales extends MY_Controller
                 ->setCellValue('D' . $row, $item->nama_pelanggan)
                 ->setCellValue('E' . $row, $item->nama_barang)
                 ->setCellValue('F' . $row, $item->jumlah)
-                ->setCellValue('G' . $row, $item->harga_jual)
-                ->setCellValue('H' . $row, $item->total)
-                ->setCellValue('I' . $row, $item->status);
+                ->setCellValue('G' . $row, $item->total)
+                ->setCellValue('H' . $row, $item->status);
             $row++;
         }
 

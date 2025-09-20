@@ -63,15 +63,6 @@
                         <td width="30%"><strong>Satuan</strong></td>
                         <td><?php echo $barang->satuan; ?></td>
                     </tr>
-                    <tr>
-                        <td><strong>Harga Jual</strong></td>
-                        <td><?php echo number_format($barang->harga_jual, 0, ',', '.'); ?></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Harga Beli Terakhir</strong></td>
-                        <td><?php echo $barang->harga_beli_terakhir ? number_format($barang->harga_beli_terakhir, 0, ',', '.') : '-'; ?>
-                        </td>
-                    </tr>
                 </table>
             </div>
             <div class="col-md-6">

@@ -90,13 +90,11 @@
                         <th>Satuan</th>
                         <th>Gudang</th>
                         <th>Jumlah</th>
-                        <th>Harga</th>
                         <th>Total</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php $no = 1;
-                    $total = 0;
                     foreach ($detail as $row): ?>
                         <tr>
                             <td><?php echo $no++; ?></td>
@@ -104,15 +102,8 @@
                             <td><?php echo $row->satuan; ?></td>
                             <td><?php echo $row->nama_gudang; ?></td>
                             <td><?php echo $row->jumlah; ?></td>
-                            <td>Rp <?php echo number_format($row->harga_jual, 0, ',', '.'); ?></td>
-                            <td>Rp <?php echo number_format($row->jumlah * $row->harga_jual, 0, ',', '.'); ?></td>
                         </tr>
-                        <?php $total += ($row->jumlah * $row->harga_jual); ?>
                     <?php endforeach; ?>
-                    <tr>
-                        <td colspan="6" class="text-right font-weight-bold">Total</td>
-                        <td class="font-weight-bold">Rp <?php echo number_format($total, 0, ',', '.'); ?></td>
-                    </tr>
                 </tbody>
             </table>
         </div>

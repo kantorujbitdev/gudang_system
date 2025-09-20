@@ -211,7 +211,6 @@
                         <th>Pelanggan</th>
                         <th>Barang</th>
                         <th>Jumlah</th>
-                        <th>Harga</th>
                         <th>Total</th>
                         <th>Status</th>
                         <th>Aksi</th>
@@ -227,7 +226,6 @@
                             <td><?php echo $row->nama_pelanggan; ?></td>
                             <td><?php echo $row->nama_barang; ?></td>
                             <td><?php echo $row->jumlah; ?></td>
-                            <td>Rp <?php echo number_format($row->harga_jual, 0, ',', '.'); ?></td>
                             <td>Rp <?php echo number_format($row->total, 0, ',', '.'); ?></td>
                             <td>
                                 <?php

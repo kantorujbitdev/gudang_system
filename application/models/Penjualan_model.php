@@ -145,31 +145,4 @@ class Penjualan_model extends MY_Model
         $query = $this->db->get();
         return ($query && $query->num_rows() > 0) ? $query->result() : [];
     }
-
-    public function get_total_penjualan($id_perusahaan = NULL, $start_date = NULL, $end_date = NULL)
-    {
-        $this->db->select('SUM(dp.harga_jual * dp.jumlah) as total');
-        $this->db->from('penjualan p');
-        $this->db->join('detail_penjualan dp', 'p.id_penjualan = dp.id_penjualan', 'inner');
-
-        if ($id_perusahaan) {
-            $this->db->where('p.id_perusahaan', $id_perusahaan);
-        }
-
-        if ($start_date) {
-            $this->db->where('DATE(p.tanggal_penjualan) >=', $start_date);
-        }
-
-        if ($end_date) {
-            $this->db->where('DATE(p.tanggal_penjualan) <=', $end_date);
-        }
-
-        $this->db->where('p.deleted_at IS NULL');
-        $this->db->where('p.status !=', 'Cancelled');
-
-        $query = $this->db->get();
-        $result = $query->row();
-
-        return $result ? $result->total : 0;
-    }
 }

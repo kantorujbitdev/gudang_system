@@ -8,7 +8,7 @@ class Detail_penjualan_model extends MY_Model
         parent::__construct();
         $this->table = 'detail_penjualan';
         $this->primary_key = 'id_detail';
-        $this->fillable = array('id_penjualan', 'id_barang', 'id_gudang', 'jumlah', 'harga_jual');
+        $this->fillable = array('id_penjualan', 'id_barang', 'id_gudang', 'jumlah');
         $this->timestamps = TRUE;
     }
 
@@ -33,19 +33,5 @@ class Detail_penjualan_model extends MY_Model
     {
         $this->db->where('id_penjualan', $id_penjualan);
         return $this->db->delete($this->table);
-    }
-
-    public function get_total_by_penjualan($id_penjualan)
-    {
-        $this->db->select('SUM(harga_jual * jumlah) as total');
-        $this->db->where('id_penjualan', $id_penjualan);
-        $query = $this->db->get($this->table);
-
-        if ($query && $query->num_rows() > 0) {
-            $result = $query->row();
-            return $result->total;
-        }
-
-        return 0;
     }
 }

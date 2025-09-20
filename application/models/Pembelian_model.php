@@ -128,30 +128,4 @@ class Pembelian_model extends MY_Model
         return ($query && $query->num_rows() > 0) ? $query->result() : [];
     }
 
-    public function get_total_pembelian($id_perusahaan = NULL, $start_date = NULL, $end_date = NULL)
-    {
-        $this->db->select('SUM(dp.harga_beli * dp.jumlah) as total');
-        $this->db->from('pembelian p');
-        $this->db->join('detail_pembelian dp', 'p.id_pembelian = dp.id_pembelian', 'inner');
-
-        if ($id_perusahaan) {
-            $this->db->where('p.id_perusahaan', $id_perusahaan);
-        }
-
-        if ($start_date) {
-            $this->db->where('DATE(p.tanggal_pembelian) >=', $start_date);
-        }
-
-        if ($end_date) {
-            $this->db->where('DATE(p.tanggal_pembelian) <=', $end_date);
-        }
-
-        $this->db->where('p.deleted_at IS NULL');
-        $this->db->where('p.status !=', 'Cancelled');
-
-        $query = $this->db->get();
-        $result = $query->row();
-
-        return $result ? $result->total : 0;
-    }
 }

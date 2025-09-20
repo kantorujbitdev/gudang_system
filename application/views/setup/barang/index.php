@@ -22,7 +22,6 @@
                         <th>Nama Barang</th>
                         <th>Kategori</th>
                         <th>Perusahaan</th>
-                        <th>Harga Jual</th>
                         <th>Status</th>
                         <th>Aksi</th>
                     </tr>
@@ -44,7 +43,6 @@
                             <td><?php echo $row->nama_barang; ?></td>
                             <td><?php echo $row->nama_kategori ?: '-'; ?></td>
                             <td><?php echo $row->nama_perusahaan; ?></td>
-                            <td><?php echo number_format($row->harga_jual, 0, ',', '.'); ?></td>
                             <td>
                                 <?php if ($row->status_aktif == 1): ?>
                                     <span class="badge badge-success">Aktif</span>

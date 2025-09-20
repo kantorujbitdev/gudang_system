@@ -8,7 +8,7 @@ class Barang_model extends MY_Model
         parent::__construct();
         $this->table = 'barang';
         $this->primary_key = 'id_barang';
-        $this->fillable = array('id_perusahaan', 'id_kategori', 'nama_barang', 'gambar', 'sku', 'deskripsi', 'satuan', 'harga_jual', 'harga_beli_terakhir', 'status_aktif');
+        $this->fillable = array('id_perusahaan', 'id_kategori', 'nama_barang', 'gambar', 'sku', 'deskripsi', 'satuan', 'status_aktif');
         $this->soft_delete = TRUE;
     }
 

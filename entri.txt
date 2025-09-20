@@ -90,9 +90,8 @@ untuk menu sendiri akan dibuat dengan posisi top_menu dan susunannya seperti ini
 │ ├Gudang
 │ ├Pelanggan
 │ └Supplier
-│ ├User Management
-│ │ ├Sales
-│ └-└Packing
+│ ├Sales
+│ ├Admin Packing
 ├Aktifitas
 │ ├Pemindahan Barang
 │ ├Penerimaan Barang
@@ -1110,49 +1109,4 @@ Ringkasan stok per barang & per gudang:
 Saldo awal
 Masuk
 Keluar
-Saldo akhir
-
-selanjutnya saya mau menginformasikan secara teknis codingan. jika ingin membuat tampilan pesan, tolong jangan buat seperti ini lagi yah "$this->session->set_flashdata('error', 'Anda tidak memiliki akses ke menu ini!');" mari kita buat seperti ini "$this->data['error'] = 'Anda tidak memiliki akses ke menu ini!';" agar seragam dengan yang sudah ada.
-untuk yg sudah terlanjut dibuat dibiarkan saja tidak perlu anda perbaiki agar saya yg perbaiki sendiri saja, namun kedepan harus sesuai dengan itu ya bro.
-
-dan juga jika mau menampilkan halaman secara utuh, jangan lagi gunakan redirect(view) tapi gunakan render_view(view) sebab sudah tersedia custom di MY_Controller.
-
-untuk informasi seperti itu saja, sekarang ada hal yg perlu di makesure, kepada anda bro yaitu submenu "sales" dan "admin packing" belum terlihat jadi nya akan dibuat seperti apa?
-
-lalu saya ingin memberikan informasi beberapa bug yg terjadi, yaitu:
-1. detail perusahaan tidak bisa, muncul error
-An uncaught Exception was encountered
-Type: Error
-Message: Call to undefined method User_model::get_by_perusahaan()
-Filename: C:\xampp\htdocs\gudang_system\application\controllers\setup\Perusahaan.php
-Line Number: 148
-
-2. detail pelanggan tidak bisa, muncul error
-An uncaught Exception was encountered
-Type: RuntimeException
-Message: Unable to locate the model you have specified: Penjualan_model
-Filename: C:\xampp\htdocs\gudang_system\system\core\Loader.php
-Line Number: 349
-Backtrace:
-File: C:\xampp\htdocs\gudang_system\application\controllers\setup\Pelanggan.php
-Line: 195
-
-3. detail supplier tidak bisa, muncul error
-An uncaught Exception was encountered
-Type: RuntimeException
-Message: Unable to locate the model you have specified: Pembelian_model
-Filename: C:\xampp\htdocs\gudang_system\system\core\Loader.php
-Line Number: 349
-Backtrace:
-File: C:\xampp\htdocs\gudang_system\application\controllers\setup\Supplier.php
-Line: 191
-
-4. tambah barang belum jalan karena dropwond kategori tidak ada isi
-dan di console ada pesan error
-tambah:320 Uncaught ReferenceError: $ is not defined
-    at tambah:320:5
-(anonymous) @ tambah:320
-
-tolong di koreksi dan di perbaiki bro yah.
-jika anda ingin melihat code yg digunakan beritahu saya file mana yg anda mau lihat agar proses koreksi bisa menjadi lebih baik
-jawab dengan singkat agar tidak mudak terkena limit
+Saldo akhi

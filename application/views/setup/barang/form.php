@@ -91,36 +91,6 @@
                     <?php echo form_error('satuan', '<small class="text-danger">', '</small>'); ?>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <?php echo form_label('Harga Jual <span class="text-danger">*</span>', 'harga_jual'); ?>
-                    <?php echo form_input(array(
-                        'name' => 'harga_jual',
-                        'id' => 'harga_jual',
-                        'class' => 'form-control',
-                        'type' => 'number',
-                        'min' => '0',
-                        'step' => '100',
-                        'value' => set_value('harga_jual', isset($barang) ? $barang->harga_jual : ''),
-                        'required' => ''
-                    )); ?>
-                    <?php echo form_error('harga_jual', '<small class="text-danger">', '</small>'); ?>
-                </div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <?php echo form_label('Harga Beli Terakhir', 'harga_beli_terakhir'); ?>
-            <?php echo form_input(array(
-                'name' => 'harga_beli_terakhir',
-                'id' => 'harga_beli_terakhir',
-                'class' => 'form-control',
-                'type' => 'number',
-                'min' => '0',
-                'step' => '100',
-                'value' => set_value('harga_beli_terakhir', isset($barang) ? $barang->harga_beli_terakhir : '')
-            )); ?>
-            <?php echo form_error('harga_beli_terakhir', '<small class="text-danger">', '</small>'); ?>
         </div>
 
         <div class="form-group">

@@ -14,7 +14,7 @@ class Stok_gudang_model extends MY_Model
 
     public function get_stok_by_gudang($id_gudang)
     {
-        $this->db->select('sg.*, b.nama_barang, b.sku, b.harga_jual, k.nama_kategori');
+        $this->db->select('sg.*, b.nama_barang, b.sku, k.nama_kategori');
         $this->db->from('stok_gudang sg');
         $this->db->join('barang b', 'sg.id_barang = b.id_barang', 'left');
         $this->db->join('kategori k', 'b.id_kategori = k.id_kategori', 'left');

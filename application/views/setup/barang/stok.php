@@ -32,14 +32,6 @@
             <div class="col-md-6">
                 <table class="table table-sm">
                     <tr>
-                        <th width="30%">Harga Jual</th>
-                        <td><?php echo number_format($barang->harga_jual, 0, ',', '.'); ?></td>
-                    </tr>
-                    <tr>
-                        <th>Harga Beli</th>
-                        <td><?php echo number_format($barang->harga_beli_terakhir, 0, ',', '.'); ?></td>
-                    </tr>
-                    <tr>
                         <th>Status</th>
                         <td>
                             <?php if ($barang->status_aktif == 1): ?>

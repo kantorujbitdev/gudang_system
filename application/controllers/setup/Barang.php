@@ -69,8 +69,6 @@ class Barang extends MY_Controller
                     'id_perusahaan' => $id_perusahaan,
                     'id_kategori' => $this->input->post('id_kategori'),
                     'satuan' => $this->input->post('satuan'),
-                    'harga_jual' => $this->input->post('harga_jual'),
-                    'harga_beli_terakhir' => $this->input->post('harga_beli_terakhir') ?: NULL,
                     'deskripsi' => $this->input->post('deskripsi'),
                     'gambar' => $gambar,
                     'status_aktif' => 1
@@ -128,8 +126,6 @@ class Barang extends MY_Controller
                     'id_perusahaan' => $id_perusahaan,
                     'id_kategori' => $this->input->post('id_kategori'),
                     'satuan' => $this->input->post('satuan'),
-                    'harga_jual' => $this->input->post('harga_jual'),
-                    'harga_beli_terakhir' => $this->input->post('harga_beli_terakhir') ?: NULL,
                     'deskripsi' => $this->input->post('deskripsi'),
                     'gambar' => $gambar,
                     'status_aktif' => $this->input->post('status_aktif')
@@ -238,7 +234,6 @@ class Barang extends MY_Controller
         $this->form_validation->set_rules('sku', 'SKU', 'required|trim|max_length[50]');
         $this->form_validation->set_rules('id_kategori', 'Kategori', 'required');
         $this->form_validation->set_rules('satuan', 'Satuan', 'required|trim|max_length[20]');
-        $this->form_validation->set_rules('harga_jual', 'Harga Jual', 'required|numeric|greater_than_equal_to[0]');
         $this->form_validation->set_rules('deskripsi', 'Deskripsi', 'trim');
 
         if ($is_edit) {

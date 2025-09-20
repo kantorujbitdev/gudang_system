@@ -8,7 +8,7 @@ class Detail_pembelian_model extends MY_Model
         parent::__construct();
         $this->table = 'detail_pembelian';
         $this->primary_key = 'id_detail';
-        $this->fillable = array('id_pembelian', 'id_barang', 'jumlah', 'harga_beli');
+        $this->fillable = array('id_pembelian', 'id_barang', 'jumlah');
         $this->timestamps = TRUE;
     }
 
@@ -32,19 +32,5 @@ class Detail_pembelian_model extends MY_Model
     {
         $this->db->where('id_pembelian', $id_pembelian);
         return $this->db->delete($this->table);
-    }
-
-    public function get_total_by_pembelian($id_pembelian)
-    {
-        $this->db->select('SUM(harga_beli * jumlah) as total');
-        $this->db->where('id_pembelian', $id_pembelian);
-        $query = $this->db->get($this->table);
-
-        if ($query && $query->num_rows() > 0) {
-            $result = $query->row();
-            return $result->total;
-        }
-
-        return 0;
     }
 }

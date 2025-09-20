@@ -141,6 +141,36 @@ class User extends MY_Controller
         return redirect('setup/user');
     }
 
+    public function sales()
+    {
+        $this->data['title'] = 'Manajemen Sales';
+
+        // Hanya Super Admin dan Admin Perusahaan yang bisa akses
+        if ($this->session->userdata('id_role') != 1 && $this->session->userdata('id_role') != 2) {
+            show_404();
+        }
+
+        // Ambil data user dengan role Sales (id_role = 3)
+        $this->data['users'] = $this->User_model->get_by_role(3);
+
+        $this->render_view('setup/user/sales');
+    }
+
+    public function packing()
+    {
+        $this->data['title'] = 'Manajemen Admin Packing';
+
+        // Hanya Super Admin dan Admin Perusahaan yang bisa akses
+        if ($this->session->userdata('id_role') != 1 && $this->session->userdata('id_role') != 2) {
+            show_404();
+        }
+
+        // Ambil data user dengan role Admin Packing (id_role = 4)
+        $this->data['users'] = $this->User_model->get_by_role(4);
+
+        $this->render_view('setup/user/packing');
+    }
+
     /** ====================
      * Helper Rules
      * ==================== */
