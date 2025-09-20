@@ -20,9 +20,6 @@ class Perusahaan extends MY_Controller
         $this->data['title'] = 'Manajemen Perusahaan';
         $this->data['perusahaan'] = $this->Perusahaan_model->get_with_stats();
 
-        // Debug: Cek menu yang diakses
-        log_message('debug', 'Accessing Perusahaan index');
-
         $this->render_view('setup/perusahaan/index');
     }
 
@@ -31,17 +28,14 @@ class Perusahaan extends MY_Controller
         $this->data['title'] = 'Tambah Perusahaan';
 
         if ($this->input->post()) {
-            $this->form_validation->set_rules('nama_perusahaan', 'Nama Perusahaan', 'required|trim|max_length[255]');
-            $this->form_validation->set_rules('alamat', 'Alamat', 'trim');
-            $this->form_validation->set_rules('telepon', 'Telepon', 'trim|max_length[20]');
-            $this->form_validation->set_rules('email', 'Email', 'trim|valid_email|max_length[100]');
+            $this->_set_validation_rules();
 
             if ($this->form_validation->run() == TRUE) {
                 $nama_perusahaan = $this->input->post('nama_perusahaan');
 
-                // Check unique name
+                // Cek unik
                 if (!$this->Perusahaan_model->check_unique_name($nama_perusahaan)) {
-                    $this->data['error'] = 'Nama perusahaan sudah ada!';
+                    $this->session->set_flashdata('error', 'Nama perusahaan sudah ada!');
                     $this->render_view('setup/perusahaan/form');
                     return;
                 }
@@ -55,11 +49,11 @@ class Perusahaan extends MY_Controller
                 );
 
                 if ($this->Perusahaan_model->insert($data)) {
-                    $this->data['success'] = 'Perusahaan berhasil ditambahkan!';
-                    redirect('setup/perusahaan');
+                    $this->session->set_flashdata('success', 'Perusahaan berhasil ditambahkan!');
                 } else {
-                    $this->data['error'] = 'Gagal menambahkan perusahaan!';
+                    $this->session->set_flashdata('error', 'Gagal menambahkan perusahaan!');
                 }
+                redirect('setup/perusahaan');
             }
         }
 
@@ -76,18 +70,14 @@ class Perusahaan extends MY_Controller
         }
 
         if ($this->input->post()) {
-            $this->form_validation->set_rules('nama_perusahaan', 'Nama Perusahaan', 'required|trim|max_length[255]');
-            $this->form_validation->set_rules('alamat', 'Alamat', 'trim');
-            $this->form_validation->set_rules('telepon', 'Telepon', 'trim|max_length[20]');
-            $this->form_validation->set_rules('email', 'Email', 'trim|valid_email|max_length[100]');
-            $this->form_validation->set_rules('status_aktif', 'Status', 'required|in_list[0,1]');
+            $this->_set_validation_rules(TRUE);
 
             if ($this->form_validation->run() == TRUE) {
                 $nama_perusahaan = $this->input->post('nama_perusahaan');
 
-                // Check unique name (excluding current record)
+                // Cek unik (exclude id_perusahaan)
                 if (!$this->Perusahaan_model->check_unique_name($nama_perusahaan, $id_perusahaan)) {
-                    $this->data['error'] = 'Nama perusahaan sudah ada!';
+                    $this->session->set_flashdata('error', 'Nama perusahaan sudah ada!');
                     $this->render_view('setup/perusahaan/form');
                     return;
                 }
@@ -101,11 +91,11 @@ class Perusahaan extends MY_Controller
                 );
 
                 if ($this->Perusahaan_model->update($id_perusahaan, $data)) {
-                    $this->data['success'] = 'Perusahaan berhasil diperbarui!';
-                    redirect('setup/perusahaan');
+                    $this->session->set_flashdata('success', 'Perusahaan berhasil diperbarui!');
                 } else {
-                    $this->data['error'] = 'Gagal memperbarui perusahaan!';
+                    $this->session->set_flashdata('error', 'Gagal memperbarui perusahaan!');
                 }
+                redirect('setup/perusahaan');
             }
         }
 
@@ -115,9 +105,9 @@ class Perusahaan extends MY_Controller
     public function nonaktif($id)
     {
         if ($this->Perusahaan_model->update_status($id, 0)) {
-            $this->data['success'] = 'Perusahaan berhasil diaktifkan kembali';
+            $this->session->set_flashdata('success', 'Perusahaan berhasil dinonaktifkan');
         } else {
-            $this->data['error'] = 'Gagal mengaktifkan perusahaan';
+            $this->session->set_flashdata('error', 'Gagal menonaktifkan perusahaan');
         }
         redirect('setup/perusahaan');
     }
@@ -125,9 +115,9 @@ class Perusahaan extends MY_Controller
     public function aktif($id)
     {
         if ($this->Perusahaan_model->update_status($id, 1)) {
-            $this->data['success'] = 'Perusahaan berhasil diaktifkan kembali';
+            $this->session->set_flashdata('success', 'Perusahaan berhasil diaktifkan kembali');
         } else {
-            $this->data['error'] = 'Gagal mengaktifkan perusahaan';
+            $this->session->set_flashdata('error', 'Gagal mengaktifkan perusahaan');
         }
         redirect('setup/perusahaan');
     }
@@ -141,13 +131,28 @@ class Perusahaan extends MY_Controller
             show_404();
         }
 
-        // Get related data
+        // Load relasi data
         $this->load->model(['setup/Gudang_model', 'setup/User_model', 'setup/Barang_model']);
-
         $this->data['gudang'] = $this->Gudang_model->get_by_perusahaan($id_perusahaan);
         $this->data['users'] = $this->User_model->get_by_perusahaan($id_perusahaan);
         $this->data['barang'] = $this->Barang_model->get_by_perusahaan($id_perusahaan);
 
         $this->render_view('setup/perusahaan/detail');
+    }
+
+    /**
+     * Set aturan validasi form
+     * @param bool $with_status apakah menyertakan validasi status
+     */
+    private function _set_validation_rules($with_status = FALSE)
+    {
+        $this->form_validation->set_rules('nama_perusahaan', 'Nama Perusahaan', 'required|trim|max_length[255]');
+        $this->form_validation->set_rules('alamat', 'Alamat', 'trim');
+        $this->form_validation->set_rules('telepon', 'Telepon', 'trim|max_length[20]');
+        $this->form_validation->set_rules('email', 'Email', 'trim|valid_email|max_length[100]');
+
+        if ($with_status) {
+            $this->form_validation->set_rules('status_aktif', 'Status', 'required|in_list[0,1]');
+        }
     }
 }

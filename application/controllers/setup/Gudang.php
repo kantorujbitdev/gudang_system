@@ -29,36 +29,33 @@ class Gudang extends MY_Controller
         $this->data['perusahaan'] = $this->Perusahaan_model->get_active();
 
         if ($this->input->post()) {
-            $this->form_validation->set_rules('nama_gudang', 'Nama Gudang', 'required|trim|max_length[100]');
-            $this->form_validation->set_rules('id_perusahaan', 'Perusahaan', 'required');
-            $this->form_validation->set_rules('alamat', 'Alamat', 'trim');
-            $this->form_validation->set_rules('telepon', 'Telepon', 'trim|max_length[20]');
+            $this->_set_validation_rules();
 
-            if ($this->form_validation->run() == TRUE) {
+            if ($this->form_validation->run() === TRUE) {
                 $nama_gudang = $this->input->post('nama_gudang');
                 $id_perusahaan = $this->input->post('id_perusahaan');
 
                 // Check unique name per company
                 if (!$this->Gudang_model->check_unique_name($nama_gudang, $id_perusahaan)) {
-                    $this->data['error'] = 'Nama gudang sudah ada di perusahaan yang sama!';
-                    $this->render_view('setup/gudang/form');
-                    return;
+                    $this->session->set_flashdata('error', 'Nama gudang sudah ada di perusahaan yang sama!');
+                    redirect('setup/gudang/tambah');
                 }
 
-                $data = array(
+                $data = [
                     'nama_gudang' => $nama_gudang,
                     'id_perusahaan' => $id_perusahaan,
                     'alamat' => $this->input->post('alamat'),
                     'telepon' => $this->input->post('telepon'),
                     'created_by' => $this->session->userdata('id_user'),
                     'status_aktif' => 1
-                );
+                ];
 
                 if ($this->Gudang_model->insert($data)) {
-                    $this->data['success'] = 'Gudang berhasil ditambahkan!';
+                    $this->session->set_flashdata('success', 'Gudang berhasil ditambahkan!');
                     redirect('setup/gudang');
                 } else {
-                    $this->data['error'] = 'Gagal menambahkan gudang!';
+                    $this->session->set_flashdata('error', 'Gagal menambahkan gudang!');
+                    redirect('setup/gudang/tambah');
                 }
             }
         }
@@ -77,36 +74,32 @@ class Gudang extends MY_Controller
         }
 
         if ($this->input->post()) {
-            $this->form_validation->set_rules('nama_gudang', 'Nama Gudang', 'required|trim|max_length[100]');
-            $this->form_validation->set_rules('id_perusahaan', 'Perusahaan', 'required');
-            $this->form_validation->set_rules('alamat', 'Alamat', 'trim');
-            $this->form_validation->set_rules('telepon', 'Telepon', 'trim|max_length[20]');
-            $this->form_validation->set_rules('status_aktif', 'Status', 'required|in_list[0,1]');
+            $this->_set_validation_rules(true);
 
-            if ($this->form_validation->run() == TRUE) {
+            if ($this->form_validation->run() === TRUE) {
                 $nama_gudang = $this->input->post('nama_gudang');
                 $id_perusahaan = $this->input->post('id_perusahaan');
 
-                // Check unique name per company (excluding current record)
+                // Check unique name per company (exclude current)
                 if (!$this->Gudang_model->check_unique_name($nama_gudang, $id_perusahaan, $id_gudang)) {
-                    $this->data['error'] = 'Nama gudang sudah ada di perusahaan yang sama!';
-                    $this->render_view('setup/gudang/form');
-                    return;
+                    $this->session->set_flashdata('error', 'Nama gudang sudah ada di perusahaan yang sama!');
+                    redirect('setup/gudang/edit/' . $id_gudang);
                 }
 
-                $data = array(
+                $data = [
                     'nama_gudang' => $nama_gudang,
                     'id_perusahaan' => $id_perusahaan,
                     'alamat' => $this->input->post('alamat'),
                     'telepon' => $this->input->post('telepon'),
                     'status_aktif' => $this->input->post('status_aktif')
-                );
+                ];
 
                 if ($this->Gudang_model->update($id_gudang, $data)) {
-                    $this->data['success'] = 'Gudang berhasil diperbarui!';
+                    $this->session->set_flashdata('success', 'Gudang berhasil diperbarui!');
                     redirect('setup/gudang');
                 } else {
-                    $this->data['error'] = 'Gagal memperbarui gudang!';
+                    $this->session->set_flashdata('error', 'Gagal memperbarui gudang!');
+                    redirect('setup/gudang/edit/' . $id_gudang);
                 }
             }
         }
@@ -117,9 +110,9 @@ class Gudang extends MY_Controller
     public function nonaktif($id)
     {
         if ($this->Gudang_model->update_status($id, 0)) {
-            $this->data['success'] = 'Gudang berhasil dinonaktifkan';
+            $this->session->set_flashdata('success', 'Gudang berhasil dinonaktifkan');
         } else {
-            $this->data['error'] = 'Gagal menonaktifkan gudang';
+            $this->session->set_flashdata('error', 'Gagal menonaktifkan gudang');
         }
         redirect('setup/gudang');
     }
@@ -127,9 +120,9 @@ class Gudang extends MY_Controller
     public function aktif($id)
     {
         if ($this->Gudang_model->update_status($id, 1)) {
-            $this->data['success'] = 'Gudang berhasil diaktifkan kembali';
+            $this->session->set_flashdata('success', 'Gudang berhasil diaktifkan kembali');
         } else {
-            $this->data['error'] = 'Gagal mengaktifkan gudang';
+            $this->session->set_flashdata('error', 'Gagal mengaktifkan gudang');
         }
         redirect('setup/gudang');
     }
@@ -143,10 +136,25 @@ class Gudang extends MY_Controller
             show_404();
         }
 
-        // Get related data
         $this->load->model('setup/Barang_model');
         $this->data['barang'] = $this->Barang_model->get_by_gudang($id_gudang);
 
         $this->render_view('setup/gudang/detail');
+    }
+
+    /** ============================
+     *  Private Helpers
+     *  ============================
+     */
+    private function _set_validation_rules($is_edit = false)
+    {
+        $this->form_validation->set_rules('nama_gudang', 'Nama Gudang', 'required|trim|max_length[100]');
+        $this->form_validation->set_rules('id_perusahaan', 'Perusahaan', 'required');
+        $this->form_validation->set_rules('alamat', 'Alamat', 'trim');
+        $this->form_validation->set_rules('telepon', 'Telepon', 'trim|max_length[20]');
+
+        if ($is_edit) {
+            $this->form_validation->set_rules('status_aktif', 'Status', 'required|in_list[0,1]');
+        }
     }
 }

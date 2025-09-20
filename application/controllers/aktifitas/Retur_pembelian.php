@@ -32,8 +32,8 @@ class Retur_pembelian extends MY_Controller
     {
         // Check permission
         if (!$this->check_permission('aktifitas/retur_pembelian', 'create')) {
-            $this->data['error'] = 'Anda tidak memiliki izin untuk membuat retur pembelian!';
-            $this->render_view('aktifitas/retur_pembelian');
+            $this->session->set_flashdata('error', 'Anda tidak memiliki izin untuk membuat retur pembelian!');
+            return redirect('aktifitas/retur_pembelian');
         }
 
         $this->data['title'] = 'Tambah Retur Pembelian';
@@ -47,50 +47,50 @@ class Retur_pembelian extends MY_Controller
         $this->form_validation->set_rules('alasan_retur', 'Alasan Retur', 'required');
 
         if ($this->form_validation->run() == FALSE) {
-            $this->render_view('aktifitas/retur_pembelian/form');
-        } else {
-            // Generate nomor retur
-            $no_retur = $this->generate_no_retur();
+            return $this->render_view('aktifitas/retur_pembelian/form');
+        }
 
-            $data_insert = [
-                'no_retur_beli' => $no_retur,
-                'id_pembelian' => $this->input->post('id_pembelian'),
-                'id_user' => $this->session->userdata('id_user'),
-                'id_supplier' => $this->input->post('id_supplier'),
-                'tanggal_retur' => $this->input->post('tanggal_retur') . ' ' . date('H:i:s'),
-                'alasan_retur' => $this->input->post('alasan_retur'),
-                'status' => 'Requested'
-            ];
+        // Generate nomor retur
+        $no_retur = $this->generate_no_retur();
 
-            $id_retur = $this->retur->insert($data_insert);
+        $data_insert = [
+            'no_retur_beli' => $no_retur,
+            'id_pembelian' => $this->input->post('id_pembelian'),
+            'id_user' => $this->session->userdata('id_user'),
+            'id_supplier' => $this->input->post('id_supplier'),
+            'tanggal_retur' => $this->input->post('tanggal_retur') . ' ' . date('H:i:s'),
+            'alasan_retur' => $this->input->post('alasan_retur'),
+            'status' => 'Requested'
+        ];
 
-            if ($id_retur) {
-                // Simpan detail barang
-                $barang_ids = $this->input->post('id_barang');
-                $id_gudangs = $this->input->post('id_gudang');
-                $jumlah_returs = $this->input->post('jumlah_retur');
-                $alasan_barangs = $this->input->post('alasan_barang');
+        $id_retur = $this->retur->insert($data_insert);
 
-                foreach ($barang_ids as $key => $id_barang) {
-                    if ($id_barang && $jumlah_returs[$key] > 0) {
-                        $detail_data = [
-                            'id_retur_beli' => $id_retur,
-                            'id_barang' => $id_barang,
-                            'id_gudang' => $id_gudangs[$key],
-                            'jumlah_retur' => $jumlah_returs[$key],
-                            'jumlah_disetujui' => 0,
-                            'alasan_barang' => $alasan_barangs[$key]
-                        ];
-                        $this->retur->insert_detail($detail_data);
-                    }
+        if ($id_retur) {
+            // Simpan detail barang
+            $barang_ids = $this->input->post('id_barang');
+            $id_gudangs = $this->input->post('id_gudang');
+            $jumlah_returs = $this->input->post('jumlah_retur');
+            $alasan_barangs = $this->input->post('alasan_barang');
+
+            foreach ($barang_ids as $key => $id_barang) {
+                if ($id_barang && $jumlah_returs[$key] > 0) {
+                    $detail_data = [
+                        'id_retur_beli' => $id_retur,
+                        'id_barang' => $id_barang,
+                        'id_gudang' => $id_gudangs[$key],
+                        'jumlah_retur' => $jumlah_returs[$key],
+                        'jumlah_disetujui' => 0,
+                        'alasan_barang' => $alasan_barangs[$key]
+                    ];
+                    $this->retur->insert_detail($detail_data);
                 }
-
-                $this->data['success'] = 'Retur pembelian berhasil dibuat dengan nomor: ' . $no_retur;
-                $this->render_view('aktifitas/retur_pembelian');
-            } else {
-                $this->data['error'] = 'Gagal membuat retur pembelian!';
-                $this->render_view('aktifitas/retur_pembelian/form');
             }
+
+            $this->session->set_flashdata('success', 'Retur pembelian berhasil dibuat dengan nomor: ' . $no_retur);
+            return redirect('aktifitas/retur_pembelian');
+        } else {
+            $this->session->set_flashdata('error', 'Gagal membuat retur pembelian!');
+            return redirect('aktifitas/retur_pembelian/tambah');
         }
     }
 
@@ -98,8 +98,8 @@ class Retur_pembelian extends MY_Controller
     {
         // Check permission
         if (!$this->check_permission('aktifitas/retur_pembelian', 'edit')) {
-            $this->data['error'] = 'Anda tidak memiliki izin untuk verifikasi retur pembelian!';
-            $this->render_view('aktifitas/retur_pembelian');
+            $this->session->set_flashdata('error', 'Anda tidak memiliki izin untuk verifikasi retur pembelian!');
+            return redirect('aktifitas/retur_pembelian');
         }
 
         $this->data['title'] = 'Verifikasi Retur Pembelian';
@@ -110,46 +110,41 @@ class Retur_pembelian extends MY_Controller
             show_404();
         }
 
-        // Cek status, hanya requested yang bisa diverifikasi
         if ($this->data['retur']->status != 'Requested') {
-            $this->data['error'] = 'Retur pembelian dengan status ' . $this->data['retur']->status . ' tidak dapat diverifikasi!';
-            $this->render_view('aktifitas/retur_pembelian');
+            $this->session->set_flashdata('error', 'Retur pembelian dengan status ' . $this->data['retur']->status . ' tidak dapat diverifikasi!');
+            return redirect('aktifitas/retur_pembelian');
         }
 
         $this->form_validation->set_rules('status', 'Status', 'required');
 
         if ($this->form_validation->run() == FALSE) {
-            $this->render_view('aktifitas/retur_pembelian/verifikasi');
-        } else {
-            $status = $this->input->post('status');
+            return $this->render_view('aktifitas/retur_pembelian/verifikasi');
+        }
 
-            // Update status retur
-            if ($this->retur->update_status($id_retur, $status)) {
-                // Update detail retur
-                $detail_ids = $this->input->post('id_detail_retur');
-                $jumlah_disetujuis = $this->input->post('jumlah_disetujui');
+        $status = $this->input->post('status');
 
-                foreach ($detail_ids as $key => $id_detail) {
-                    $detail_data = [
-                        'jumlah_disetujui' => $jumlah_disetujuis[$key]
-                    ];
-                    $this->retur->update_detail($id_detail, $detail_data);
-                }
+        if ($this->retur->update_status($id_retur, $status)) {
+            $detail_ids = $this->input->post('id_detail_retur');
+            $jumlah_disetujuis = $this->input->post('jumlah_disetujui');
 
-                // Jika status approved, kurangi stok
-                if ($status == 'Approved') {
-                    $this->kurangi_stok($id_retur);
-                }
-
-                // Log status transaksi
-                $this->log_status_transaksi($id_retur, 'retur_pembelian', $status);
-
-                $this->data['success'] = 'Verifikasi retur pembelian berhasil, status: ' . $status;
-                $this->render_view('aktifitas/retur_pembelian');
-            } else {
-                $this->data['error'] = 'Gagal verifikasi retur pembelian!';
-                $this->render_view('aktifitas/retur_pembelian/verifikasi');
+            foreach ($detail_ids as $key => $id_detail) {
+                $detail_data = [
+                    'jumlah_disetujui' => $jumlah_disetujuis[$key]
+                ];
+                $this->retur->update_detail($id_detail, $detail_data);
             }
+
+            if ($status == 'Approved') {
+                $this->kurangi_stok($id_retur);
+            }
+
+            $this->log_status_transaksi($id_retur, 'retur_pembelian', $status);
+
+            $this->session->set_flashdata('success', 'Verifikasi retur pembelian berhasil, status: ' . $status);
+            return redirect('aktifitas/retur_pembelian');
+        } else {
+            $this->session->set_flashdata('error', 'Gagal verifikasi retur pembelian!');
+            return redirect('aktifitas/retur_pembelian/verifikasi/' . $id_retur);
         }
     }
 
@@ -157,8 +152,8 @@ class Retur_pembelian extends MY_Controller
     {
         // Check permission
         if (!$this->check_permission('aktifitas/retur_pembelian', 'delete')) {
-            $this->data['error'] = 'Anda tidak memiliki izin untuk menghapus retur pembelian!';
-            $this->render_view('aktifitas/retur_pembelian');
+            $this->session->set_flashdata('error', 'Anda tidak memiliki izin untuk menghapus retur pembelian!');
+            return redirect('aktifitas/retur_pembelian');
         }
 
         $retur = $this->retur->get($id_retur);
@@ -167,18 +162,18 @@ class Retur_pembelian extends MY_Controller
             show_404();
         }
 
-        // Cek status, hanya requested yang bisa dihapus
         if ($retur->status != 'Requested') {
-            $this->data['error'] = 'Retur pembelian dengan status ' . $retur->status . ' tidak dapat dihapus!';
-            $this->render_view('aktifitas/retur_pembelian');
+            $this->session->set_flashdata('error', 'Retur pembelian dengan status ' . $retur->status . ' tidak dapat dihapus!');
+            return redirect('aktifitas/retur_pembelian');
         }
 
         if ($this->retur->delete($id_retur)) {
-            $this->data['success'] = 'Retur pembelian berhasil dihapus';
+            $this->session->set_flashdata('success', 'Retur pembelian berhasil dihapus');
         } else {
-            $this->data['error'] = 'Gagal menghapus retur pembelian!';
+            $this->session->set_flashdata('error', 'Gagal menghapus retur pembelian!');
         }
-        $this->render_view('aktifitas/retur_pembelian');
+
+        return redirect('aktifitas/retur_pembelian');
     }
 
     public function detail($id_retur)
@@ -219,15 +214,12 @@ class Retur_pembelian extends MY_Controller
 
         foreach ($detail as $item) {
             if ($item->jumlah_disetujui > 0) {
-                // Get current stock
                 $stok = $this->retur->get_stok_barang($item->id_gudang, $item->id_barang);
 
                 if ($stok && $stok->jumlah >= $item->jumlah_disetujui) {
-                    // Update stock
                     $new_stok = $stok->jumlah - $item->jumlah_disetujui;
                     $this->retur->update_stok($item->id_gudang, $item->id_barang, $new_stok);
 
-                    // Log stock movement
                     $log_data = [
                         'id_barang' => $item->id_barang,
                         'id_user' => $this->session->userdata('id_user'),

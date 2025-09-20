@@ -43,7 +43,7 @@ class Mutasi extends MY_Controller
         $this->data['barang'] = $this->barang->get_all();
         $this->data['gudang'] = $this->gudang->get_all();
 
-        // Get filter from POST
+        // Ambil filter dari POST
         $filter = [
             'tanggal_awal' => $this->input->post('tanggal_awal') ?: date('Y-m-01'),
             'tanggal_akhir' => $this->input->post('tanggal_akhir') ?: date('Y-m-d'),
@@ -60,7 +60,7 @@ class Mutasi extends MY_Controller
 
     public function export()
     {
-        // Get filter from POST
+        // Ambil filter dari POST
         $filter = [
             'tanggal_awal' => $this->input->post('tanggal_awal') ?: date('Y-m-01'),
             'tanggal_akhir' => $this->input->post('tanggal_akhir') ?: date('Y-m-d'),
@@ -71,16 +71,22 @@ class Mutasi extends MY_Controller
 
         $mutasi = $this->mutasi->get_filtered($filter);
 
-        // Create new PHPExcel object
+        if (empty($mutasi)) {
+            $this->session->set_flashdata('error', 'Data mutasi tidak ditemukan untuk filter yang dipilih!');
+            return redirect('laporan/mutasi');
+        }
+
+        // Buat objek PHPExcel baru
         $this->load->library('PHPExcel');
         $objPHPExcel = new PHPExcel();
 
         // Set properties
-        $objPHPExcel->getProperties()->setTitle("Laporan Mutasi Barang")
+        $objPHPExcel->getProperties()
+            ->setTitle("Laporan Mutasi Barang")
             ->setSubject("Laporan Mutasi Barang")
             ->setDescription("Laporan Mutasi Barang");
 
-        // Add header
+        // Tambah header
         $objPHPExcel->setActiveSheetIndex(0)
             ->setCellValue('A1', 'No')
             ->setCellValue('B1', 'Tanggal')
@@ -91,7 +97,7 @@ class Mutasi extends MY_Controller
             ->setCellValue('G1', 'Sisa Stok')
             ->setCellValue('H1', 'Keterangan');
 
-        // Add data
+        // Isi data
         $row = 2;
         $no = 1;
         foreach ($mutasi as $item) {
@@ -100,7 +106,7 @@ class Mutasi extends MY_Controller
                 ->setCellValue('B' . $row, date('d-m-Y H:i', strtotime($item->tanggal)))
                 ->setCellValue('C' . $row, $item->nama_barang)
                 ->setCellValue('D' . $row, $item->nama_gudang)
-                ->setCellValue('E' . $row, $item->jenis)
+                ->setCellValue('E' . $row, ucfirst($item->jenis))
                 ->setCellValue('F' . $row, $item->jumlah)
                 ->setCellValue('G' . $row, $item->sisa_stok)
                 ->setCellValue('H' . $row, $item->keterangan);
@@ -108,15 +114,15 @@ class Mutasi extends MY_Controller
             $row++;
         }
 
-        // Auto size columns
+        // Auto size kolom
         foreach (range('A', 'H') as $column) {
             $objPHPExcel->getActiveSheet()->getColumnDimension($column)->setAutoSize(true);
         }
 
-        // Set active sheet index to the first sheet
+        // Set aktif sheet
         $objPHPExcel->setActiveSheetIndex(0);
 
-        // Redirect output to client browser
+        // Output ke browser
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="Laporan_Mutasi_' . date('YmdHis') . '.xlsx"');
         header('Cache-Control: max-age=0');

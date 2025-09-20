@@ -7,7 +7,7 @@ class Sistem extends MY_Controller
     {
         parent::__construct();
         $this->load->model('Pengaturan/Sistem_model', 'sistem');
-        $this->load->helper('form');
+        $this->load->helper(['form', 'file']);
         $this->load->library('form_validation');
 
         // Cek akses menu
@@ -25,10 +25,9 @@ class Sistem extends MY_Controller
 
     public function update()
     {
-        // Check permission
         if (!$this->check_permission('pengaturan/sistem', 'edit')) {
-            $this->data['error'] = 'Anda tidak memiliki izin untuk mengubah pengaturan sistem!';
-            $this->render_view('pengaturan/sistem');
+            $this->session->set_flashdata('error', 'Anda tidak memiliki izin untuk mengubah pengaturan sistem!');
+            return redirect('pengaturan/sistem');
         }
 
         if ($this->input->post()) {
@@ -37,25 +36,25 @@ class Sistem extends MY_Controller
 
             foreach ($keys as $index => $key) {
                 if (!empty($key)) {
-                    $data = [
+                    $this->sistem->update_pengaturan($key, [
                         'value' => $values[$index]
-                    ];
-
-                    $this->sistem->update_pengaturan($key, $data);
+                    ]);
                 }
             }
 
-            $this->data['success'] = 'Pengaturan sistem berhasil diperbarui';
-            $this->render_view('pengaturan/sistem');
+            $this->session->set_flashdata('success', 'Pengaturan sistem berhasil diperbarui');
+            return redirect('pengaturan/sistem');
         }
+
+        // kalau tidak ada POST, kembali ke index
+        redirect('pengaturan/sistem');
     }
 
     public function backup()
     {
-        // Check permission
         if (!$this->check_permission('pengaturan/sistem', 'edit')) {
-            $this->data['error'] = 'Anda tidak memiliki izin untuk melakukan backup!';
-            $this->render_view('pengaturan/sistem');
+            $this->session->set_flashdata('error', 'Anda tidak memiliki izin untuk melakukan backup!');
+            return redirect('pengaturan/sistem');
         }
 
         $this->load->dbutil();
@@ -69,27 +68,26 @@ class Sistem extends MY_Controller
         ];
 
         $backup = $this->dbutil->backup($prefs);
-
         $db_name = 'backup_on_' . date('Y-m-d_H-i-s') . '.zip';
         $save = './uploads/backup/' . $db_name;
 
-        write_file($save, $backup);
+        if (write_file($save, $backup)) {
+            $this->session->set_flashdata('success', 'Backup database berhasil dibuat. File disimpan di: ' . $save);
+        } else {
+            $this->session->set_flashdata('error', 'Gagal membuat backup database!');
+        }
 
-        $this->data['success'] = 'Backup database berhasil dibuat. File disimpan di: ' . $save;
-        $this->render_view('pengaturan/sistem');
+        redirect('pengaturan/sistem');
     }
 
     public function log()
     {
-        // Check permission
         if (!$this->check_permission('pengaturan/sistem', 'edit')) {
-            $this->data['error'] = 'Anda tidak memiliki izin untuk melihat log sistem!';
-            $this->render_view('pengaturan/sistem');
+            $this->session->set_flashdata('error', 'Anda tidak memiliki izin untuk melihat log sistem!');
+            return redirect('pengaturan/sistem');
         }
 
         $this->data['title'] = 'Log Sistem';
-
-        // Get log files
         $log_files = [];
         $log_path = APPPATH . 'logs/';
 
@@ -107,27 +105,24 @@ class Sistem extends MY_Controller
                 }
             }
 
-            // Sort by modified date
+            // sort log dari terbaru
             usort($log_files, function ($a, $b) {
                 return $b['modified'] - $a['modified'];
             });
         }
 
         $this->data['log_files'] = $log_files;
-
         $this->render_view('pengaturan/sistem/log');
     }
 
     public function view_log($filename)
     {
-        // Check permission
         if (!$this->check_permission('pengaturan/sistem', 'edit')) {
-            $this->data['error'] = 'Anda tidak memiliki izin untuk melihat log sistem!';
-            $this->render_view('pengaturan/sistem');
+            $this->session->set_flashdata('error', 'Anda tidak memiliki izin untuk melihat log sistem!');
+            return redirect('pengaturan/sistem/log');
         }
 
         $log_path = APPPATH . 'logs/' . $filename;
-
         if (!file_exists($log_path)) {
             show_404();
         }
@@ -141,25 +136,29 @@ class Sistem extends MY_Controller
 
     public function clear_log()
     {
-        // Check permission
         if (!$this->check_permission('pengaturan/sistem', 'edit')) {
-            $this->data['error'] = 'Anda tidak memiliki izin untuk membersihkan log sistem!';
-            $this->render_view('pengaturan/sistem/log');
+            $this->session->set_flashdata('error', 'Anda tidak memiliki izin untuk membersihkan log sistem!');
+            return redirect('pengaturan/sistem/log');
         }
 
         $log_path = APPPATH . 'logs/';
+        $success = true;
 
         if (is_dir($log_path)) {
             $files = glob($log_path . '*.log');
-
             foreach ($files as $file) {
-                if (is_file($file)) {
-                    unlink($file);
+                if (is_file($file) && !unlink($file)) {
+                    $success = false;
                 }
             }
         }
 
-        $this->data['success'] = 'Log sistem berhasil dibersihkan';
-        $this->render_view('pengaturan/sistem/log');
+        if ($success) {
+            $this->session->set_flashdata('success', 'Log sistem berhasil dibersihkan');
+        } else {
+            $this->session->set_flashdata('error', 'Gagal membersihkan sebagian/seluruh log!');
+        }
+
+        redirect('pengaturan/sistem/log');
     }
 }

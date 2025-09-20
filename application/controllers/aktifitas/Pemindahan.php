@@ -30,10 +30,9 @@ class Pemindahan extends MY_Controller
 
     public function tambah()
     {
-        // Check permission
         if (!$this->check_permission('aktifitas/pemindahan', 'create')) {
-            $this->data['error'] = 'Anda tidak memiliki izin untuk membuat pemindahan barang!';
-            $this->render_view('aktifitas/pemindahan');
+            $this->session->set_flashdata('error', 'Anda tidak memiliki izin untuk membuat pemindahan barang!');
+            return redirect('aktifitas/pemindahan');
         }
 
         $this->data['title'] = 'Tambah Pemindahan Barang';
@@ -46,62 +45,58 @@ class Pemindahan extends MY_Controller
         $this->form_validation->set_rules('tanggal', 'Tanggal', 'required');
 
         if ($this->form_validation->run() == FALSE) {
-            $this->render_view('aktifitas/pemindahan/form');
-        } else {
-            // Generate nomor transfer
-            $no_transfer = $this->generate_no_transfer();
-
-            $data_insert = [
-                'no_transfer' => $no_transfer,
-                'id_perusahaan' => $this->session->userdata('id_perusahaan'),
-                'id_gudang_asal' => $this->input->post('id_gudang_asal'),
-                'id_user' => $this->session->userdata('id_user'),
-                'tanggal' => $this->input->post('tanggal') . ' ' . date('H:i:s'),
-                'keterangan' => $this->input->post('keterangan'),
-                'status' => 'Draft'
-            ];
-
-            // Set gudang tujuan atau pelanggan
-            $tipe_tujuan = $this->input->post('tipe_tujuan');
-            if ($tipe_tujuan == 'gudang') {
-                $data_insert['id_gudang_tujuan'] = $this->input->post('id_gudang_tujuan');
-            } elseif ($tipe_tujuan == 'pelanggan') {
-                $data_insert['id_pelanggan'] = $this->input->post('id_pelanggan');
-            }
-
-            $id_transfer = $this->pemindahan->insert($data_insert);
-
-            if ($id_transfer) {
-                // Simpan detail barang
-                $barang_ids = $this->input->post('id_barang');
-                $jumlahs = $this->input->post('jumlah');
-
-                foreach ($barang_ids as $key => $id_barang) {
-                    if ($id_barang && $jumlahs[$key] > 0) {
-                        $detail_data = [
-                            'id_transfer' => $id_transfer,
-                            'id_barang' => $id_barang,
-                            'jumlah' => $jumlahs[$key]
-                        ];
-                        $this->pemindahan->insert_detail($detail_data);
-                    }
-                }
-
-                $this->data['success'] = 'Pemindahan barang berhasil dibuat dengan nomor: ' . $no_transfer;
-                $this->render_view('aktifitas/pemindahan');
-            } else {
-                $this->data['error'] = 'Gagal membuat pemindahan barang!';
-                $this->render_view('aktifitas/pemindahan/form');
-            }
+            return $this->render_view('aktifitas/pemindahan/form');
         }
+
+        // Generate nomor transfer
+        $no_transfer = $this->generate_no_transfer();
+        $data_insert = [
+            'no_transfer' => $no_transfer,
+            'id_perusahaan' => $this->session->userdata('id_perusahaan'),
+            'id_gudang_asal' => $this->input->post('id_gudang_asal'),
+            'id_user' => $this->session->userdata('id_user'),
+            'tanggal' => $this->input->post('tanggal') . ' ' . date('H:i:s'),
+            'keterangan' => $this->input->post('keterangan'),
+            'status' => 'Draft'
+        ];
+
+        $tipe_tujuan = $this->input->post('tipe_tujuan');
+        if ($tipe_tujuan == 'gudang') {
+            $data_insert['id_gudang_tujuan'] = $this->input->post('id_gudang_tujuan');
+        } elseif ($tipe_tujuan == 'pelanggan') {
+            $data_insert['id_pelanggan'] = $this->input->post('id_pelanggan');
+        }
+
+        $id_transfer = $this->pemindahan->insert($data_insert);
+
+        if ($id_transfer) {
+            // Simpan detail barang
+            $barang_ids = $this->input->post('id_barang');
+            $jumlahs = $this->input->post('jumlah');
+
+            foreach ($barang_ids as $key => $id_barang) {
+                if ($id_barang && $jumlahs[$key] > 0) {
+                    $this->pemindahan->insert_detail([
+                        'id_transfer' => $id_transfer,
+                        'id_barang' => $id_barang,
+                        'jumlah' => $jumlahs[$key]
+                    ]);
+                }
+            }
+
+            $this->session->set_flashdata('success', 'Pemindahan barang berhasil dibuat dengan nomor: ' . $no_transfer);
+            return redirect('aktifitas/pemindahan');
+        }
+
+        $this->session->set_flashdata('error', 'Gagal membuat pemindahan barang!');
+        return redirect('aktifitas/pemindahan/tambah');
     }
 
     public function edit($id_transfer)
     {
-        // Check permission
         if (!$this->check_permission('aktifitas/pemindahan', 'edit')) {
-            $this->data['error'] = 'Anda tidak memiliki izin untuk mengubah pemindahan barang!';
-            $this->render_view('aktifitas/pemindahan');
+            $this->session->set_flashdata('error', 'Anda tidak memiliki izin untuk mengubah pemindahan barang!');
+            return redirect('aktifitas/pemindahan');
         }
 
         $this->data['title'] = 'Edit Pemindahan Barang';
@@ -115,10 +110,9 @@ class Pemindahan extends MY_Controller
             show_404();
         }
 
-        // Cek status, hanya draft yang bisa diedit
         if ($this->data['pemindahan']->status != 'Draft') {
-            $this->data['error'] = 'Pemindahan barang dengan status ' . $this->data['pemindahan']->status . ' tidak dapat diubah!';
-            $this->render_view('aktifitas/pemindahan');
+            $this->session->set_flashdata('error', 'Pemindahan dengan status ' . $this->data['pemindahan']->status . ' tidak dapat diubah!');
+            return redirect('aktifitas/pemindahan');
         }
 
         $this->form_validation->set_rules('id_gudang_asal', 'Gudang Asal', 'required');
@@ -126,154 +120,129 @@ class Pemindahan extends MY_Controller
         $this->form_validation->set_rules('tanggal', 'Tanggal', 'required');
 
         if ($this->form_validation->run() == FALSE) {
-            $this->render_view('aktifitas/pemindahan/form');
-        } else {
-            $data_update = [
-                'id_gudang_asal' => $this->input->post('id_gudang_asal'),
-                'tanggal' => $this->input->post('tanggal') . ' ' . date('H:i:s'),
-                'keterangan' => $this->input->post('keterangan')
-            ];
-
-            // Set gudang tujuan atau pelanggan
-            $tipe_tujuan = $this->input->post('tipe_tujuan');
-            if ($tipe_tujuan == 'gudang') {
-                $data_update['id_gudang_tujuan'] = $this->input->post('id_gudang_tujuan');
-                $data_update['id_pelanggan'] = NULL;
-            } elseif ($tipe_tujuan == 'pelanggan') {
-                $data_update['id_pelanggan'] = $this->input->post('id_pelanggan');
-                $data_update['id_gudang_tujuan'] = NULL;
-            }
-
-            if ($this->pemindahan->update($id_transfer, $data_update)) {
-                // Hapus detail lama
-                $this->pemindahan->delete_detail($id_transfer);
-
-                // Simpan detail baru
-                $barang_ids = $this->input->post('id_barang');
-                $jumlahs = $this->input->post('jumlah');
-
-                foreach ($barang_ids as $key => $id_barang) {
-                    if ($id_barang && $jumlahs[$key] > 0) {
-                        $detail_data = [
-                            'id_transfer' => $id_transfer,
-                            'id_barang' => $id_barang,
-                            'jumlah' => $jumlahs[$key]
-                        ];
-                        $this->pemindahan->insert_detail($detail_data);
-                    }
-                }
-
-                $this->data['success'] = 'Pemindahan barang berhasil diperbarui';
-                $this->render_view('aktifitas/pemindahan');
-            } else {
-                $this->data['error'] = 'Gagal memperbarui pemindahan barang!';
-                $this->render_view('aktifitas/pemindahan/form');
-            }
+            return $this->render_view('aktifitas/pemindahan/form');
         }
+
+        $data_update = [
+            'id_gudang_asal' => $this->input->post('id_gudang_asal'),
+            'tanggal' => $this->input->post('tanggal') . ' ' . date('H:i:s'),
+            'keterangan' => $this->input->post('keterangan')
+        ];
+
+        $tipe_tujuan = $this->input->post('tipe_tujuan');
+        if ($tipe_tujuan == 'gudang') {
+            $data_update['id_gudang_tujuan'] = $this->input->post('id_gudang_tujuan');
+            $data_update['id_pelanggan'] = NULL;
+        } elseif ($tipe_tujuan == 'pelanggan') {
+            $data_update['id_pelanggan'] = $this->input->post('id_pelanggan');
+            $data_update['id_gudang_tujuan'] = NULL;
+        }
+
+        if ($this->pemindahan->update($id_transfer, $data_update)) {
+            $this->pemindahan->delete_detail($id_transfer);
+
+            $barang_ids = $this->input->post('id_barang');
+            $jumlahs = $this->input->post('jumlah');
+
+            foreach ($barang_ids as $key => $id_barang) {
+                if ($id_barang && $jumlahs[$key] > 0) {
+                    $this->pemindahan->insert_detail([
+                        'id_transfer' => $id_transfer,
+                        'id_barang' => $id_barang,
+                        'jumlah' => $jumlahs[$key]
+                    ]);
+                }
+            }
+
+            $this->session->set_flashdata('success', 'Pemindahan barang berhasil diperbarui');
+            return redirect('aktifitas/pemindahan');
+        }
+
+        $this->session->set_flashdata('error', 'Gagal memperbarui pemindahan barang!');
+        return redirect('aktifitas/pemindahan/edit/' . $id_transfer);
     }
 
     public function hapus($id_transfer)
     {
-        // Check permission
         if (!$this->check_permission('aktifitas/pemindahan', 'delete')) {
-            $this->data['error'] = 'Anda tidak memiliki izin untuk menghapus pemindahan barang!';
-            $this->render_view('aktifitas/pemindahan');
+            $this->session->set_flashdata('error', 'Anda tidak memiliki izin untuk menghapus pemindahan barang!');
+            return redirect('aktifitas/pemindahan');
         }
 
         $pemindahan = $this->pemindahan->get($id_transfer);
-
         if (!$pemindahan) {
             show_404();
         }
 
-        // Cek status, hanya draft yang bisa dihapus
         if ($pemindahan->status != 'Draft') {
-            $this->data['error'] = 'Pemindahan barang dengan status ' . $pemindahan->status . ' tidak dapat dihapus!';
-            $this->render_view('aktifitas/pemindahan');
+            $this->session->set_flashdata('error', 'Pemindahan dengan status ' . $pemindahan->status . ' tidak dapat dihapus!');
+            return redirect('aktifitas/pemindahan');
         }
 
         if ($this->pemindahan->delete($id_transfer)) {
-            $this->data['success'] = 'Pemindahan barang berhasil dihapus';
+            $this->session->set_flashdata('success', 'Pemindahan barang berhasil dihapus');
         } else {
-            $this->data['error'] = 'Gagal menghapus pemindahan barang!';
+            $this->session->set_flashdata('error', 'Gagal menghapus pemindahan barang!');
         }
-        $this->render_view('aktifitas/pemindahan');
+        return redirect('aktifitas/pemindahan');
     }
 
     public function konfirmasi($id_transfer, $status)
     {
-        // Check permission
         if (!$this->check_permission('aktifitas/pemindahan', 'edit')) {
-            $this->data['error'] = 'Anda tidak memiliki izin untuk mengkonfirmasi pemindahan barang!';
-            $this->render_view('aktifitas/pemindahan');
+            $this->session->set_flashdata('error', 'Anda tidak memiliki izin untuk mengkonfirmasi pemindahan barang!');
+            return redirect('aktifitas/pemindahan');
         }
 
         $pemindahan = $this->pemindahan->get($id_transfer);
-
         if (!$pemindahan) {
             show_404();
         }
 
-        // Validasi perubahan status
         $valid_status = ['Packing', 'Shipping', 'Delivered', 'Cancelled'];
         if (!in_array($status, $valid_status)) {
-            $this->data['error'] = 'Status tidak valid!';
-            $this->render_view('aktifitas/pemindahan');
+            $this->session->set_flashdata('error', 'Status tidak valid!');
+            return redirect('aktifitas/pemindahan');
         }
 
-        // Cek alur status
         $current_status = $pemindahan->status;
         $valid_transition = false;
 
         switch ($current_status) {
             case 'Draft':
-                if (in_array($status, ['Packing', 'Cancelled'])) {
-                    $valid_transition = true;
-                }
+                $valid_transition = in_array($status, ['Packing', 'Cancelled']);
                 break;
             case 'Packing':
-                if (in_array($status, ['Shipping', 'Cancelled'])) {
-                    $valid_transition = true;
-                }
+                $valid_transition = in_array($status, ['Shipping', 'Cancelled']);
                 break;
             case 'Shipping':
-                if (in_array($status, ['Delivered', 'Cancelled'])) {
-                    $valid_transition = true;
-                }
+                $valid_transition = in_array($status, ['Delivered', 'Cancelled']);
                 break;
         }
 
         if (!$valid_transition) {
-            $this->data['error'] = 'Perubahan status dari ' . $current_status . ' ke ' . $status . ' tidak diizinkan!';
-            $this->render_view('aktifitas/pemindahan');
+            $this->session->set_flashdata('error', 'Perubahan status dari ' . $current_status . ' ke ' . $status . ' tidak diizinkan!');
+            return redirect('aktifitas/pemindahan');
         }
 
-        // Update status
         if ($this->pemindahan->update_status($id_transfer, $status)) {
-            // Jika status shipping, kurangi stok gudang asal
             if ($status == 'Shipping' && $current_status != 'Shipping') {
                 $this->kurangi_stok($id_transfer);
             }
-
-            // Jika status delivered, tambah stok gudang tujuan
             if ($status == 'Delivered' && $pemindahan->id_gudang_tujuan) {
                 $this->tambah_stok($id_transfer);
             }
-
-            // Jika status cancelled, kembalikan stok
             if ($status == 'Cancelled' && $current_status == 'Shipping') {
                 $this->kembalikan_stok($id_transfer);
             }
 
-            // Log status transaksi
             $this->log_status_transaksi($id_transfer, 'transfer_stok', $status);
-
-            $this->data['success'] = 'Status pemindahan barang berhasil diubah menjadi ' . $status;
+            $this->session->set_flashdata('success', 'Status pemindahan berhasil diubah menjadi ' . $status);
         } else {
-            $this->data['error'] = 'Gagal mengubah status pemindahan barang!';
+            $this->session->set_flashdata('error', 'Gagal mengubah status pemindahan barang!');
         }
 
-        $this->render_view('aktifitas/pemindahan');
+        return redirect('aktifitas/pemindahan');
     }
 
     public function detail($id_transfer)

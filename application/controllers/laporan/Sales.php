@@ -42,7 +42,7 @@ class Sales extends MY_Controller
         $this->data['pelanggan'] = $this->pelanggan->get_all();
         $this->data['barang'] = $this->barang->get_all();
 
-        // Get filter from POST
+        // Get filter dari POST
         $filter = [
             'tanggal_awal' => $this->input->post('tanggal_awal') ?: date('Y-m-01'),
             'tanggal_akhir' => $this->input->post('tanggal_akhir') ?: date('Y-m-d'),
@@ -58,20 +58,23 @@ class Sales extends MY_Controller
 
     public function detail($id_penjualan)
     {
-        $this->data['title'] = 'Detail Penjualan';
-        $this->data['penjualan'] = $this->sales->get_penjualan($id_penjualan);
-        $this->data['detail'] = $this->sales->get_detail_penjualan($id_penjualan);
+        $penjualan = $this->sales->get_penjualan($id_penjualan);
 
-        if (!$this->data['penjualan']) {
-            show_404();
+        if (!$penjualan) {
+            $this->session->set_flashdata('error', 'Data penjualan tidak ditemukan!');
+            return redirect('laporan/sales');
         }
+
+        $this->data['title'] = 'Detail Penjualan';
+        $this->data['penjualan'] = $penjualan;
+        $this->data['detail'] = $this->sales->get_detail_penjualan($id_penjualan);
 
         $this->render_view('laporan/sales/detail');
     }
 
     public function export()
     {
-        // Get filter from POST
+        // Get filter dari POST
         $filter = [
             'tanggal_awal' => $this->input->post('tanggal_awal') ?: date('Y-m-01'),
             'tanggal_akhir' => $this->input->post('tanggal_akhir') ?: date('Y-m-d'),
@@ -86,7 +89,8 @@ class Sales extends MY_Controller
         $objPHPExcel = new PHPExcel();
 
         // Set properties
-        $objPHPExcel->getProperties()->setTitle("Laporan Sales")
+        $objPHPExcel->getProperties()
+            ->setTitle("Laporan Sales")
             ->setSubject("Laporan Sales")
             ->setDescription("Laporan Sales");
 
@@ -116,7 +120,6 @@ class Sales extends MY_Controller
                 ->setCellValue('G' . $row, $item->harga_jual)
                 ->setCellValue('H' . $row, $item->total)
                 ->setCellValue('I' . $row, $item->status);
-
             $row++;
         }
 

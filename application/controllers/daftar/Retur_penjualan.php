@@ -19,7 +19,6 @@ class Retur_penjualan extends MY_Controller
         $this->data['title'] = 'Daftar Retur Penjualan';
         $this->data['pelanggan'] = $this->retur->get_pelanggan();
 
-        // Set filter default
         $filter = [
             'tanggal_awal' => date('Y-m-01'),
             'tanggal_akhir' => date('Y-m-d'),
@@ -35,21 +34,33 @@ class Retur_penjualan extends MY_Controller
 
     public function filter()
     {
-        $this->data['title'] = 'Daftar Retur Penjualan';
-        $this->data['pelanggan'] = $this->retur->get_pelanggan();
+        $this->form_validation->set_rules('tanggal_awal', 'Tanggal Awal', 'required');
+        $this->form_validation->set_rules('tanggal_akhir', 'Tanggal Akhir', 'required');
 
-        // Get filter from POST
-        $filter = [
-            'tanggal_awal' => $this->input->post('tanggal_awal') ?: date('Y-m-01'),
-            'tanggal_akhir' => $this->input->post('tanggal_akhir') ?: date('Y-m-d'),
-            'status' => $this->input->post('status'),
-            'id_pelanggan' => $this->input->post('id_pelanggan')
-        ];
+        if ($this->form_validation->run() === FALSE) {
+            // validasi gagal → render ulang
+            $this->data['title'] = 'Daftar Retur Penjualan';
+            $this->data['pelanggan'] = $this->retur->get_pelanggan();
+            $this->data['filter'] = $this->input->post();
+            $this->data['retur'] = [];
 
-        $this->data['filter'] = $filter;
-        $this->data['retur'] = $this->retur->get_filtered($filter);
+            $this->render_view('daftar/retur_penjualan/index');
+        } else {
+            // validasi sukses → ambil data
+            $filter = [
+                'tanggal_awal' => $this->input->post('tanggal_awal'),
+                'tanggal_akhir' => $this->input->post('tanggal_akhir'),
+                'status' => $this->input->post('status'),
+                'id_pelanggan' => $this->input->post('id_pelanggan')
+            ];
 
-        $this->render_view('daftar/retur_penjualan/index');
+            $this->data['title'] = 'Daftar Retur Penjualan';
+            $this->data['pelanggan'] = $this->retur->get_pelanggan();
+            $this->data['filter'] = $filter;
+            $this->data['retur'] = $this->retur->get_filtered($filter);
+
+            $this->render_view('daftar/retur_penjualan/index');
+        }
     }
 
     public function detail($id_retur)
@@ -75,5 +86,76 @@ class Retur_penjualan extends MY_Controller
         }
 
         $this->load->view('daftar/retur_penjualan/cetak', $this->data);
+    }
+
+    // =========================
+    // Tambahan aksi CRUD
+    // =========================
+    public function tambah()
+    {
+        $this->form_validation->set_rules('id_pelanggan', 'Pelanggan', 'required');
+        $this->form_validation->set_rules('tanggal_retur', 'Tanggal Retur', 'required');
+
+        if ($this->form_validation->run() === FALSE) {
+            $this->data['title'] = 'Tambah Retur Penjualan';
+            $this->data['pelanggan'] = $this->retur->get_pelanggan();
+
+            $this->render_view('daftar/retur_penjualan/form');
+        } else {
+            $data = [
+                'id_pelanggan' => $this->input->post('id_pelanggan'),
+                'tanggal_retur' => $this->input->post('tanggal_retur'),
+                'status' => 'draft',
+                'created_at' => date('Y-m-d H:i:s')
+            ];
+
+            if ($this->retur->insert($data)) {
+                $this->session->set_flashdata('success', 'Retur berhasil ditambahkan.');
+                redirect('daftar/retur_penjualan');
+            } else {
+                $this->session->set_flashdata('error', 'Gagal menambahkan retur.');
+                redirect('daftar/retur_penjualan/tambah');
+            }
+        }
+    }
+
+    public function edit($id_retur)
+    {
+        $this->form_validation->set_rules('tanggal_retur', 'Tanggal Retur', 'required');
+
+        if ($this->form_validation->run() === FALSE) {
+            $this->data['title'] = 'Edit Retur Penjualan';
+            $this->data['pelanggan'] = $this->retur->get_pelanggan();
+            $this->data['retur'] = $this->retur->get($id_retur);
+
+            if (!$this->data['retur']) {
+                show_404();
+            }
+
+            $this->render_view('daftar/retur_penjualan/form');
+        } else {
+            $data = [
+                'tanggal_retur' => $this->input->post('tanggal_retur'),
+                'status' => $this->input->post('status')
+            ];
+
+            if ($this->retur->update($id_retur, $data)) {
+                $this->session->set_flashdata('success', 'Retur berhasil diperbarui.');
+                redirect('daftar/retur_penjualan');
+            } else {
+                $this->session->set_flashdata('error', 'Gagal memperbarui retur.');
+                redirect('daftar/retur_penjualan/edit/' . $id_retur);
+            }
+        }
+    }
+
+    public function hapus($id_retur)
+    {
+        if ($this->retur->delete($id_retur)) {
+            $this->session->set_flashdata('success', 'Retur berhasil dihapus.');
+        } else {
+            $this->session->set_flashdata('error', 'Gagal menghapus retur.');
+        }
+        redirect('daftar/retur_penjualan');
     }
 }

@@ -36,8 +36,8 @@ class Approval extends MY_Controller
     {
         // Check permission
         if (!$this->check_permission('pengaturan/approval', 'edit')) {
-            $this->data['error'] = 'Anda tidak memiliki izin untuk mengubah approval flow!';
-            redirect('pengaturan/approval');
+            $this->session->set_flashdata('error', 'Anda tidak memiliki izin untuk mengubah approval flow!');
+            return redirect('pengaturan/approval');
         }
 
         $this->data['title'] = 'Edit Approval Flow - ' . ucfirst(str_replace('_', ' ', $tipe_transaksi));
@@ -52,8 +52,8 @@ class Approval extends MY_Controller
     {
         // Check permission
         if (!$this->check_permission('pengaturan/approval', 'edit')) {
-            $this->data['error'] = 'Anda tidak memiliki izin untuk mengubah approval flow!';
-            redirect('pengaturan/approval');
+            $this->session->set_flashdata('error', 'Anda tidak memiliki izin untuk mengubah approval flow!');
+            return redirect('pengaturan/approval');
         }
 
         if ($this->input->post()) {
@@ -63,10 +63,10 @@ class Approval extends MY_Controller
             $id_roles = $this->input->post('id_role');
             $urutans = $this->input->post('urutan');
 
-            // Delete existing approval flow for this transaction type
+            // Hapus flow lama untuk tipe transaksi ini
             $this->approval->delete_by_tipe($tipe_transaksi);
 
-            // Insert new approval flow
+            $inserted = false;
             foreach ($status_daris as $key => $status_dari) {
                 if (!empty($status_dari) && !empty($status_kes[$key]) && !empty($id_roles[$key])) {
                     $data = [
@@ -77,13 +77,21 @@ class Approval extends MY_Controller
                         'urutan' => $urutans[$key] ?: 0,
                         'status_aktif' => 1
                     ];
-
                     $this->approval->insert($data);
+                    $inserted = true;
                 }
             }
 
-            $this->data['success'] = 'Approval flow berhasil diperbarui';
-            redirect('pengaturan/approval');
+            if ($inserted) {
+                $this->session->set_flashdata('success', 'Approval flow berhasil diperbarui');
+            } else {
+                $this->session->set_flashdata('error', 'Tidak ada approval flow yang diperbarui. Pastikan data valid!');
+            }
+
+            return redirect('pengaturan/approval');
         }
+
+        // Kalau tidak ada post, redirect balik
+        return redirect('pengaturan/approval');
     }
 }

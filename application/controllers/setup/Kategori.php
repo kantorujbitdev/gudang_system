@@ -29,9 +29,7 @@ class Kategori extends MY_Controller
         $this->data['perusahaan'] = $this->Perusahaan_model->get_active();
 
         if ($this->input->post()) {
-            $this->form_validation->set_rules('nama_kategori', 'Nama Kategori', 'required|trim|max_length[50]');
-            $this->form_validation->set_rules('id_perusahaan', 'Perusahaan', 'required');
-            $this->form_validation->set_rules('deskripsi', 'Deskripsi', 'trim');
+            $this->_set_validation_rules();
 
             if ($this->form_validation->run() == TRUE) {
                 $nama_kategori = $this->input->post('nama_kategori');
@@ -39,9 +37,8 @@ class Kategori extends MY_Controller
 
                 // Check unique name per company
                 if (!$this->Kategori_model->check_unique_name($nama_kategori, $id_perusahaan)) {
-                    $this->data['error'] = 'Nama kategori sudah ada di perusahaan yang sama!';
-                    $this->render_view('setup/kategori/form');
-                    return;
+                    $this->session->set_flashdata('error', 'Nama kategori sudah ada di perusahaan yang sama!');
+                    redirect('setup/kategori/tambah');
                 }
 
                 $data = array(
@@ -52,35 +49,16 @@ class Kategori extends MY_Controller
                 );
 
                 if ($this->Kategori_model->insert($data)) {
-                    $this->data['success'] = 'Kategori berhasil ditambahkan!';
-                    redirect('setup/kategori');
+                    $this->session->set_flashdata('success', 'Kategori berhasil ditambahkan!');
                 } else {
-                    $this->data['error'] = 'Gagal menambahkan kategori!';
+                    $this->session->set_flashdata('error', 'Gagal menambahkan kategori!');
                 }
+                redirect('setup/kategori');
             }
         }
 
+        // render ulang kalau validasi gagal
         $this->render_view('setup/kategori/form');
-    }
-
-    public function nonaktif($id)
-    {
-        if ($this->Kategori_model->update_status($id, 0)) {
-            $this->data['success'] = 'Kategori berhasil dinonaktifkan';
-        } else {
-            $this->data['error'] = 'Gagal menonaktifkan kategori';
-        }
-        redirect('setup/kategori');
-    }
-
-    public function aktif($id)
-    {
-        if ($this->Kategori_model->update_status($id, 1)) {
-            $this->data['success'] = 'Kategori berhasil diaktifkan kembali';
-        } else {
-            $this->data['error'] = 'Gagal mengaktifkan kategori';
-        }
-        redirect('setup/kategori');
     }
 
     public function edit($id_kategori)
@@ -94,19 +72,11 @@ class Kategori extends MY_Controller
 
         // Jika Super Admin, tampilkan pilihan perusahaan
         if ($this->session->userdata('id_role') == 1) {
-            $this->load->model('setup/Perusahaan_model');
             $this->data['perusahaan'] = $this->Perusahaan_model->get_all();
         }
 
         if ($this->input->post()) {
-            $this->form_validation->set_rules('nama_kategori', 'Nama Kategori', 'required|trim|max_length[50]');
-            $this->form_validation->set_rules('deskripsi', 'Deskripsi', 'trim|max_length[255]');
-            $this->form_validation->set_rules('status_aktif', 'Status', 'required|in_list[0,1]');
-
-            // Jika Super Admin, validasi perusahaan
-            if ($this->session->userdata('id_role') == 1) {
-                $this->form_validation->set_rules('id_perusahaan', 'Perusahaan', 'required');
-            }
+            $this->_set_validation_rules(true);
 
             if ($this->form_validation->run() == TRUE) {
                 $nama_kategori = $this->input->post('nama_kategori');
@@ -114,11 +84,10 @@ class Kategori extends MY_Controller
                     $this->input->post('id_perusahaan') :
                     $this->session->userdata('id_perusahaan');
 
-                // Check unique name (excluding current record)
+                // Check unique name (exclude current record)
                 if (!$this->Kategori_model->check_unique_name($nama_kategori, $id_perusahaan, $id_kategori)) {
-                    $this->data['error'] = 'Nama kategori sudah ada untuk perusahaan ini!';
-                    $this->render_view('setup/kategori/form');
-                    return;
+                    $this->session->set_flashdata('error', 'Nama kategori sudah ada untuk perusahaan ini!');
+                    redirect('setup/kategori/edit/' . $id_kategori);
                 }
 
                 $data = array(
@@ -127,17 +96,16 @@ class Kategori extends MY_Controller
                     'status_aktif' => $this->input->post('status_aktif')
                 );
 
-                // Jika Super Admin, update perusahaan
                 if ($this->session->userdata('id_role') == 1) {
                     $data['id_perusahaan'] = $id_perusahaan;
                 }
 
                 if ($this->Kategori_model->update($id_kategori, $data)) {
-                    $this->data['success'] = 'Kategori barang berhasil diperbarui!';
-                    redirect('setup/kategori');
+                    $this->session->set_flashdata('success', 'Kategori berhasil diperbarui!');
                 } else {
-                    $this->data['error'] = 'Gagal memperbarui kategori barang!';
+                    $this->session->set_flashdata('error', 'Gagal memperbarui kategori!');
                 }
+                redirect('setup/kategori');
             }
         }
 
@@ -147,7 +115,6 @@ class Kategori extends MY_Controller
     public function hapus($id_kategori)
     {
         $kategori = $this->Kategori_model->get($id_kategori);
-
         if (!$kategori) {
             show_404();
         }
@@ -158,16 +125,35 @@ class Kategori extends MY_Controller
         $product_count = $this->db->count_all_results('barang');
 
         if ($product_count > 0) {
-            $this->data['error'] = 'Kategori tidak dapat dihapus karena masih memiliki produk terkait!';
+            $this->session->set_flashdata('error', 'Kategori tidak dapat dihapus karena masih memiliki produk terkait!');
             redirect('setup/kategori');
         }
 
         if ($this->Kategori_model->delete($id_kategori)) {
-            $this->data['success'] = 'Kategori barang berhasil dihapus!';
+            $this->session->set_flashdata('success', 'Kategori berhasil dihapus!');
         } else {
-            $this->data['error'] = 'Gagal menghapus kategori barang!';
+            $this->session->set_flashdata('error', 'Gagal menghapus kategori!');
         }
+        redirect('setup/kategori');
+    }
 
+    public function aktif($id)
+    {
+        if ($this->Kategori_model->update_status($id, 1)) {
+            $this->session->set_flashdata('success', 'Kategori berhasil diaktifkan kembali!');
+        } else {
+            $this->session->set_flashdata('error', 'Gagal mengaktifkan kategori!');
+        }
+        redirect('setup/kategori');
+    }
+
+    public function nonaktif($id)
+    {
+        if ($this->Kategori_model->update_status($id, 0)) {
+            $this->session->set_flashdata('success', 'Kategori berhasil dinonaktifkan!');
+        } else {
+            $this->session->set_flashdata('error', 'Gagal menonaktifkan kategori!');
+        }
         redirect('setup/kategori');
     }
 
@@ -180,9 +166,21 @@ class Kategori extends MY_Controller
             show_404();
         }
 
-        // Get related products
         $this->data['barang'] = $this->Kategori_model->get_barang_by_kategori($id_kategori);
 
         $this->render_view('setup/kategori/detail');
+    }
+
+    // --- Private Helper ---
+    private function _set_validation_rules($is_edit = false)
+    {
+        $this->form_validation->set_rules('nama_kategori', 'Nama Kategori', 'required|trim|max_length[50]');
+        $this->form_validation->set_rules('deskripsi', 'Deskripsi', 'trim|max_length[255]');
+
+        if ($is_edit) {
+            $this->form_validation->set_rules('status_aktif', 'Status', 'required|in_list[0,1]');
+        } else {
+            $this->form_validation->set_rules('id_perusahaan', 'Perusahaan', 'required');
+        }
     }
 }

@@ -10,33 +10,39 @@ class Menu_model extends CI_Model
 
     public function get_menu_tree($id_role = NULL)
     {
-        // Jika Super Admin, ambil semua menu
+        // Query dasar
+        $this->db->select('m.*');
+
         if ($id_role == 1) {
-            $this->db->where('status_aktif', 1);
-        } else {
-            $this->db->select('m.*');
+            // Super Admin -> ambil semua menu
             $this->db->from('menu m');
-            $this->db->join('hak_akses_menu ham', 'm.id_menu = ham.id_menu');
-            $this->db->where('ham.id_role', $id_role);
-            $this->db->where('ham.can_view', 1);
-            $this->db->where('m.status_aktif', 1);
+        } else {
+            // Role lain -> join dengan hak akses
+            $this->db->from('menu m');
+            $this->db->join('hak_akses_menu h', 'h.id_menu = m.id_menu AND h.id_role = ' . $id_role);
+            $this->db->where('h.can_view', 1);
         }
-        $this->db->order_by('urutan', 'ASC');
-        $query = $this->db->get('menu');
+
+        $this->db->where('m.status_aktif', 1);
+        $this->db->order_by('m.urutan', 'ASC');
+
+        $query = $this->db->get();
         $menus = $query->result();
 
-        // Build menu tree
-        $menu_tree = array();
+        // Buat map id_menu -> menu
+        $menu_map = array();
         foreach ($menus as $menu) {
-            if ($menu->id_parent == NULL) {
-                $menu_tree[$menu->id_menu] = $menu;
-                $menu_tree[$menu->id_menu]->children = array();
-            }
+            $menu->children = array(); // inisialisasi
+            $menu_map[$menu->id_menu] = $menu;
         }
 
+        // Susun tree
+        $menu_tree = array();
         foreach ($menus as $menu) {
-            if ($menu->id_parent != NULL && isset($menu_tree[$menu->id_parent])) {
-                $menu_tree[$menu->id_parent]->children[] = $menu;
+            if (!empty($menu->id_parent) && isset($menu_map[$menu->id_parent])) {
+                $menu_map[$menu->id_parent]->children[] = $menu;
+            } else {
+                $menu_tree[] = $menu; // root menu
             }
         }
 

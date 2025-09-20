@@ -39,7 +39,7 @@ class Packing extends MY_Controller
         $this->data['title'] = 'Laporan Packing';
         $this->data['user'] = $this->user->get_by_role(4); // Admin Packing
 
-        // Get filter from POST
+        // Get filter dari POST
         $filter = [
             'tanggal_awal' => $this->input->post('tanggal_awal') ?: date('Y-m-01'),
             'tanggal_akhir' => $this->input->post('tanggal_akhir') ?: date('Y-m-d'),
@@ -55,20 +55,23 @@ class Packing extends MY_Controller
 
     public function detail($id_packing)
     {
-        $this->data['title'] = 'Detail Packing';
-        $this->data['packing'] = $this->packing->get_packing($id_packing);
-        $this->data['detail'] = $this->packing->get_detail_packing($id_packing);
+        $packing = $this->packing->get_packing($id_packing);
 
-        if (!$this->data['packing']) {
-            show_404();
+        if (!$packing) {
+            $this->session->set_flashdata('error', 'Data packing tidak ditemukan!');
+            return redirect('laporan/packing');
         }
+
+        $this->data['title'] = 'Detail Packing';
+        $this->data['packing'] = $packing;
+        $this->data['detail'] = $this->packing->get_detail_packing($id_packing);
 
         $this->render_view('laporan/packing/detail');
     }
 
     public function export()
     {
-        // Get filter from POST
+        // Get filter dari POST
         $filter = [
             'tanggal_awal' => $this->input->post('tanggal_awal') ?: date('Y-m-01'),
             'tanggal_akhir' => $this->input->post('tanggal_akhir') ?: date('Y-m-d'),
@@ -83,7 +86,8 @@ class Packing extends MY_Controller
         $objPHPExcel = new PHPExcel();
 
         // Set properties
-        $objPHPExcel->getProperties()->setTitle("Laporan Packing")
+        $objPHPExcel->getProperties()
+            ->setTitle("Laporan Packing")
             ->setSubject("Laporan Packing")
             ->setDescription("Laporan Packing");
 
@@ -111,7 +115,6 @@ class Packing extends MY_Controller
                 ->setCellValue('F' . $row, $item->nama_barang)
                 ->setCellValue('G' . $row, $item->jumlah)
                 ->setCellValue('H' . $row, $item->status);
-
             $row++;
         }
 
