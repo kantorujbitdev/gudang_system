@@ -192,7 +192,7 @@ class Pelanggan extends MY_Controller
         }
 
         // Get related transactions
-        $this->load->model('transaksi/Penjualan_model');
+        $this->load->model('Penjualan_model');
         $this->data['penjualan'] = $this->Penjualan_model->get_by_pelanggan($id_pelanggan, 10);
 
         $this->render_view('setup/pelanggan/detail');

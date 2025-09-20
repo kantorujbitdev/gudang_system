@@ -188,7 +188,7 @@ class Supplier extends MY_Controller
         }
 
         // Get related transactions
-        $this->load->model('transaksi/Pembelian_model');
+        $this->load->model('Pembelian_model');
         $this->data['pembelian'] = $this->Pembelian_model->get_by_supplier($id_supplier, 10);
 
         $this->render_view('setup/supplier/detail');

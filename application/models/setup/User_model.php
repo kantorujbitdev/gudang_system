@@ -30,7 +30,12 @@ class User_model extends MY_Model
         $this->db->order_by('u.created_at', 'DESC');
         return $this->db->get()->result();
     }
-
+    public function get_by_perusahaan($id_perusahaan)
+    {
+        $this->db->where('id_perusahaan', $id_perusahaan);
+        $this->db->where('aktif', 1);
+        return $this->db->get('user')->result();
+    }
     public function get_by_role($id_role, $id_perusahaan = NULL)
     {
         $this->db->select('u.*, r.nama_role, p.nama_perusahaan');
