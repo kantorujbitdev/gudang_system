@@ -12,38 +12,6 @@
         </div>
     </div>
     <div class="card-body">
-        <?php if (isset($success_message)): ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <?php echo $success_message; ?>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        <?php endif; ?>
-
-        <?php if (isset($error)): ?>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <?php echo $error; ?>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        <?php endif; ?>
-
-        <?php if (isset($error_messages)): ?>
-            <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                <strong>Detail Error:</strong>
-                <ul>
-                    <?php foreach ($error_messages as $msg): ?>
-                        <li><?php echo $msg; ?></li>
-                    <?php endforeach; ?>
-                </ul>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        <?php endif; ?>
-
         <div class="card card-info mb-4">
             <div class="card-header">
                 <h6 class="m-0 font-weight-bold text-info">Format File Import</h6>

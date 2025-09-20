@@ -83,4 +83,34 @@ class Stok_awal_model extends CI_Model
         $this->db->insert('log_stok', $data);
         return $this->db->insert_id();
     }
+
+    // Metode baru untuk mendapatkan barang berdasarkan perusahaan
+    public function get_barang_by_perusahaan($id_perusahaan)
+    {
+        $this->db->select('id_barang, nama_barang, sku');
+        $this->db->where('id_perusahaan', $id_perusahaan);
+        $this->db->where('status_aktif', 1);
+        return $this->db->get('barang')->result();
+    }
+
+    // Metode baru untuk mendapatkan gudang berdasarkan perusahaan
+    public function get_gudang_by_perusahaan($id_perusahaan)
+    {
+        $this->db->select('id_gudang, nama_gudang');
+        $this->db->where('id_perusahaan', $id_perusahaan);
+        $this->db->where('status_aktif', 1);
+        return $this->db->get('gudang')->result();
+    }
+
+    // Metode baru untuk mendapatkan stok awal berdasarkan perusahaan
+    public function get_stok_awal_by_perusahaan($id_perusahaan)
+    {
+        $this->db->select('sa.*, b.nama_barang, b.sku, g.nama_gudang');
+        $this->db->from('stok_awal sa');
+        $this->db->join('barang b', 'sa.id_barang = b.id_barang');
+        $this->db->join('gudang g', 'sa.id_gudang = g.id_gudang');
+        $this->db->where('sa.id_perusahaan', $id_perusahaan);
+        $this->db->order_by('sa.created_at', 'DESC');
+        return $this->db->get()->result();
+    }
 }

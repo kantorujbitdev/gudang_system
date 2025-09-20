@@ -8,11 +8,12 @@
             <div class="col-md-6">
                 <div class="form-group">
                     <label for="id_barang">Barang <span class="text-danger">*</span></label>
-                    <select class="form-control" id="id_barang" name="id_barang" required>
+                    <select class="form-control select2" id="id_barang" name="id_barang" required>
                         <option value="">-- Pilih Barang --</option>
                         <?php foreach ($barang as $row): ?>
                             <option value="<?php echo $row->id_barang; ?>" <?php echo (isset($stok_awal) && $stok_awal->id_barang == $row->id_barang) ? 'selected' : ''; ?>>
-                                <?php echo $row->nama_barang; ?> (<?php echo $row->sku; ?>)</option>
+                                <?php echo $row->nama_barang; ?> (<?php echo $row->sku; ?>)
+                            </option>
                         <?php endforeach; ?>
                     </select>
                     <?php echo form_error('id_barang', '<small class="text-danger">', '</small>'); ?>
@@ -20,11 +21,12 @@
 
                 <div class="form-group">
                     <label for="id_gudang">Gudang <span class="text-danger">*</span></label>
-                    <select class="form-control" id="id_gudang" name="id_gudang" required>
+                    <select class="form-control select2" id="id_gudang" name="id_gudang" required>
                         <option value="">-- Pilih Gudang --</option>
                         <?php foreach ($gudang as $row): ?>
                             <option value="<?php echo $row->id_gudang; ?>" <?php echo (isset($stok_awal) && $stok_awal->id_gudang == $row->id_gudang) ? 'selected' : ''; ?>>
-                                <?php echo $row->nama_gudang; ?></option>
+                                <?php echo $row->nama_gudang; ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                     <?php echo form_error('id_gudang', '<small class="text-danger">', '</small>'); ?>
@@ -49,9 +51,26 @@
         </div>
 
         <div class="form-group">
-            <button type="submit" class="btn btn-primary">Simpan</button>
-            <a href="<?php echo site_url('pengaturan/stok_awal'); ?>" class="btn btn-secondary">Batal</a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Simpan
+            </button>
+            <a href="<?php echo site_url('pengaturan/stok_awal'); ?>" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Batal
+            </a>
         </div>
         <?php echo form_close(); ?>
     </div>
 </div>
+
+<!-- Load Select2 CSS & JS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('.select2').select2({
+            theme: 'bootstrap4',
+            placeholder: 'Pilih opsi'
+        });
+    });
+</script>

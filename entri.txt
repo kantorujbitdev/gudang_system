@@ -15,7 +15,7 @@ Aplikasi akan dikembangkan menggunakan CodeIgniter 3.1.13 dengan tampilan berbas
 Hak akses diatur berdasarkan role:
     1. Super Admin → mengelola semua perusahaan.
     2. Admin Perusahaan → mengelola seluruh data dan transaksi dalam lingkup perusahaannya.
-    3. Sales Online → melakukan input penjualan ke konsumen, tidak menyimpan stok.
+    3. Sales Online → melakukan input pemindahan barang ke konsumen milik sales sendiri.
     4. Admin Packing → menangani proses packing, pengiriman, dan konfirmasi barang sampai.
     5. Admin Return → memproses verifikasi dan approval retur barang.
 
@@ -24,7 +24,7 @@ Hak akses diatur berdasarkan role:
 Pemindahan barang bisa berupa:
     1. Gudang → Gudang lain (internal transfer).
     2. Gudang → Pelanggan (distributor resmi).
-    3. Gudang → Konsumen (melalui penjualan oleh Sales).
+    3. Gudang → Konsumen (melalui pemindahan barang ke konsumen milik Sales).
 Catatan: Sales tidak memiliki stok. Barang tetap diambil dari gudang.
 
 Alur Status Pemindahan:
@@ -50,7 +50,7 @@ Alur Status Retur:
     a.Requested → retur diajukan.
     b.Verification → barang diperiksa oleh Admin Return.
     c.Approved → retur diterima, stok gudang bertambah
-    d. Rejected → retur ditolak, tidak ada perubahan stok.
+    d.Rejected → retur ditolak, tidak ada perubahan stok.
     e.Completed → retur selesai diproses.
 
 3.4 Retur Barang Pembelian
@@ -58,8 +58,8 @@ Yaitu retur barang ke supplier.
 Alur Status Retur:
     a.Requested → retur diajukan.
     b.Verification → barang diperiksa oleh Admin Return.
-    c.Approved → retur diterima, stok gudang bertambah (untuk retur penjualan) atau berkurang (untuk retur pembelian).
-    d. Rejected → retur ditolak, tidak ada perubahan stok.
+    c.Approved → retur diterima, stok gudang berkurang
+    d.Rejected → retur ditolak, tidak ada perubahan stok.
     e.Completed → retur selesai diproses.
 
 4. Menu Setup
@@ -73,10 +73,10 @@ Alur Status Retur:
     8. Supplier → pemasok per perusahaan.
 
 5. Menu Laporan
-    1. Laporan Sales → detail penjualan ke konsumen/pelanggan (per perusahaan per gudang)
-    2. Laporan Packing → aktivitas pengiriman & pekerjaan Admin Packing (per perusahaan per gudang)
-    3. Laporan Mutasi → pergerakan barang antar gudang & transaksi keluar/masuk (per perusahaan per gudang)
-    4. Laporan Summary → ringkasan stok masuk, keluar, dan saldo akhir (per perusahaan per gudang)
+    1. Laporan Sales → detail pengirimin barang ke konsumen/pelanggan milik sales sendiri.
+    2. Laporan Packing → aktivitas pengiriman & pekerjaan Admin Packing.
+    3. Laporan Mutasi → pergerakan barang antar gudang & transaksi keluar/masuk.
+    4. Laporan Summary → ringkasan stok masuk, keluar, dan saldo akhir (stok akhir).
 
 
 untuk menu sendiri akan dibuat dengan posisi top_menu dan susunannya seperti ini
@@ -198,7 +198,7 @@ CREATE TABLE `gudang` (
   `updated_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Tabel pelanggan (bergantung pada perusahaan)
+-- Tabel pelanggan (bergantung pada perusahaan) - DITAMBAHKAN id_sales
 CREATE TABLE `pelanggan` (
   `id_pelanggan` int(11) NOT NULL,
   `id_perusahaan` int(11) NOT NULL,
@@ -207,6 +207,7 @@ CREATE TABLE `pelanggan` (
   `telepon` varchar(20) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
   `tipe_pelanggan` enum('distributor','konsumen') DEFAULT 'konsumen',
+  `id_sales` int(11) DEFAULT NULL, -- Untuk melacak sales yang memiliki pelanggan ini
   `status_aktif` tinyint(1) DEFAULT 1,
   `deleted_at` datetime DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
@@ -271,7 +272,7 @@ CREATE TABLE `stok_awal` (
 -- Tabel approval_flow (bergantung pada role_user)
 CREATE TABLE `approval_flow` (
   `id_approval` int(11) NOT NULL,
-  `tipe_transaksi` enum('penjualan','pembelian','penerimaan','retur_penjualan','retur_pembelian','transfer_stok') NOT NULL,
+  `tipe_transaksi` enum('pemindahan_barang','penerimaan_barang','retur_penjualan','retur_pembelian') NOT NULL,
   `status_dari` varchar(20) NOT NULL,
   `status_ke` varchar(20) NOT NULL,
   `id_role` int(11) NOT NULL,
@@ -290,14 +291,17 @@ CREATE TABLE `hak_akses_menu` (
   `can_delete` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Tabel penjualan (bergantung pada perusahaan, user, dan pelanggan)
-CREATE TABLE `penjualan` (
-  `id_penjualan` int(11) NOT NULL,
+-- Tabel pemindahan_barang (menggantikan penjualan dan transfer_stok)
+CREATE TABLE `pemindahan_barang` (
+  `id_pemindahan` int(11) NOT NULL,
   `id_perusahaan` int(11) NOT NULL,
-  `no_invoice` varchar(50) DEFAULT NULL,
+  `no_transaksi` varchar(50) DEFAULT NULL,
   `id_user` int(11) NOT NULL,
+  `id_gudang_asal` int(11) NOT NULL,
+  `tipe_tujuan` enum('gudang','pelanggan') NOT NULL,
+  `id_gudang_tujuan` int(11) DEFAULT NULL,
   `id_pelanggan` int(11) DEFAULT NULL,
-  `tanggal_penjualan` datetime NOT NULL,
+  `tanggal_pemindahan` datetime NOT NULL,
   `keterangan` text DEFAULT NULL,
   `status` enum('Draft','Packing','Shipping','Delivered','Cancelled') DEFAULT 'Draft',
   `deleted_at` datetime DEFAULT NULL,
@@ -305,28 +309,12 @@ CREATE TABLE `penjualan` (
   `updated_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Tabel pembelian (bergantung pada perusahaan, user, dan supplier)
-CREATE TABLE `pembelian` (
-  `id_pembelian` int(11) NOT NULL,
-  `id_perusahaan` int(11) NOT NULL,
-  `no_pembelian` varchar(50) DEFAULT NULL,
-  `id_user` int(11) NOT NULL,
-  `id_supplier` int(11) DEFAULT NULL,
-  `tanggal_pembelian` datetime NOT NULL,
-  `tanggal_estimasi` datetime DEFAULT NULL,
-  `keterangan` text DEFAULT NULL,
-  `status` enum('Draft','Received','Completed','Cancelled') DEFAULT 'Draft',
-  `deleted_at` datetime DEFAULT NULL,
-  `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- Tabel penerimaan_barang (bergantung pada pembelian, user, dan gudang)
+-- Tabel penerimaan_barang (bergantung pada user, supplier, dan gudang)
 CREATE TABLE `penerimaan_barang` (
   `id_penerimaan` int(11) NOT NULL,
   `no_penerimaan` varchar(50) DEFAULT NULL,
-  `id_pembelian` int(11) DEFAULT NULL,
   `id_user` int(11) NOT NULL,
+  `id_supplier` int(11) NOT NULL,
   `id_gudang` int(11) NOT NULL,
   `tanggal_penerimaan` datetime NOT NULL,
   `keterangan` text DEFAULT NULL,
@@ -335,26 +323,11 @@ CREATE TABLE `penerimaan_barang` (
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Tabel transfer_stok (bergantung pada perusahaan, gudang, dan user)
-CREATE TABLE `transfer_stok` (
-  `id_transfer` int(11) NOT NULL,
-  `no_transfer` varchar(50) DEFAULT NULL,
-  `id_perusahaan` int(11) NOT NULL,
-  `id_gudang_asal` int(11) NOT NULL,
-  `id_gudang_tujuan` int(11) NOT NULL,
-  `id_user` int(11) NOT NULL,
-  `tanggal` datetime NOT NULL,
-  `keterangan` varchar(255) DEFAULT NULL,
-  `status` enum('Draft','Packing','Shipping','Delivered','Cancelled') DEFAULT 'Draft',
-  `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 -- Tabel packing (bergantung pada user)
 CREATE TABLE `packing` (
   `id_packing` int(11) NOT NULL,
-  `id_referensi` int(11) NOT NULL COMMENT 'ID dari transaksi terkait (penjualan/transfer)',
-  `tipe_referensi` enum('penjualan','transfer') NOT NULL,
+  `id_referensi` int(11) NOT NULL COMMENT 'ID dari transaksi terkait (pemindahan_barang)',
+  `tipe_referensi` enum('pemindahan_barang') NOT NULL,
   `id_user` int(11) NOT NULL,
   `tanggal_packing` datetime NOT NULL,
   `status` enum('Draft','Packing','Completed','Cancelled') DEFAULT 'Draft',
@@ -363,11 +336,11 @@ CREATE TABLE `packing` (
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Tabel retur_penjualan (bergantung pada penjualan dan user)
+-- Tabel retur_penjualan (bergantung pada pemindahan_barang dan user)
 CREATE TABLE `retur_penjualan` (
   `id_retur` int(11) NOT NULL,
   `no_retur` varchar(50) DEFAULT NULL,
-  `id_penjualan` int(11) NOT NULL,
+  `id_pemindahan` int(11) NOT NULL,
   `id_user` int(11) NOT NULL,
   `tanggal_retur` datetime NOT NULL,
   `alasan_retur` text NOT NULL,
@@ -375,11 +348,11 @@ CREATE TABLE `retur_penjualan` (
   `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Tabel retur_pembelian (bergantung pada pembelian, user, dan supplier)
+-- Tabel retur_pembelian (bergantung pada penerimaan_barang, user, dan supplier)
 CREATE TABLE `retur_pembelian` (
   `id_retur_beli` int(11) NOT NULL,
   `no_retur_beli` varchar(50) DEFAULT NULL,
-  `id_pembelian` int(11) DEFAULT NULL,
+  `id_penerimaan` int(11) NOT NULL,
   `id_user` int(11) NOT NULL,
   `id_supplier` int(11) NOT NULL,
   `tanggal_retur` datetime NOT NULL,
@@ -389,21 +362,12 @@ CREATE TABLE `retur_pembelian` (
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Tabel detail_penjualan (bergantung pada penjualan, barang, dan gudang)
-CREATE TABLE `detail_penjualan` (
+-- Tabel detail_pemindahan_barang (bergantung pada pemindahan_barang, barang, dan gudang)
+CREATE TABLE `detail_pemindahan_barang` (
   `id_detail` int(11) NOT NULL,
-  `id_penjualan` int(11) NOT NULL,
+  `id_pemindahan` int(11) NOT NULL,
   `id_barang` int(11) NOT NULL,
   `id_gudang` int(11) NOT NULL,
-  `jumlah` int(11) NOT NULL,
-  `created_at` datetime DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- Tabel detail_pembelian (bergantung pada pembelian dan barang)
-CREATE TABLE `detail_pembelian` (
-  `id_detail` int(11) NOT NULL,
-  `id_pembelian` int(11) NOT NULL,
-  `id_barang` int(11) NOT NULL,
   `jumlah` int(11) NOT NULL,
   `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -417,15 +381,6 @@ CREATE TABLE `detail_penerimaan` (
   `jumlah_dipesan` int(11) DEFAULT NULL,
   `id_gudang` int(11) NOT NULL,
   `keterangan` text DEFAULT NULL,
-  `created_at` datetime DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- Tabel detail_transfer_stok (bergantung pada transfer_stok dan barang)
-CREATE TABLE `detail_transfer_stok` (
-  `id_detail` int(11) NOT NULL,
-  `id_transfer` int(11) NOT NULL,
-  `id_barang` int(11) NOT NULL,
-  `jumlah` int(11) NOT NULL,
   `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -474,15 +429,15 @@ CREATE TABLE `log_stok` (
   `sisa_stok` int(11) NOT NULL,
   `keterangan` text DEFAULT NULL,
   `tanggal` datetime DEFAULT current_timestamp(),
-  `id_referensi` int(11) DEFAULT NULL COMMENT 'ID transaksi terkait (penjualan/penerimaan/retur/transfer)',
-  `tipe_referensi` enum('penjualan','penerimaan','retur_penjualan','retur_pembelian','transfer','penyesuaian') DEFAULT NULL
+  `id_referensi` int(11) DEFAULT NULL COMMENT 'ID transaksi terkait (pemindahan_barang/penerimaan_barang/retur)',
+  `tipe_referensi` enum('pemindahan_barang','penerimaan_barang','retur_penjualan','retur_pembelian','penyesuaian') DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel log_status_transaksi (bergantung pada user)
 CREATE TABLE `log_status_transaksi` (
   `id_log` int(11) NOT NULL,
   `id_transaksi` int(11) NOT NULL,
-  `tipe_transaksi` enum('penjualan','pembelian','penerimaan','retur_penjualan','retur_pembelian','transfer_stok','packing') NOT NULL,
+  `tipe_transaksi` enum('pemindahan_barang','penerimaan_barang','retur_penjualan','retur_pembelian','packing') NOT NULL,
   `id_user` int(11) NOT NULL,
   `status` varchar(20) NOT NULL,
   `tanggal` datetime NOT NULL DEFAULT current_timestamp(),
@@ -510,36 +465,34 @@ WHERE `b`.`status_aktif` = 1 AND `g`.`status_aktif` = 1 AND `p`.`status_aktif` =
 -- Data untuk tabel perusahaan
 INSERT INTO `perusahaan` (`id_perusahaan`, `nama_perusahaan`, `alamat`, `telepon`, `email`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES
 (1, 'PT. Maju Bersama', 'Jl. Sudirman No. 10, Jakarta', '021-12345678', '', 1, NULL, '2025-09-15 22:53:59', '2025-09-17 12:09:24'),
-(6, 'asdas', 'asdas', 'asdas', '', 0, NULL, '2025-09-17 17:55:05', '2025-09-19 09:42:54'),
-(8, 'rwrwrw', 'werw', '', '', 1, NULL, '2025-09-17 18:36:54', '2025-09-20 05:25:09'),
-(9, 'fghjk', 'gfhjk;', '', '', 1, NULL, '2025-09-20 05:34:24', '2025-09-20 06:18:52');
+(2, 'PT. Sukses Sejahtera', 'Jl. Thamrin No. 5, Jakarta', '021-87654321', '', 1, NULL, '2025-09-16 10:15:30', NULL);
 
 -- Data untuk tabel role_user
 INSERT INTO `role_user` (`id_role`, `nama_role`, `deskripsi`) VALUES
 (1, 'Super Admin', 'Mengelola semua perusahaan'),
 (2, 'Admin Perusahaan', 'Mengelola seluruh data dan transaksi dalam lingkup perusahaannya'),
-(3, 'Sales Online', 'Melakukan input penjualan ke konsumen, tidak menyimpan stok'),
+(3, 'Sales Online', 'Melakukan input pemindahan barang ke konsumen, tidak menyimpan stok'),
 (4, 'Admin Packing', 'Menangani proses packing, pengiriman, dan konfirmasi barang sampai'),
 (5, 'Admin Return', 'Memproses verifikasi dan approval retur barang');
 
--- Data untuk tabel menu
+-- Data untuk tabel menu (disesuaikan dengan struktur menu yang diinginkan)
 INSERT INTO `menu` (`id_menu`, `nama_menu`, `url`, `permission`, `icon`, `deskripsi`, `urutan`, `id_parent`, `status_aktif`, `tipe`) VALUES
 (1, 'Dashboard', 'dashboard', NULL, 'fas fa-tachometer-alt', NULL, 1, NULL, 1, 'menu'),
 (2, 'Setup', '#', NULL, 'fas fa-database', NULL, 2, NULL, 1, 'menu'),
-(3, 'Kategori Barang', 'setup/kategori', NULL, 'fas fa-tags', NULL, 2, 2, 1, 'submenu'),
-(4, 'Barang', 'setup/barang', NULL, 'fas fa-box', NULL, 3, 2, 1, 'submenu'),
-(5, 'Gudang', 'setup/gudang', NULL, 'fas fa-warehouse', NULL, 4, 2, 1, 'submenu'),
-(6, 'Pelanggan', 'setup/pelanggan', NULL, 'fas fa-users', NULL, 5, 2, 1, 'submenu'),
-(7, 'Supplier', 'setup/supplier', NULL, 'fas fa-truck', NULL, 6, 2, 1, 'submenu'),
-(8, 'User Management', '#', NULL, 'fas fa-user-cog', NULL, 7, 2, 0, 'submenu'),
+(3, 'Perusahaan', 'setup/perusahaan', NULL, 'fas fa-building', NULL, 1, 2, 1, 'submenu'),
+(4, 'Kategori Barang', 'setup/kategori', NULL, 'fas fa-tags', NULL, 2, 2, 1, 'submenu'),
+(5, 'Barang', 'setup/barang', NULL, 'fas fa-box', NULL, 3, 2, 1, 'submenu'),
+(6, 'Gudang', 'setup/gudang', NULL, 'fas fa-warehouse', NULL, 4, 2, 1, 'submenu'),
+(7, 'Pelanggan', 'setup/pelanggan', NULL, 'fas fa-users', NULL, 5, 2, 1, 'submenu'),
+(8, 'Supplier', 'setup/supplier', NULL, 'fas fa-truck', NULL, 6, 2, 1, 'submenu'),
 (9, 'Sales', 'setup/user/sales', NULL, 'fas fa-user-tag', NULL, 7, 2, 1, 'submenu'),
 (10, 'Admin Packing', 'setup/user/packing', NULL, 'fas fa-user-cog', NULL, 8, 2, 1, 'submenu'),
-(11, 'Aktifitas', '#', NULL, 'fas fa-exchange-alt', NULL, 4, NULL, 1, 'menu'),
+(11, 'Aktifitas', '#', NULL, 'fas fa-exchange-alt', NULL, 3, NULL, 1, 'menu'),
 (12, 'Pemindahan Barang', 'aktifitas/pemindahan', NULL, 'fas fa-truck-loading', NULL, 1, 11, 1, 'submenu'),
 (13, 'Penerimaan Barang', 'aktifitas/penerimaan', NULL, 'fas fa-clipboard-check', NULL, 2, 11, 1, 'submenu'),
 (14, 'Retur Penjualan', 'aktifitas/retur_penjualan', NULL, 'fas fa-undo-alt', NULL, 3, 11, 1, 'submenu'),
 (15, 'Retur Pembelian', 'aktifitas/retur_pembelian', NULL, 'fas fa-undo', NULL, 4, 11, 1, 'submenu'),
-(16, 'Daftar', '#', NULL, 'fas fa-list', NULL, 3, NULL, 1, 'menu'),
+(16, 'Daftar', '#', NULL, 'fas fa-list', NULL, 4, NULL, 1, 'menu'),
 (17, 'Pemindahan Barang', 'daftar/pemindahan', NULL, 'fas fa-truck', NULL, 1, 16, 1, 'submenu'),
 (18, 'Penerimaan Barang', 'daftar/penerimaan', NULL, 'fas fa-clipboard-list', NULL, 2, 16, 1, 'submenu'),
 (19, 'Retur Penjualan', 'daftar/retur_penjualan', NULL, 'fas fa-undo-alt', NULL, 3, 16, 1, 'submenu'),
@@ -553,51 +506,167 @@ INSERT INTO `menu` (`id_menu`, `nama_menu`, `url`, `permission`, `icon`, `deskri
 (27, 'Stok Awal', 'pengaturan/stok_awal', NULL, 'fas fa-dolly-flatbed', NULL, 1, 26, 1, 'submenu'),
 (28, 'Hak Akses', 'pengaturan/hak_akses', NULL, 'fas fa-user-shield', NULL, 2, 26, 1, 'submenu'),
 (29, 'Approval Flow', 'pengaturan/approval', NULL, 'fas fa-tasks', NULL, 3, 26, 1, 'submenu'),
-(30, 'Pengaturan Sistem', 'pengaturan/sistem', NULL, 'fas fa-sliders-h', NULL, 4, 26, 1, 'submenu'),
-(31, 'Perusahaan', 'setup/perusahaan', NULL, 'fas fa-building', NULL, 1, 2, 1, 'submenu');
+(30, 'Pengaturan Sistem', 'pengaturan/sistem', NULL, 'fas fa-sliders-h', NULL, 4, 26, 1, 'submenu');
 
 -- Data untuk tabel user
 INSERT INTO `user` (`id_user`, `nama`, `username`, `password_hash`, `id_role`, `id_perusahaan`, `email`, `telepon`, `created_by`, `aktif`, `created_at`, `updated_at`, `last_login`, `foto_profil`, `remember_token`, `token_expires`) VALUES
 (1, 'Super Admin', 'admin', '$2y$10$Jk0IyD8hFSY6CbpX5MJtD.3GlVjw.g9hAVM/rymsjmza2cnTl02aq', 1, NULL, 'admin@example.com', '081234567890', NULL, 1, '2025-09-16 00:13:33', NULL, '2025-09-20 07:03:20', NULL, NULL, NULL),
-(2, 'Admin Perusahaan', 'adminperusahaan', '$2y$10$Jk0IyD8hFSY6CbpX5MJtD.3GlVjw.g9hAVM/rymsjmza2cnTl02aq', 2, 1, 'admin@perusahaan.com', '081234567891', NULL, 1, '2025-09-16 00:13:33', NULL, '2025-09-20 06:53:05', NULL, NULL, NULL),
+(2, 'Admin Perusahaan', 'admin_pt', '$2y$10$Jk0IyD8hFSY6CbpX5MJtD.3GlVjw.g9hAVM/rymsjmza2cnTl02aq', 2, 1, 'admin@perusahaan.com', '081234567891', NULL, 1, '2025-09-16 00:13:33', NULL, '2025-09-20 06:53:05', NULL, NULL, NULL),
 (3, 'Sales Online', 'sales', '$2y$10$Jk0IyD8hFSY6CbpX5MJtD.3GlVjw.g9hAVM/rymsjmza2cnTl02aq', 3, 1, 'sales@perusahaan.com', '081234567892', NULL, 1, '2025-09-16 00:13:33', NULL, '2025-09-20 04:29:15', NULL, NULL, NULL),
 (4, 'Admin Packing', 'packing', '$2y$10$Jk0IyD8hFSY6CbpX5MJtD.3GlVjw.g9hAVM/rymsjmza2cnTl02aq', 4, 1, 'packing@perusahaan.com', '081234567893', NULL, 1, '2025-09-16 00:13:33', NULL, NULL, NULL, NULL, NULL),
 (5, 'Admin Return', 'return', '$2y$10$Jk0IyD8hFSY6CbpX5MJtD.3GlVjw.g9hAVM/rymsjmza2cnTl02aq', 5, 1, 'return@perusahaan.com', '081234567894', NULL, 1, '2025-09-16 00:13:33', NULL, NULL, NULL, NULL, NULL);
 
 -- Data untuk tabel kategori
 INSERT INTO `kategori` (`id_kategori`, `id_perusahaan`, `nama_kategori`, `deskripsi`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 1, 'asdas', 'asdnaskjd', 1, NULL, '2025-09-18 00:28:37', NULL);
+(1, 1, 'Elektronik', 'Barang elektronik', 1, NULL, '2025-09-18 00:28:37', NULL),
+(2, 1, 'Furniture', 'Barang furniture', 1, NULL, '2025-09-18 09:45:12', NULL),
+(3, 2, 'Tekstil', 'Barang tekstil', 1, NULL, '2025-09-18 11:20:45', NULL);
 
 -- Data untuk tabel gudang
 INSERT INTO `gudang` (`id_gudang`, `id_perusahaan`, `nama_gudang`, `alamat`, `telepon`, `created_by`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES
 (1, 1, 'Gudang Utama', 'Alamat Gudang Utama', '02112345679', NULL, 1, NULL, '2025-09-16 00:12:08', NULL),
-(2, 1, 'Gudang Jakarta Timur', '124fhgbknlm,', '', 1, 1, NULL, '2025-09-17 19:01:45', '2025-09-20 06:18:46');
+(2, 1, 'Gudang Jakarta Timur', 'Jl. Jatinegara No. 10', '02112345680', 1, 1, NULL, '2025-09-17 19:01:45', '2025-09-20 06:18:46'),
+(3, 2, 'Gudang Pusat', 'Jl. Gatot Subroto No. 5', '02187654322', 2, 1, NULL, '2025-09-18 08:30:15', NULL);
 
 -- Data untuk tabel pelanggan
-INSERT INTO `pelanggan` (`id_pelanggan`, `id_perusahaan`, `nama_pelanggan`, `alamat`, `telepon`, `email`, `tipe_pelanggan`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 1, 'asdas', 'asdas', '', '', 'konsumen', 1, NULL, '2025-09-19 10:18:12', '2025-09-19 10:18:24');
+INSERT INTO `pelanggan` (`id_pelanggan`, `id_perusahaan`, `nama_pelanggan`, `alamat`, `telepon`, `email`, `tipe_pelanggan`, `id_sales`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES
+(1, 1, 'Toko Maju Jaya', 'Jl. Sudirman No. 15', '02112345681', 'toko@maju.com', 'distributor', NULL, 1, NULL, '2025-09-19 10:18:12', '2025-09-19 10:18:24'),
+(2, 1, 'Budi Santoso', 'Jl. Thamrin No. 20', '081234567893', 'budi@email.com', 'konsumen', 3, 1, NULL, '2025-09-19 11:30:45', NULL),
+(3, 2, 'CV. Sukses Abadi', 'Jl. Gatot Subroto No. 15', '02187654323', 'sukses@abadi.com', 'distributor', NULL, 1, NULL, '2025-09-19 13:45:20', NULL);
 
 -- Data untuk tabel supplier
 INSERT INTO `supplier` (`id_supplier`, `id_perusahaan`, `nama_supplier`, `alamat`, `telepon`, `email`, `kontak_person`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 1, 'asdasdas', 'asd', '', '', NULL, 1, NULL, '2025-09-19 10:17:53', '2025-09-19 10:18:02');
+(1, 1, 'PT. Elektronik Indah', 'Jl. Gatot Subroto No. 25', '02112345682', 'info@elektronik.com', 'Budi', 1, NULL, '2025-09-19 10:17:53', '2025-09-19 10:18:02'),
+(2, 2, 'PT. Tekstil Makmur', 'Jl. Sudirman No. 30', '02187654324', 'info@tekstil.com', 'Siti', 1, NULL, '2025-09-19 14:20:15', NULL);
 
 -- Data untuk tabel barang
 INSERT INTO `barang` (`id_barang`, `id_perusahaan`, `id_kategori`, `nama_barang`, `gambar`, `sku`, `deskripsi`, `satuan`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 1, 1, '1', '1758329220_stocks.png', '1', '', '1', 1, NULL, '2025-09-20 02:47:00', '2025-09-20 02:47:00'),
-(2, 1, 1, '5', '1758338937_stocks.png', '5', '', '1', 1, NULL, '2025-09-20 05:28:57', '2025-09-20 05:28:57'),
-(3, 1, 1, '6', '1758339043_stocks.png', '6', '', '1', 1, NULL, '2025-09-20 05:30:43', '2025-09-20 05:30:43'),
-(4, 1, 1, '7', '1758339357_stocks.png', '7', '', '7', 1, NULL, '2025-09-20 05:35:57', '2025-09-20 05:35:57'),
-(5, 1, 1, '8', '1758339775_large01.jpg', '89', '', 's', 1, NULL, '2025-09-20 05:42:55', '2025-09-20 05:42:55'),
-(6, 1, 1, 'n,askn', '1758343470_large01.jpg', 'bkj', '', '1', 1, NULL, '2025-09-20 06:44:31', '2025-09-20 06:44:31'),
-(7, 1, 1, 'barang nya di edit', '1758344019_stocks.png', 'alksdkas', '', 'asd', 1, NULL, '2025-09-20 06:53:39', '2025-09-20 06:53:39');
+(1, 1, 1, 'Laptop', '1758329220_laptop.png', 'LP001', 'Laptop core i5', 'unit', 1, NULL, '2025-09-20 02:47:00', '2025-09-20 02:47:00'),
+(2, 1, 1, 'Smartphone', '1758338930_phone.png', 'HP001', 'Smartphone Android', 'unit', 1, NULL, '2025-09-20 05:28:57', '2025-09-20 05:28:57'),
+(3, 1, 2, 'Meja Kantor', '1758339040_meja.png', 'MK001', 'Meja kantor ukuran 120x60cm', 'unit', 1, NULL, '2025-09-20 05:30:43', '2025-09-20 05:30:43'),
+(4, 2, 3, 'Kain Batik', '1758339350_batik.png', 'KB001', 'Kain batik premium', 'meter', 1, NULL, '2025-09-20 05:35:57', '2025-09-20 05:35:57'),
+(5, 2, 3, 'Kain Katun', '1758339770_katun.jpg', 'KK001', 'Kain katun halus', 'meter', 1, NULL, '2025-09-20 05:42:55', '2025-09-20 05:42:55');
 
 -- Data untuk tabel approval_flow
 INSERT INTO `approval_flow` (`id_approval`, `tipe_transaksi`, `status_dari`, `status_ke`, `id_role`, `urutan`, `status_aktif`) VALUES
-(1, 'penjualan', 'Draft', 'Packing', 4, 1, 1), (2, 'penjualan', 'Packing', 'Shipping', 4, 2, 1), (3, 'penjualan', 'Shipping', 'Delivered', 4, 3, 1), (4, 'penjualan', 'Draft', 'Cancelled', 4, 4, 1), (5, 'penjualan', 'Packing', 'Cancelled', 4, 5, 1), (6, 'penjualan', 'Shipping', 'Cancelled', 4, 6, 1), (7, 'transfer_stok', 'Draft', 'Packing', 4, 1, 1), (8, 'transfer_stok', 'Packing', 'Shipping', 4, 2, 1), (9, 'transfer_stok', 'Shipping', 'Delivered', 4, 3, 1), (10, 'transfer_stok', 'Draft', 'Cancelled', 4, 4, 1), (11, 'transfer_stok', 'Packing', 'Cancelled', 4, 5, 1), (12, 'transfer_stok', 'Shipping', 'Cancelled', 4, 6, 1), (13, 'pembelian', 'Draft', 'Received', 2, 1, 1), (14, 'pembelian', 'Received', 'Completed', 2, 2, 1), (15, 'pembelian', 'Draft', 'Cancelled', 2, 3, 1), (16, 'pembelian', 'Received', 'Cancelled', 2, 4, 1), (17, 'penerimaan', 'Draft', 'Received', 2, 1, 1), (18, 'penerimaan', 'Received', 'Completed', 2, 2, 1), (19, 'penerimaan', 'Draft', 'Cancelled', 2, 3, 1), (20, 'penerimaan', 'Received', 'Cancelled', 2, 4, 1), (21, 'retur_penjualan', 'Requested', 'Verification', 5, 1, 1), (22, 'retur_penjualan', 'Verification', 'Approved', 5, 2, 1), (23, 'retur_penjualan', 'Verification', 'Rejected', 5, 3, 1), (24, 'retur_penjualan', 'Approved', 'Completed', 5, 4, 1), (25, 'retur_pembelian', 'Requested', 'Verification', 5, 1, 1), (26, 'retur_pembelian', 'Verification', 'Approved', 5, 2, 1), (27, 'retur_pembelian', 'Verification', 'Rejected', 5, 3, 1), (28, 'retur_pembelian', 'Approved', 'Completed', 5, 4, 1);
+(1, 'pemindahan_barang', 'Draft', 'Packing', 4, 1, 1),
+(2, 'pemindahan_barang', 'Packing', 'Shipping', 4, 2, 1),
+(3, 'pemindahan_barang', 'Shipping', 'Delivered', 4, 3, 1),
+(4, 'pemindahan_barang', 'Draft', 'Cancelled', 4, 4, 1),
+(5, 'pemindahan_barang', 'Packing', 'Cancelled', 4, 5, 1),
+(6, 'pemindahan_barang', 'Shipping', 'Cancelled', 4, 6, 1),
+(7, 'penerimaan_barang', 'Draft', 'Received', 2, 1, 1),
+(8, 'penerimaan_barang', 'Received', 'Completed', 2, 2, 1),
+(9, 'penerimaan_barang', 'Draft', 'Cancelled', 2, 3, 1),
+(10, 'penerimaan_barang', 'Received', 'Cancelled', 2, 4, 1),
+(11, 'retur_penjualan', 'Requested', 'Verification', 5, 1, 1),
+(12, 'retur_penjualan', 'Verification', 'Approved', 5, 2, 1),
+(13, 'retur_penjualan', 'Verification', 'Rejected', 5, 3, 1),
+(14, 'retur_penjualan', 'Approved', 'Completed', 5, 4, 1),
+(15, 'retur_pembelian', 'Requested', 'Verification', 5, 1, 1),
+(16, 'retur_pembelian', 'Verification', 'Approved', 5, 2, 1),
+(17, 'retur_pembelian', 'Verification', 'Rejected', 5, 3, 1),
+(18, 'retur_pembelian', 'Approved', 'Completed', 5, 4, 1);
 
 -- Data untuk tabel hak_akses_menu
 INSERT INTO `hak_akses_menu` (`id_hak_akses`, `id_role`, `id_menu`, `can_view`, `can_create`, `can_edit`, `can_delete`) VALUES
-(1, 1, 1, 1, 1, 1, 1), (2, 1, 2, 1, 1, 1, 1), (3, 1, 3, 1, 1, 1, 1), (4, 1, 4, 1, 1, 1, 1), (5, 1, 5, 1, 1, 1, 1), (6, 1, 6, 1, 1, 1, 1), (7, 1, 7, 1, 1, 1, 1), (8, 1, 8, 1, 1, 1, 1), (9, 1, 9, 1, 1, 1, 1), (10, 1, 10, 1, 1, 1, 1), (11, 1, 11, 1, 1, 1, 1), (12, 1, 12, 1, 1, 1, 1), (13, 1, 13, 1, 1, 1, 1), (14, 1, 14, 1, 1, 1, 1), (15, 1, 15, 1, 1, 1, 1), (16, 1, 16, 1, 1, 1, 1), (17, 1, 17, 1, 1, 1, 1), (18, 1, 18, 1, 1, 1, 1), (19, 1, 19, 1, 1, 1, 1), (20, 1, 20, 1, 1, 1, 1), (21, 1, 21, 1, 1, 1, 1), (22, 1, 22, 1, 1, 1, 1), (23, 1, 23, 1, 1, 1, 1), (24, 1, 24, 1, 1, 1, 1), (25, 1, 25, 1, 1, 1, 1), (26, 1, 26, 1, 1, 1, 1), (27, 1, 27, 1, 1, 1, 1), (28, 1, 28, 1, 1, 1, 1), (29, 1, 29, 1, 1, 1, 1), (30, 1, 30, 1, 1, 1, 1), (32, 2, 1, 1, 1, 1, 1), (33, 2, 2, 1, 1, 1, 1), (34, 2, 3, 1, 1, 1, 1), (35, 2, 4, 1, 1, 1, 1), (36, 2, 5, 1, 1, 1, 1), (37, 2, 6, 1, 1, 1, 1), (38, 2, 7, 1, 1, 1, 1), (39, 2, 8, 1, 1, 1, 1), (40, 2, 9, 1, 1, 1, 1), (41, 2, 10, 1, 1, 1, 1), (42, 2, 11, 1, 1, 1, 1), (43, 2, 12, 1, 1, 1, 1), (44, 2, 13, 1, 1, 1, 1), (45, 2, 14, 1, 1, 1, 1), (46, 2, 15, 1, 1, 1, 1), (47, 2, 16, 1, 1, 1, 1), (48, 2, 17, 1, 1, 1, 1), (49, 2, 18, 1, 1, 1, 1), (50, 2, 19, 1, 1, 1, 1), (51, 2, 20, 1, 1, 1, 1), (52, 2, 21, 1, 1, 1, 1), (53, 2, 22, 1, 1, 1, 1), (54, 2, 23, 1, 1, 1, 1), (55, 2, 24, 1, 1, 1, 1), (56, 2, 25, 1, 1, 1, 1), (57, 2, 26, 1, 1, 1, 1), (58, 2, 27, 1, 1, 1, 1), (59, 2, 28, 1, 1, 1, 1), (60, 2, 29, 1, 1, 1, 1), (61, 2, 30, 1, 1, 1, 1), (63, 3, 1, 1, 0, 0, 0), (64, 3, 2, 1, 0, 0, 0), (65, 3, 4, 1, 0, 0, 0), (66, 3, 6, 1, 0, 0, 0), (67, 3, 11, 1, 0, 0, 0), (68, 3, 13, 1, 0, 0, 0), (69, 3, 14, 1, 0, 0, 0), (70, 3, 15, 1, 0, 0, 0), (71, 3, 16, 1, 0, 0, 0), (72, 3, 18, 1, 0, 0, 0), (73, 3, 19, 1, 0, 0, 0), (74, 3, 20, 1, 0, 0, 0), (75, 3, 21, 1, 0, 0, 0), (76, 3, 22, 1, 0, 0, 0), (77, 4, 1, 1, 0, 0, 0), (78, 4, 11, 1, 0, 0, 0), (79, 4, 12, 1, 0, 0, 0), (80, 4, 13, 1, 0, 0, 0), (81, 4, 16, 1, 0, 0, 0), (82, 4, 17, 1, 0, 0, 0), (83, 4, 18, 1, 0, 0, 0), (84, 4, 21, 1, 0, 0, 0), (85, 4, 23, 1, 0, 0, 0), (86, 5, 1, 1, 0, 0, 0), (87, 5, 11, 1, 0, 0, 0), (88, 5, 14, 1, 0, 0, 0), (89, 5, 15, 1, 0, 0, 0), (90, 5, 16, 1, 0, 0, 0), (91, 5, 19, 1, 0, 0, 0), (92, 5, 20, 1, 0, 0, 0), (93, 1, 31, 1, 1, 1, 1), (94, 2, 31, 1, 1, 1, 1);
+-- Super Admin (id_role = 1) - Akses penuh ke semua menu
+(1, 1, 1, 1, 1, 1, 1),
+(2, 1, 2, 1, 1, 1, 1),
+(3, 1, 3, 1, 1, 1, 1),
+(4, 1, 4, 1, 1, 1, 1),
+(5, 1, 5, 1, 1, 1, 1),
+(6, 1, 6, 1, 1, 1, 1),
+(7, 1, 7, 1, 1, 1, 1),
+(8, 1, 8, 1, 1, 1, 1),
+(9, 1, 9, 1, 1, 1, 1),
+(10, 1, 10, 1, 1, 1, 1),
+(11, 1, 11, 1, 1, 1, 1),
+(12, 1, 12, 1, 1, 1, 1),
+(13, 1, 13, 1, 1, 1, 1),
+(14, 1, 14, 1, 1, 1, 1),
+(15, 1, 15, 1, 1, 1, 1),
+(16, 1, 16, 1, 1, 1, 1),
+(17, 1, 17, 1, 1, 1, 1),
+(18, 1, 18, 1, 1, 1, 1),
+(19, 1, 19, 1, 1, 1, 1),
+(20, 1, 20, 1, 1, 1, 1),
+(21, 1, 21, 1, 1, 1, 1),
+(22, 1, 22, 1, 1, 1, 1),
+(23, 1, 23, 1, 1, 1, 1),
+(24, 1, 24, 1, 1, 1, 1),
+(25, 1, 25, 1, 1, 1, 1),
+(26, 1, 26, 1, 1, 1, 1),
+(27, 1, 27, 1, 1, 1, 1),
+(28, 1, 28, 1, 1, 1, 1),
+(29, 1, 29, 1, 1, 1, 1),
+(30, 1, 30, 1, 1, 1, 1),
+
+-- Admin Perusahaan (id_role = 2) - Akses penuh di perusahaannya
+(31, 2, 1, 1, 1, 1, 1),
+(32, 2, 2, 1, 1, 1, 1),
+(33, 2, 3, 1, 1, 1, 1),
+(34, 2, 4, 1, 1, 1, 1),
+(35, 2, 5, 1, 1, 1, 1),
+(36, 2, 6, 1, 1, 1, 1),
+(37, 2, 7, 1, 1, 1, 1),
+(38, 2, 8, 1, 1, 1, 1),
+(39, 2, 9, 1, 1, 1, 1),
+(40, 2, 10, 1, 1, 1, 1),
+(41, 2, 11, 1, 1, 1, 1),
+(42, 2, 12, 1, 1, 1, 1),
+(43, 2, 13, 1, 1, 1, 1),
+(44, 2, 14, 1, 1, 1, 1),
+(45, 2, 15, 1, 1, 1, 1),
+(46, 2, 16, 1, 1, 1, 1),
+(47, 2, 17, 1, 1, 1, 1),
+(48, 2, 18, 1, 1, 1, 1),
+(49, 2, 19, 1, 1, 1, 1),
+(50, 2, 20, 1, 1, 1, 1),
+(51, 2, 21, 1, 1, 1, 1),
+(52, 2, 22, 1, 1, 1, 1),
+(53, 2, 23, 1, 1, 1, 1),
+(54, 2, 24, 1, 1, 1, 1),
+(55, 2, 25, 1, 1, 1, 1),
+(56, 2, 26, 1, 1, 1, 1),
+(57, 2, 27, 1, 1, 1, 1),
+(58, 2, 28, 1, 1, 1, 1),
+(59, 2, 29, 1, 1, 1, 1),
+(60, 2, 30, 1, 1, 1, 1),
+
+-- Sales Online (id_role = 3) - Hanya bisa melihat dan membuat pemindahan barang ke konsumen miliknya
+(61, 3, 1, 1, 0, 0, 0),
+(62, 3, 2, 1, 0, 0, 0),
+(63, 3, 4, 1, 0, 0, 0),
+(64, 3, 5, 1, 0, 0, 0),
+(65, 3, 6, 1, 0, 0, 0),
+(66, 3, 7, 1, 0, 0, 0),
+(67, 3, 11, 1, 1, 1, 0),
+(68, 3, 12, 1, 1, 1, 0),
+(69, 3, 16, 1, 1, 1, 0),
+(70, 3, 17, 1, 1, 1, 0),
+(71, 3, 21, 1, 1, 0, 0),
+(72, 3, 22, 1, 1, 0, 0),
+
+-- Admin Packing (id_role = 4) - Bisa mengelola packing dan pengiriman
+(73, 4, 1, 1, 0, 0, 0),
+(74, 4, 11, 1, 0, 0, 0),
+(75, 4, 12, 1, 1, 1, 0),
+(76, 4, 16, 1, 1, 1, 0),
+(77, 4, 17, 1, 1, 1, 0),
+(78, 4, 21, 1, 1, 0, 0),
+(79, 4, 23, 1, 1, 0, 0),
+
+-- Admin Return (id_role = 5) - Bisa memproses retur
+(80, 5, 1, 1, 0, 0, 0),
+(81, 5, 11, 1, 0, 0, 0),
+(82, 5, 13, 1, 0, 0, 0),
+(83, 5, 14, 1, 1, 1, 0),
+(84, 5, 15, 1, 1, 1, 0),
+(85, 5, 16, 1, 0, 0, 0),
+(86, 5, 19, 1, 1, 1, 0),
+(87, 5, 20, 1, 1, 1, 0),
+(88, 5, 21, 1, 1, 0, 0);
 
 -- Indexes dan constraints untuk semua tabel
 ALTER TABLE `approval_flow`
@@ -615,22 +684,17 @@ ALTER TABLE `detail_packing`
   ADD KEY `id_packing` (`id_packing`),
   ADD KEY `id_barang` (`id_barang`);
 
-ALTER TABLE `detail_pembelian`
-  ADD PRIMARY KEY (`id_detail`),
-  ADD KEY `id_pembelian` (`id_pembelian`),
-  ADD KEY `id_barang` (`id_barang`);
-
 ALTER TABLE `detail_penerimaan`
   ADD PRIMARY KEY (`id_detail`),
   ADD KEY `id_penerimaan` (`id_penerimaan`),
   ADD KEY `id_barang` (`id_barang`),
   ADD KEY `id_gudang` (`id_gudang`);
 
-ALTER TABLE `detail_penjualan`
+ALTER TABLE `detail_pemindahan_barang`
   ADD PRIMARY KEY (`id_detail`),
-  ADD KEY `fk_penjualan_detail` (`id_penjualan`),
-  ADD KEY `fk_barang_penjualan` (`id_barang`),
-  ADD KEY `fk_gudang_penjualan` (`id_gudang`);
+  ADD KEY `id_pemindahan` (`id_pemindahan`),
+  ADD KEY `id_barang` (`id_barang`),
+  ADD KEY `id_gudang` (`id_gudang`);
 
 ALTER TABLE `detail_retur_pembelian`
   ADD PRIMARY KEY (`id_detail_retur_beli`),
@@ -640,14 +704,9 @@ ALTER TABLE `detail_retur_pembelian`
 
 ALTER TABLE `detail_retur_penjualan`
   ADD PRIMARY KEY (`id_detail_retur`),
-  ADD KEY `fk_retur` (`id_retur`),
-  ADD KEY `fk_barang` (`id_barang`),
-  ADD KEY `fk_gudang` (`id_gudang`);
-
-ALTER TABLE `detail_transfer_stok`
-  ADD PRIMARY KEY (`id_detail`),
-  ADD KEY `id_transfer` (`id_transfer`),
-  ADD KEY `id_barang` (`id_barang`);
+  ADD KEY `id_retur` (`id_retur`),
+  ADD KEY `id_barang` (`id_barang`),
+  ADD KEY `id_gudang` (`id_gudang`);
 
 ALTER TABLE `gudang`
   ADD PRIMARY KEY (`id_gudang`),
@@ -689,42 +748,39 @@ ALTER TABLE `packing`
 
 ALTER TABLE `pelanggan`
   ADD PRIMARY KEY (`id_pelanggan`),
-  ADD KEY `pelanggan_ibfk_1` (`id_perusahaan`);
-
-ALTER TABLE `pembelian`
-  ADD PRIMARY KEY (`id_pembelian`),
-  ADD KEY `id_perusahaan` (`id_perusahaan`),
-  ADD KEY `pembelian_ibfk_2` (`id_user`),
-  ADD KEY `pembelian_ibfk_3` (`id_supplier`);
+  ADD KEY `pelanggan_ibfk_1` (`id_perusahaan`),
+  ADD KEY `id_sales` (`id_sales`);
 
 ALTER TABLE `penerimaan_barang`
   ADD PRIMARY KEY (`id_penerimaan`),
-  ADD KEY `id_pembelian` (`id_pembelian`),
   ADD KEY `id_user` (`id_user`),
+  ADD KEY `id_supplier` (`id_supplier`),
   ADD KEY `id_gudang` (`id_gudang`);
+
+ALTER TABLE `pemindahan_barang`
+  ADD PRIMARY KEY (`id_pemindahan`),
+  ADD KEY `id_perusahaan` (`id_perusahaan`),
+  ADD KEY `id_user` (`id_user`),
+  ADD KEY `id_gudang_asal` (`id_gudang_asal`),
+  ADD KEY `id_gudang_tujuan` (`id_gudang_tujuan`),
+  ADD KEY `id_pelanggan` (`id_pelanggan`);
 
 ALTER TABLE `pengaturan_sistem`
   ADD PRIMARY KEY (`id_pengaturan`),
   ADD UNIQUE KEY `uniq_key` (`key`);
-
-ALTER TABLE `penjualan`
-  ADD PRIMARY KEY (`id_penjualan`),
-  ADD KEY `id_perusahaan` (`id_perusahaan`),
-  ADD KEY `penjualan_ibfk_2` (`id_user`),
-  ADD KEY `penjualan_ibfk_3` (`id_pelanggan`);
 
 ALTER TABLE `perusahaan`
   ADD PRIMARY KEY (`id_perusahaan`);
 
 ALTER TABLE `retur_pembelian`
   ADD PRIMARY KEY (`id_retur_beli`),
-  ADD KEY `id_pembelian` (`id_pembelian`),
+  ADD KEY `id_penerimaan` (`id_penerimaan`),
   ADD KEY `id_user` (`id_user`),
   ADD KEY `id_supplier` (`id_supplier`);
 
 ALTER TABLE `retur_penjualan`
   ADD PRIMARY KEY (`id_retur`),
-  ADD KEY `id_penjualan` (`id_penjualan`),
+  ADD KEY `id_pemindahan` (`id_pemindahan`),
   ADD KEY `id_user` (`id_user`);
 
 ALTER TABLE `role_user`
@@ -747,13 +803,6 @@ ALTER TABLE `supplier`
   ADD PRIMARY KEY (`id_supplier`),
   ADD KEY `supplier_ibfk_1` (`id_perusahaan`);
 
-ALTER TABLE `transfer_stok`
-  ADD PRIMARY KEY (`id_transfer`),
-  ADD KEY `id_perusahaan` (`id_perusahaan`),
-  ADD KEY `id_gudang_asal` (`id_gudang_asal`),
-  ADD KEY `id_gudang_tujuan` (`id_gudang_tujuan`),
-  ADD KEY `id_user` (`id_user`);
-
 ALTER TABLE `user`
   ADD PRIMARY KEY (`id_user`),
   ADD UNIQUE KEY `username` (`username`),
@@ -763,21 +812,18 @@ ALTER TABLE `user`
 
 -- AUTO_INCREMENT untuk semua tabel
 ALTER TABLE `approval_flow`
-  MODIFY `id_approval` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id_approval` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 ALTER TABLE `barang`
-  MODIFY `id_barang` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id_barang` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 ALTER TABLE `detail_packing`
-  MODIFY `id_detail` int(11) NOT NULL AUTO_INCREMENT;
-
-ALTER TABLE `detail_pembelian`
   MODIFY `id_detail` int(11) NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `detail_penerimaan`
   MODIFY `id_detail` int(11) NOT NULL AUTO_INCREMENT;
 
-ALTER TABLE `detail_penjualan`
+ALTER TABLE `detail_pemindahan_barang`
   MODIFY `id_detail` int(11) NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `detail_retur_pembelian`
@@ -786,17 +832,14 @@ ALTER TABLE `detail_retur_pembelian`
 ALTER TABLE `detail_retur_penjualan`
   MODIFY `id_detail_retur` int(11) NOT NULL AUTO_INCREMENT;
 
-ALTER TABLE `detail_transfer_stok`
-  MODIFY `id_detail` int(11) NOT NULL AUTO_INCREMENT;
-
 ALTER TABLE `gudang`
-  MODIFY `id_gudang` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_gudang` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 ALTER TABLE `hak_akses_menu`
-  MODIFY `id_hak_akses` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=105;
+  MODIFY `id_hak_akses` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=89;
 
 ALTER TABLE `kategori`
-  MODIFY `id_kategori` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_kategori` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 ALTER TABLE `log_status_transaksi`
   MODIFY `id_log` int(11) NOT NULL AUTO_INCREMENT;
@@ -805,28 +848,25 @@ ALTER TABLE `log_stok`
   MODIFY `id_log` int(11) NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `menu`
-  MODIFY `id_menu` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id_menu` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 ALTER TABLE `packing`
   MODIFY `id_packing` int(11) NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `pelanggan`
-  MODIFY `id_pelanggan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
-ALTER TABLE `pembelian`
-  MODIFY `id_pembelian` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_pelanggan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 ALTER TABLE `penerimaan_barang`
   MODIFY `id_penerimaan` int(11) NOT NULL AUTO_INCREMENT;
 
+ALTER TABLE `pemindahan_barang`
+  MODIFY `id_pemindahan` int(11) NOT NULL AUTO_INCREMENT;
+
 ALTER TABLE `pengaturan_sistem`
   MODIFY `id_pengaturan` int(11) NOT NULL AUTO_INCREMENT;
 
-ALTER TABLE `penjualan`
-  MODIFY `id_penjualan` int(11) NOT NULL AUTO_INCREMENT;
-
 ALTER TABLE `perusahaan`
-  MODIFY `id_perusahaan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id_perusahaan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 ALTER TABLE `retur_pembelian`
   MODIFY `id_retur_beli` int(11) NOT NULL AUTO_INCREMENT;
@@ -844,10 +884,7 @@ ALTER TABLE `stok_gudang`
   MODIFY `id_stok` int(11) NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `supplier`
-  MODIFY `id_supplier` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
-ALTER TABLE `transfer_stok`
-  MODIFY `id_transfer` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_supplier` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 ALTER TABLE `user`
   MODIFY `id_user` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
@@ -864,19 +901,15 @@ ALTER TABLE `detail_packing`
   ADD CONSTRAINT `detail_packing_ibfk_1` FOREIGN KEY (`id_packing`) REFERENCES `packing` (`id_packing`),
   ADD CONSTRAINT `detail_packing_ibfk_2` FOREIGN KEY (`id_barang`) REFERENCES `barang` (`id_barang`);
 
-ALTER TABLE `detail_pembelian`
-  ADD CONSTRAINT `detail_pembelian_ibfk_1` FOREIGN KEY (`id_pembelian`) REFERENCES `pembelian` (`id_pembelian`),
-  ADD CONSTRAINT `detail_pembelian_ibfk_2` FOREIGN KEY (`id_barang`) REFERENCES `barang` (`id_barang`);
-
 ALTER TABLE `detail_penerimaan`
   ADD CONSTRAINT `detail_penerimaan_ibfk_1` FOREIGN KEY (`id_penerimaan`) REFERENCES `penerimaan_barang` (`id_penerimaan`),
   ADD CONSTRAINT `detail_penerimaan_ibfk_2` FOREIGN KEY (`id_barang`) REFERENCES `barang` (`id_barang`),
   ADD CONSTRAINT `detail_penerimaan_ibfk_3` FOREIGN KEY (`id_gudang`) REFERENCES `gudang` (`id_gudang`);
 
-ALTER TABLE `detail_penjualan`
-  ADD CONSTRAINT `detail_penjualan_ibfk_1` FOREIGN KEY (`id_penjualan`) REFERENCES `penjualan` (`id_penjualan`),
-  ADD CONSTRAINT `detail_penjualan_ibfk_2` FOREIGN KEY (`id_barang`) REFERENCES `barang` (`id_barang`),
-  ADD CONSTRAINT `detail_penjualan_ibfk_3` FOREIGN KEY (`id_gudang`) REFERENCES `gudang` (`id_gudang`);
+ALTER TABLE `detail_pemindahan_barang`
+  ADD CONSTRAINT `detail_pemindahan_barang_ibfk_1` FOREIGN KEY (`id_pemindahan`) REFERENCES `pemindahan_barang` (`id_pemindahan`),
+  ADD CONSTRAINT `detail_pemindahan_barang_ibfk_2` FOREIGN KEY (`id_barang`) REFERENCES `barang` (`id_barang`),
+  ADD CONSTRAINT `detail_pemindahan_barang_ibfk_3` FOREIGN KEY (`id_gudang`) REFERENCES `gudang` (`id_gudang`);
 
 ALTER TABLE `detail_retur_pembelian`
   ADD CONSTRAINT `detail_retur_pembelian_ibfk_1` FOREIGN KEY (`id_retur_beli`) REFERENCES `retur_pembelian` (`id_retur_beli`),
@@ -887,10 +920,6 @@ ALTER TABLE `detail_retur_penjualan`
   ADD CONSTRAINT `detail_retur_penjualan_ibfk_1` FOREIGN KEY (`id_retur`) REFERENCES `retur_penjualan` (`id_retur`),
   ADD CONSTRAINT `detail_retur_penjualan_ibfk_2` FOREIGN KEY (`id_barang`) REFERENCES `barang` (`id_barang`),
   ADD CONSTRAINT `detail_retur_penjualan_ibfk_3` FOREIGN KEY (`id_gudang`) REFERENCES `gudang` (`id_gudang`);
-
-ALTER TABLE `detail_transfer_stok`
-  ADD CONSTRAINT `detail_transfer_stok_ibfk_1` FOREIGN KEY (`id_transfer`) REFERENCES `transfer_stok` (`id_transfer`),
-  ADD CONSTRAINT `detail_transfer_stok_ibfk_2` FOREIGN KEY (`id_barang`) REFERENCES `barang` (`id_barang`);
 
 ALTER TABLE `gudang`
   ADD CONSTRAINT `gudang_ibfk_1` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`),
@@ -919,30 +948,28 @@ ALTER TABLE `packing`
   ADD CONSTRAINT `packing_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`);
 
 ALTER TABLE `pelanggan`
-  ADD CONSTRAINT `pelanggan_ibfk_1` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`);
-
-ALTER TABLE `pembelian`
-  ADD CONSTRAINT `pembelian_ibfk_1` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`),
-  ADD CONSTRAINT `pembelian_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`),
-  ADD CONSTRAINT `pembelian_ibfk_3` FOREIGN KEY (`id_supplier`) REFERENCES `supplier` (`id_supplier`);
+  ADD CONSTRAINT `pelanggan_ibfk_1` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`),
+  ADD CONSTRAINT `pelanggan_ibfk_2` FOREIGN KEY (`id_sales`) REFERENCES `user` (`id_user`);
 
 ALTER TABLE `penerimaan_barang`
-  ADD CONSTRAINT `penerimaan_barang_ibfk_1` FOREIGN KEY (`id_pembelian`) REFERENCES `pembelian` (`id_pembelian`),
-  ADD CONSTRAINT `penerimaan_barang_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`),
+  ADD CONSTRAINT `penerimaan_barang_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`),
+  ADD CONSTRAINT `penerimaan_barang_ibfk_2` FOREIGN KEY (`id_supplier`) REFERENCES `supplier` (`id_supplier`),
   ADD CONSTRAINT `penerimaan_barang_ibfk_3` FOREIGN KEY (`id_gudang`) REFERENCES `gudang` (`id_gudang`);
 
-ALTER TABLE `penjualan`
-  ADD CONSTRAINT `penjualan_ibfk_1` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`),
-  ADD CONSTRAINT `penjualan_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`),
-  ADD CONSTRAINT `penjualan_ibfk_3` FOREIGN KEY (`id_pelanggan`) REFERENCES `pelanggan` (`id_pelanggan`);
+ALTER TABLE `pemindahan_barang`
+  ADD CONSTRAINT `pemindahan_barang_ibfk_1` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`),
+  ADD CONSTRAINT `pemindahan_barang_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`),
+  ADD CONSTRAINT `pemindahan_barang_ibfk_3` FOREIGN KEY (`id_gudang_asal`) REFERENCES `gudang` (`id_gudang`),
+  ADD CONSTRAINT `pemindahan_barang_ibfk_4` FOREIGN KEY (`id_gudang_tujuan`) REFERENCES `gudang` (`id_gudang`),
+  ADD CONSTRAINT `pemindahan_barang_ibfk_5` FOREIGN KEY (`id_pelanggan`) REFERENCES `pelanggan` (`id_pelanggan`);
 
 ALTER TABLE `retur_pembelian`
-  ADD CONSTRAINT `retur_pembelian_ibfk_1` FOREIGN KEY (`id_pembelian`) REFERENCES `pembelian` (`id_pembelian`),
+  ADD CONSTRAINT `retur_pembelian_ibfk_1` FOREIGN KEY (`id_penerimaan`) REFERENCES `penerimaan_barang` (`id_penerimaan`),
   ADD CONSTRAINT `retur_pembelian_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`),
   ADD CONSTRAINT `retur_pembelian_ibfk_3` FOREIGN KEY (`id_supplier`) REFERENCES `supplier` (`id_supplier`);
 
 ALTER TABLE `retur_penjualan`
-  ADD CONSTRAINT `retur_penjualan_ibfk_1` FOREIGN KEY (`id_penjualan`) REFERENCES `penjualan` (`id_penjualan`),
+  ADD CONSTRAINT `retur_penjualan_ibfk_1` FOREIGN KEY (`id_pemindahan`) REFERENCES `pemindahan_barang` (`id_pemindahan`),
   ADD CONSTRAINT `retur_penjualan_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`);
 
 ALTER TABLE `stok_awal`
@@ -959,17 +986,15 @@ ALTER TABLE `stok_gudang`
 ALTER TABLE `supplier`
   ADD CONSTRAINT `supplier_ibfk_1` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`);
 
-ALTER TABLE `transfer_stok`
-  ADD CONSTRAINT `transfer_stok_ibfk_1` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`),
-  ADD CONSTRAINT `transfer_stok_ibfk_2` FOREIGN KEY (`id_gudang_asal`) REFERENCES `gudang` (`id_gudang`),
-  ADD CONSTRAINT `transfer_stok_ibfk_3` FOREIGN KEY (`id_gudang_tujuan`) REFERENCES `gudang` (`id_gudang`),
-  ADD CONSTRAINT `transfer_stok_ibfk_4` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`);
-
 ALTER TABLE `user`
   ADD CONSTRAINT `user_ibfk_1` FOREIGN KEY (`id_role`) REFERENCES `role_user` (`id_role`),
   ADD CONSTRAINT `user_ibfk_2` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`),
   ADD CONSTRAINT `user_ibfk_3` FOREIGN KEY (`created_by`) REFERENCES `user` (`id_user`);
 
+yang ingin saya tanyakan adalah, dari penjelasan rancangan sistem yang sedang di bangun,
+apakah rancangan databse ini sudah sesuai?
+sepertinya belum sebab tidak ada transaksi penjualan dalam rancangan kita kali ini. Benar kan?
+jadi mari tolong buatkan rancangan databse yg sesuai dengan rancangan sismtem ini ya.
 
 gudang_system/
 ├── application/

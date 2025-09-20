@@ -17,24 +17,6 @@
         </div>
     </div>
     <div class="card-body">
-        <?php if ($this->session->flashdata('success')): ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <?php echo $this->session->flashdata('success'); ?>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        <?php endif; ?>
-
-        <?php if ($this->session->flashdata('error')): ?>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <?php echo $this->session->flashdata('error'); ?>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        <?php endif; ?>
-
         <div class="table-responsive">
             <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
                 <thead>
@@ -50,31 +32,37 @@
                 </thead>
                 <tbody>
                     <?php $no = 1;
-                    foreach ($stok_awal as $row): ?>
+                    if (!empty($stok_awal)):
+                        foreach ($stok_awal as $row): ?>
+                            <tr>
+                                <td><?php echo $no++; ?></td>
+                                <td><?php echo $row->nama_barang; ?> (<?php echo $row->sku; ?>)</td>
+                                <td><?php echo $row->nama_gudang; ?></td>
+                                <td><?php echo $row->qty_awal; ?></td>
+                                <td><?php echo $row->created_by; ?></td>
+                                <td><?php echo date('d-m-Y H:i', strtotime($row->created_at)); ?></td>
+                                <td>
+                                    <?php if ($can_edit): ?>
+                                        <a href="<?php echo site_url('pengaturan/stok_awal/edit/' . $row->id_stok_awal); ?>"
+                                            class="btn btn-sm btn-warning" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    <?php endif; ?>
+                                    <?php if ($can_delete): ?>
+                                        <a href="<?php echo site_url('pengaturan/stok_awal/hapus/' . $row->id_stok_awal); ?>"
+                                            class="btn btn-sm btn-danger" title="Hapus"
+                                            onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach;
+                    else: ?>
                         <tr>
-                            <td><?php echo $no++; ?></td>
-                            <td><?php echo $row->nama_barang; ?> (<?php echo $row->sku; ?>)</td>
-                            <td><?php echo $row->nama_gudang; ?></td>
-                            <td><?php echo $row->qty_awal; ?></td>
-                            <td><?php echo $row->created_by; ?></td>
-                            <td><?php echo date('d-m-Y H:i', strtotime($row->created_at)); ?></td>
-                            <td>
-                                <?php if ($can_edit): ?>
-                                    <a href="<?php echo site_url('pengaturan/stok_awal/edit/' . $row->id_stok_awal); ?>"
-                                        class="btn btn-sm btn-warning" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                <?php endif; ?>
-                                <?php if ($can_delete): ?>
-                                    <a href="<?php echo site_url('pengaturan/stok_awal/hapus/' . $row->id_stok_awal); ?>"
-                                        class="btn btn-sm btn-danger" title="Hapus"
-                                        onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
-                                <?php endif; ?>
-                            </td>
+                            <td colspan="7" class="text-center">Tidak ada data stok awal</td>
                         </tr>
-                    <?php endforeach; ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>

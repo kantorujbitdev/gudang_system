@@ -19,7 +19,8 @@ class Stok_awal extends MY_Controller
     public function index()
     {
         $this->data['title'] = 'Stok Awal';
-        $this->data['stok_awal'] = $this->stok_awal->get_all();
+        $id_perusahaan = $this->session->userdata('id_perusahaan');
+        $this->data['stok_awal'] = $this->stok_awal->get_stok_awal_by_perusahaan($id_perusahaan);
         $this->data['can_create'] = $this->check_permission('pengaturan/stok_awal', 'create');
         $this->data['can_edit'] = $this->check_permission('pengaturan/stok_awal', 'edit');
         $this->data['can_delete'] = $this->check_permission('pengaturan/stok_awal', 'delete');
@@ -35,8 +36,9 @@ class Stok_awal extends MY_Controller
         }
 
         $this->data['title'] = 'Tambah Stok Awal';
-        $this->data['barang'] = $this->barang->get_all();
-        $this->data['gudang'] = $this->gudang->get_all();
+        $id_perusahaan = $this->session->userdata('id_perusahaan');
+        $this->data['barang'] = $this->stok_awal->get_barang_by_perusahaan($id_perusahaan);
+        $this->data['gudang'] = $this->stok_awal->get_gudang_by_perusahaan($id_perusahaan);
 
         $this->form_validation->set_rules('id_barang', 'Barang', 'required');
         $this->form_validation->set_rules('id_gudang', 'Gudang', 'required');
@@ -59,7 +61,7 @@ class Stok_awal extends MY_Controller
         $data_insert = [
             'id_barang' => $id_barang,
             'id_gudang' => $id_gudang,
-            'id_perusahaan' => $this->session->userdata('id_perusahaan'),
+            'id_perusahaan' => $id_perusahaan,
             'qty_awal' => $qty_awal,
             'keterangan' => $this->input->post('keterangan'),
             'created_by' => $this->session->userdata('id_user'),
@@ -85,8 +87,9 @@ class Stok_awal extends MY_Controller
 
         $this->data['title'] = 'Edit Stok Awal';
         $this->data['stok_awal'] = $this->stok_awal->get($id_stok_awal);
-        $this->data['barang'] = $this->barang->get_all();
-        $this->data['gudang'] = $this->gudang->get_all();
+        $id_perusahaan = $this->session->userdata('id_perusahaan');
+        $this->data['barang'] = $this->stok_awal->get_barang_by_perusahaan($id_perusahaan);
+        $this->data['gudang'] = $this->stok_awal->get_gudang_by_perusahaan($id_perusahaan);
 
         if (!$this->data['stok_awal']) {
             show_404();
@@ -143,21 +146,149 @@ class Stok_awal extends MY_Controller
         return redirect('pengaturan/stok_awal');
     }
 
-    // import() biarin dulu (bisa dimodif flashdata juga kalau mau)
+    public function import()
+    {
+        if (!$this->check_permission('pengaturan/stok_awal', 'create')) {
+            $this->session->set_flashdata('error', 'Anda tidak memiliki izin untuk mengimpor stok awal!');
+            return redirect('pengaturan/stok_awal');
+        }
+
+        $this->data['title'] = 'Import Stok Awal';
+
+        if ($this->input->post()) {
+            $config['upload_path'] = './uploads/';
+            $config['allowed_types'] = 'xlsx|xls|csv';
+            $config['max_size'] = 2048;
+            $config['file_name'] = 'stok_awal_' . time();
+
+            $this->load->library('upload', $config);
+
+            if (!$this->upload->do_upload('file_import')) {
+                $error = $this->upload->display_errors();
+                $this->session->set_flashdata('error', $error);
+                return redirect('pengaturan/stok_awal/import');
+            } else {
+                $file = $this->upload->data();
+                $ext = pathinfo($file['file_name'], PATHINFO_EXTENSION);
+
+                if ($ext == 'csv') {
+                    $reader = new \PhpOffice\PhpSpreadsheet\Reader\Csv();
+                } elseif ($ext == 'xls') {
+                    $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+                } else {
+                    $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+                }
+
+                $spreadsheet = $reader->load('./uploads/' . $file['file_name']);
+                $sheetData = $spreadsheet->getActiveSheet()->toArray();
+
+                $error_messages = [];
+                $success_count = 0;
+                $skip_count = 0;
+
+                // Lewati header (baris pertama)
+                for ($i = 1; $i < count($sheetData); $i++) {
+                    $row = $sheetData[$i];
+
+                    $sku = trim($row[0]);
+                    $nama_gudang = trim($row[1]);
+                    $qty_awal = (int) $row[2];
+                    $keterangan = isset($row[3]) ? trim($row[3]) : '';
+
+                    if (empty($sku) || empty($nama_gudang) || $qty_awal < 0) {
+                        $error_messages[] = "Baris " . ($i + 1) . ": Data tidak lengkap atau jumlah stok negatif";
+                        continue;
+                    }
+
+                    // Cari barang berdasarkan SKU
+                    $barang = $this->db->get_where('barang', [
+                        'sku' => $sku,
+                        'id_perusahaan' => $this->session->userdata('id_perusahaan'),
+                        'status_aktif' => 1
+                    ])->row();
+
+                    if (!$barang) {
+                        $error_messages[] = "Baris " . ($i + 1) . ": Barang dengan SKU '$sku' tidak ditemukan";
+                        continue;
+                    }
+
+                    // Cari gudang berdasarkan nama
+                    $gudang = $this->db->get_where('gudang', [
+                        'nama_gudang' => $nama_gudang,
+                        'id_perusahaan' => $this->session->userdata('id_perusahaan'),
+                        'status_aktif' => 1
+                    ])->row();
+
+                    if (!$gudang) {
+                        $error_messages[] = "Baris " . ($i + 1) . ": Gudang '$nama_gudang' tidak ditemukan";
+                        continue;
+                    }
+
+                    // Cek apakah stok awal sudah ada
+                    $existing_stok = $this->stok_awal->get_by_barang_gudang($barang->id_barang, $gudang->id_gudang);
+                    if ($existing_stok) {
+                        $skip_count++;
+                        continue;
+                    }
+
+                    // Simpan stok awal
+                    $data_insert = [
+                        'id_barang' => $barang->id_barang,
+                        'id_gudang' => $gudang->id_gudang,
+                        'id_perusahaan' => $this->session->userdata('id_perusahaan'),
+                        'qty_awal' => $qty_awal,
+                        'keterangan' => $keterangan,
+                        'created_by' => $this->session->userdata('id_user'),
+                        'created_at' => date('Y-m-d H:i:s')
+                    ];
+
+                    if ($this->stok_awal->insert($data_insert)) {
+                        $this->update_stok_gudang($barang->id_barang, $gudang->id_gudang, $qty_awal);
+                        $success_count++;
+                    } else {
+                        $error_messages[] = "Baris " . ($i + 1) . ": Gagal menyimpan data";
+                    }
+                }
+
+                // Hapus file upload
+                unlink('./uploads/' . $file['file_name']);
+
+                // Set flashdata
+                if ($success_count > 0) {
+                    $this->session->set_flashdata('success', "$success_count stok awal berhasil diimpor");
+                }
+
+                if ($skip_count > 0) {
+                    $this->session->set_flashdata('warning', "$skip_count data dilewati karena sudah ada");
+                }
+
+                if (!empty($error_messages)) {
+                    $this->session->set_flashdata('error_messages', $error_messages);
+                }
+
+                return redirect('pengaturan/stok_awal');
+            }
+        }
+
+        $this->render_view('pengaturan/stok_awal/import');
+    }
 
     private function update_stok_gudang($id_barang, $id_gudang, $jumlah)
     {
+        $id_perusahaan = $this->session->userdata('id_perusahaan');
         $stok = $this->stok_awal->get_stok_gudang($id_barang, $id_gudang);
 
         if ($stok) {
+            // Update stok yang ada
             $data = [
                 'jumlah' => $jumlah,
                 'updated_at' => date('Y-m-d H:i:s')
             ];
             $this->stok_awal->update_stok_gudang($id_barang, $id_gudang, $data);
         } else {
+            // Insert stok baru
             $data = [
-                'id_perusahaan' => $this->session->userdata('id_perusahaan'),
+                'id_perusahaan' => $id_perusahaan,
                 'id_barang' => $id_barang,
                 'id_gudang' => $id_gudang,
                 'jumlah' => $jumlah,
@@ -168,16 +299,21 @@ class Stok_awal extends MY_Controller
             $this->stok_awal->insert_stok_gudang($data);
         }
 
+        // Ambil stok terbaru untuk log
+        $stok_terbaru = $this->stok_awal->get_stok_gudang($id_barang, $id_gudang);
+
         $log_data = [
             'id_barang' => $id_barang,
             'id_user' => $this->session->userdata('id_user'),
-            'id_perusahaan' => $this->session->userdata('id_perusahaan'),
+            'id_perusahaan' => $id_perusahaan,
             'id_gudang' => $id_gudang,
             'jenis' => 'penyesuaian',
             'jumlah' => $jumlah,
-            'sisa_stok' => $jumlah,
+            'sisa_stok' => $stok_terbaru ? $stok_terbaru->jumlah : 0,
             'keterangan' => 'Penyesuaian stok awal',
-            'tanggal' => date('Y-m-d H:i:s')
+            'tanggal' => date('Y-m-d H:i:s'),
+            'id_referensi' => null,
+            'tipe_referensi' => 'penyesuaian'
         ];
         $this->stok_awal->insert_log_stok($log_data);
     }
