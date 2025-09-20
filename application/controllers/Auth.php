@@ -60,14 +60,14 @@ class Auth extends CI_Controller
                         set_cookie('remember_token', $token, 86400 * 30); // 30 days
                     }
 
-                    $this->data['success'] = 'Login berhasil!';
+                    $this->session->set_flashdata('success', 'Login berhasil!');
                     redirect('dashboard');
                 } else {
-                    $this->data['error'] = 'Akun Anda tidak aktif!';
+                    $this->session->set_flashdata('error', 'Akun Anda tidak aktif!');
                     redirect('auth/login');
                 }
             } else {
-                $this->data['error'] = 'Username atau password salah!';
+                $this->session->set_flashdata('error', 'Username atau password salah!');
                 redirect('auth/login');
             }
         }
