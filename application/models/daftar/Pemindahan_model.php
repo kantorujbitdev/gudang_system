@@ -11,7 +11,14 @@ class Pemindahan_model extends CI_Model
     public function get_gudang()
     {
         $id_perusahaan = $this->session->userdata('id_perusahaan');
-        $this->db->where('id_perusahaan', $id_perusahaan);
+
+        // Filter berdasarkan role user
+        $user_role = $this->session->userdata('id_role');
+        if ($user_role != 1) {
+            // Bukan Super Admin
+            $this->db->where('id_perusahaan', $id_perusahaan);
+        }
+
         $this->db->where('status_aktif', 1);
         $this->db->order_by('nama_gudang', 'ASC');
         return $this->db->get('gudang')->result();
@@ -20,7 +27,12 @@ class Pemindahan_model extends CI_Model
     public function get_pelanggan()
     {
         $id_perusahaan = $this->session->userdata('id_perusahaan');
-        $this->db->where('id_perusahaan', $id_perusahaan);
+        // Filter berdasarkan role user
+        $user_role = $this->session->userdata('id_role');
+        if ($user_role != 1) {
+            // Bukan Super Admin
+            $this->db->where('id_perusahaan', $id_perusahaan);
+        }
         $this->db->where('status_aktif', 1);
         $this->db->order_by('nama_pelanggan', 'ASC');
         return $this->db->get('pelanggan')->result();
@@ -30,14 +42,16 @@ class Pemindahan_model extends CI_Model
     {
         $id_perusahaan = $this->session->userdata('id_perusahaan');
 
-        $this->db->select('ts.*, u.nama as user_nama, ga.nama_gudang as gudang_asal, gt.nama_gudang as gudang_tujuan, p.nama_pelanggan');
+        $this->db->select('ts.*, u.nama as user_nama, ga.nama_gudang as gudang_asal, gt.nama_gudang as gudang_tujuan');
         $this->db->from('transfer_stok ts');
         $this->db->join('user u', 'ts.id_user = u.id_user');
         $this->db->join('gudang ga', 'ts.id_gudang_asal = ga.id_gudang');
         $this->db->join('gudang gt', 'ts.id_gudang_tujuan = gt.id_gudang', 'left');
-        $this->db->join('pelanggan p', 'ts.id_pelanggan = p.id_pelanggan', 'left');
-        $this->db->where('ts.id_perusahaan', $id_perusahaan);
-
+        $user_role = $this->session->userdata('id_role');
+        if ($user_role != 1) {
+            // Bukan Super Admin
+            $this->db->where('ts.id_perusahaan', $id_perusahaan);
+        }
         if ($filter['tanggal_awal']) {
             $this->db->where('DATE(ts.tanggal) >=', $filter['tanggal_awal']);
         }

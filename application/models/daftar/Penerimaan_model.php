@@ -11,7 +11,11 @@ class Penerimaan_model extends CI_Model
     public function get_gudang()
     {
         $id_perusahaan = $this->session->userdata('id_perusahaan');
-        $this->db->where('id_perusahaan', $id_perusahaan);
+        $user_role = $this->session->userdata('id_role');
+        if ($user_role != 1) {
+            // Bukan Super Admin
+            $this->db->where('id_perusahaan', $id_perusahaan);
+        }
         $this->db->where('status_aktif', 1);
         $this->db->order_by('nama_gudang', 'ASC');
         return $this->db->get('gudang')->result();
@@ -19,8 +23,13 @@ class Penerimaan_model extends CI_Model
 
     public function get_supplier()
     {
+
         $id_perusahaan = $this->session->userdata('id_perusahaan');
-        $this->db->where('id_perusahaan', $id_perusahaan);
+        // Filter berdasarkan role user
+        $user_role = $this->session->userdata('id_role');
+        if ($user_role != 1) { // Bukan Super Admin
+            $this->db->where('id_perusahaan', $id_perusahaan);
+        }
         $this->db->where('status_aktif', 1);
         $this->db->order_by('nama_supplier', 'ASC');
         return $this->db->get('supplier')->result();
@@ -35,7 +44,11 @@ class Penerimaan_model extends CI_Model
         $this->db->join('user u', 'pb.id_user = u.id_user');
         $this->db->join('gudang g', 'pb.id_gudang = g.id_gudang');
         $this->db->join('supplier s', 'pb.id_supplier = s.id_supplier');
-        $this->db->where('pb.id_perusahaan', $id_perusahaan);
+        // Filter berdasarkan role user
+        $user_role = $this->session->userdata('id_role');
+        if ($user_role != 1) { // Bukan Super Admin
+            $this->db->where('pb.id_perusahaan', $id_perusahaan);
+        }
 
         if ($filter['tanggal_awal']) {
             $this->db->where('DATE(pb.tanggal_penerimaan) >=', $filter['tanggal_awal']);

@@ -10,16 +10,18 @@ class Pemindahan_model extends CI_Model
 
     public function get_all()
     {
-        $id_perusahaan = $this->session->userdata('id_perusahaan');
+        $user_role = $this->session->userdata('id_role');
 
-        $this->db->select('ts.*, u.nama as user_nama, ga.nama_gudang as gudang_asal, gt.nama_gudang as gudang_tujuan, p.nama_pelanggan');
+        $id_perusahaan = $this->session->userdata('id_perusahaan');
+        $this->db->select('ts.*, u.nama as user_nama, ga.nama_gudang as gudang_asal, gt.nama_gudang as gudang_tujuan');
         $this->db->from('transfer_stok ts');
         $this->db->join('user u', 'ts.id_user = u.id_user');
         $this->db->join('gudang ga', 'ts.id_gudang_asal = ga.id_gudang');
         $this->db->join('gudang gt', 'ts.id_gudang_tujuan = gt.id_gudang', 'left');
-        $this->db->join('pelanggan p', 'ts.id_pelanggan = p.id_pelanggan', 'left');
-        $this->db->where('ts.id_perusahaan', $id_perusahaan);
-        $this->db->order_by('ts.created_at', 'DESC');
+        // Filter berdasarkan role user
+        if ($user_role != 1) { // Bukan Super Admin
+            $this->db->where('pb.id_perusahaan', $id_perusahaan);
+        }
         return $this->db->get()->result();
     }
 

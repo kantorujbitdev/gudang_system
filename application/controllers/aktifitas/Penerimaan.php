@@ -52,6 +52,7 @@ class Penerimaan extends MY_Controller
         $data_insert = [
             'no_penerimaan' => $no_penerimaan,
             'id_user' => $this->session->userdata('id_user'),
+            'id_perusahaan' => $this->session->userdata('id_perusahaan'), // Tambahkan ini
             'id_gudang' => $this->input->post('id_gudang'),
             'id_supplier' => $this->input->post('id_supplier'),
             'tanggal_penerimaan' => $this->input->post('tanggal_penerimaan') . ' ' . date('H:i:s'),
@@ -282,25 +283,37 @@ class Penerimaan extends MY_Controller
                 // Update stock
                 $new_stok = $stok->jumlah + $item->jumlah_diterima;
                 $this->penerimaan->update_stok($penerimaan->id_gudang, $item->id_barang, $new_stok);
-
-                // Log stock movement
-                $log_data = [
-                    'id_barang' => $item->id_barang,
-                    'id_user' => $this->session->userdata('id_user'),
+            } else {
+                // Create new stock record
+                $data_stok = [
                     'id_perusahaan' => $this->session->userdata('id_perusahaan'),
                     'id_gudang' => $penerimaan->id_gudang,
-                    'jenis' => 'masuk',
+                    'id_barang' => $item->id_barang,
                     'jumlah' => $item->jumlah_diterima,
-                    'sisa_stok' => $new_stok,
-                    'keterangan' => 'Penerimaan barang ' . $penerimaan->no_penerimaan,
-                    'id_referensi' => $id_penerimaan,
-                    'tipe_referensi' => 'penerimaan'
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s')
                 ];
-                $this->penerimaan->insert_log_stok($log_data);
+                $this->db->insert('stok_gudang', $data_stok);
+                $new_stok = $item->jumlah_diterima;
             }
+
+            // Log stock movement
+            $log_data = [
+                'id_barang' => $item->id_barang,
+                'id_user' => $this->session->userdata('id_user'),
+                'id_perusahaan' => $this->session->userdata('id_perusahaan'),
+                'id_gudang' => $penerimaan->id_gudang,
+                'jenis' => 'masuk',
+                'jumlah' => $item->jumlah_diterima,
+                'sisa_stok' => $new_stok,
+                'keterangan' => 'Penerimaan barang ' . $penerimaan->no_penerimaan,
+                'id_referensi' => $id_penerimaan,
+                'tipe_referensi' => 'penerimaan',
+                'tanggal' => date('Y-m-d H:i:s')
+            ];
+            $this->penerimaan->insert_log_stok($log_data);
         }
     }
-
     private function kurangi_stok($id_penerimaan)
     {
         $penerimaan = $this->penerimaan->get($id_penerimaan);
@@ -326,7 +339,8 @@ class Penerimaan extends MY_Controller
                     'sisa_stok' => $new_stok,
                     'keterangan' => 'Pembatalan penerimaan barang ' . $penerimaan->no_penerimaan,
                     'id_referensi' => $id_penerimaan,
-                    'tipe_referensi' => 'penerimaan'
+                    'tipe_referensi' => 'penerimaan',
+                    'tanggal' => date('Y-m-d H:i:s')
                 ];
                 $this->penerimaan->insert_log_stok($log_data);
             }
