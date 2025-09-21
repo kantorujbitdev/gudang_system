@@ -5,6 +5,34 @@
     <div class="card-body">
         <?php echo form_open(current_url()); ?>
         <div class="row">
+            <?php if ($this->session->userdata('id_role') == 1): // Super Admin ?>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="id_perusahaan">Perusahaan <span class="text-danger">*</span></label>
+                        <select class="form-control" id="id_perusahaan" name="id_perusahaan" required>
+                            <option value="">-- Pilih Perusahaan --</option>
+                            <?php foreach ($perusahaan as $row): ?>
+                                <option value="<?php echo $row->id_perusahaan; ?>" <?php echo (isset($pemindahan) && $pemindahan->id_perusahaan == $row->id_perusahaan) ? 'selected' : ''; ?>>
+                                    <?php echo $row->nama_perusahaan; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <?php echo form_error('id_perusahaan', '<small class="text-danger">', '</small>'); ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="tanggal_pemindahan">Tanggal Pemindahan</label>
+                    <input type="text" class="form-control" id="tanggal_pemindahan" name="tanggal_pemindahan"
+                        value="<?php echo date('d-m-Y H:i:s'); ?>" readonly>
+                    <small class="text-muted">Waktu real, tidak dapat diubah</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
             <div class="col-md-6">
                 <div class="form-group">
                     <label for="id_gudang_asal">Gudang Asal <span class="text-danger">*</span></label>
@@ -23,14 +51,15 @@
                     <label for="tipe_tujuan">Tipe Tujuan <span class="text-danger">*</span></label>
                     <select class="form-control" id="tipe_tujuan" name="tipe_tujuan" required>
                         <option value="">-- Pilih Tipe --</option>
-                        <option value="gudang" <?php echo (isset($pemindahan) && $pemindahan->id_gudang_tujuan) ? 'selected' : ''; ?>>Gudang</option>
-                        <option value="pelanggan" <?php echo (isset($pemindahan) && $pemindahan->id_pelanggan) ? 'selected' : ''; ?>>Pelanggan</option>
+                        <option value="gudang" <?php echo (isset($pemindahan) && $pemindahan->tipe_tujuan == 'gudang') ? 'selected' : ''; ?>>Gudang</option>
+                        <option value="pelanggan" <?php echo (isset($pemindahan) && $pemindahan->tipe_tujuan == 'pelanggan') ? 'selected' : ''; ?>>Pelanggan</option>
+                        <option value="konsumen" <?php echo (isset($pemindahan) && $pemindahan->tipe_tujuan == 'konsumen') ? 'selected' : ''; ?>>Konsumen</option>
                     </select>
                     <?php echo form_error('tipe_tujuan', '<small class="text-danger">', '</small>'); ?>
                 </div>
 
                 <div class="form-group" id="gudang_tujuan_field"
-                    style="display: <?php echo (isset($pemindahan) && $pemindahan->id_gudang_tujuan) ? 'block' : 'none'; ?>;">
+                    style="display: <?php echo (isset($pemindahan) && $pemindahan->tipe_tujuan == 'gudang') ? 'block' : 'none'; ?>;">
                     <label for="id_gudang_tujuan">Gudang Tujuan</label>
                     <select class="form-control" id="id_gudang_tujuan" name="id_gudang_tujuan">
                         <option value="">-- Pilih Gudang --</option>
@@ -43,28 +72,36 @@
                 </div>
 
                 <div class="form-group" id="pelanggan_field"
-                    style="display: <?php echo (isset($pemindahan) && $pemindahan->id_pelanggan) ? 'block' : 'none'; ?>;">
+                    style="display: <?php echo (isset($pemindahan) && $pemindahan->tipe_tujuan == 'pelanggan') ? 'block' : 'none'; ?>;">
                     <label for="id_pelanggan">Pelanggan</label>
                     <select class="form-control" id="id_pelanggan" name="id_pelanggan">
                         <option value="">-- Pilih Pelanggan --</option>
                         <?php foreach ($pelanggan as $row): ?>
                             <option value="<?php echo $row->id_pelanggan; ?>" <?php echo (isset($pemindahan) && $pemindahan->id_pelanggan == $row->id_pelanggan) ? 'selected' : ''; ?>>
-                                <?php echo $row->nama_pelanggan; ?>
+                                <?php echo $row->nama_pelanggan; ?> (<?php echo $row->tipe_pelanggan; ?>)
                             </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
+
+                <div class="form-group" id="konsumen_field"
+                    style="display: <?php echo (isset($pemindahan) && $pemindahan->tipe_tujuan == 'konsumen') ? 'block' : 'none'; ?>;">
+                    <label for="id_alamat_konsumen">Alamat Pengiriman</label>
+                    <select class="form-control" id="id_alamat_konsumen" name="id_alamat_konsumen">
+                        <option value="">-- Pilih Alamat --</option>
+                        <?php foreach ($alamat_konsumen as $row): ?>
+                            <option value="<?php echo $row->id_alamat; ?>" <?php echo (isset($pemindahan) && $pemindahan->id_alamat_konsumen == $row->id_alamat) ? 'selected' : ''; ?>>
+                                <?php echo $row->alamat_lengkap; ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <a href="javascript:void(0)" id="btn-tambah-alamat" class="btn btn-sm btn-secondary mt-2">
+                        <i class="fas fa-plus"></i> Tambah Alamat Baru
+                    </a>
+                </div>
             </div>
 
             <div class="col-md-6">
-                <div class="form-group">
-                    <label for="tanggal">Tanggal <span class="text-danger">*</span></label>
-                    <input type="date" class="form-control" id="tanggal" name="tanggal"
-                        value="<?php echo set_value('tanggal', isset($pemindahan) ? date('Y-m-d', strtotime($pemindahan->tanggal)) : date('Y-m-d')); ?>"
-                        required>
-                    <?php echo form_error('tanggal', '<small class="text-danger">', '</small>'); ?>
-                </div>
-
                 <div class="form-group">
                     <label for="keterangan">Keterangan</label>
                     <textarea class="form-control" id="keterangan" name="keterangan"
@@ -156,26 +193,135 @@
     </div>
 </div>
 
+<!-- Modal Tambah Alamat -->
+<div class="modal fade" id="modalTambahAlamat" tabindex="-1" role="dialog" aria-labelledby="modalTambahAlamatLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTambahAlamatLabel">Tambah Alamat Baru</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="form-tambah-alamat">
+                    <div class="form-group">
+                        <label for="alamat_lengkap">Alamat Lengkap <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="alamat_lengkap" name="alamat_lengkap" rows="3"
+                            required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="keterangan_alamat">Keterangan</label>
+                        <input type="text" class="form-control" id="keterangan_alamat" name="keterangan_alamat">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="btn-simpan-alamat">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     $(document).ready(function () {
+        // Untuk Super Admin, ambil data berdasarkan perusahaan
+        <?php if ($this->session->userdata('id_role') == 1): ?>
+            $('#id_perusahaan').change(function () {
+                var id_perusahaan = $(this).val();
+
+                if (id_perusahaan) {
+                    $.ajax({
+                        url: '<?php echo site_url('aktifitas/pemindahan/get_data_by_perusahaan'); ?>',
+                        method: 'POST',
+                        data: {
+                            id_perusahaan: id_perusahaan
+                        },
+                        dataType: 'json',
+                        success: function (response) {
+                            // Update gudang asal
+                            var gudangAsalHtml = '<option value="">-- Pilih Gudang --</option>';
+                            $.each(response.gudang, function (i, item) {
+                                gudangAsalHtml += '<option value="' + item.id_gudang + '">' + item.nama_gudang + '</option>';
+                            });
+                            $('#id_gudang_asal').html(gudangAsalHtml);
+
+                            // Update gudang tujuan
+                            var gudangTujuanHtml = '<option value="">-- Pilih Gudang --</option>';
+                            $.each(response.gudang, function (i, item) {
+                                gudangTujuanHtml += '<option value="' + item.id_gudang + '">' + item.nama_gudang + '</option>';
+                            });
+                            $('#id_gudang_tujuan').html(gudangTujuanHtml);
+
+                            // Update pelanggan
+                            var pelangganHtml = '<option value="">-- Pilih Pelanggan --</option>';
+                            $.each(response.pelanggan, function (i, item) {
+                                pelangganHtml += '<option value="' + item.id_pelanggan + '">' + item.nama_pelanggan + ' (' + item.tipe_pelanggan + ')</option>';
+                            });
+                            $('#id_pelanggan').html(pelangganHtml);
+
+                            // Update barang
+                            var barangHtml = '';
+                            $.each(response.barang, function (i, item) {
+                                barangHtml += '<option value="' + item.id_barang + '">' + item.nama_barang + ' (' + item.sku + ')</option>';
+                            });
+
+                            // Update semua select barang di tabel
+                            $('.select-barang').each(function () {
+                                var currentValue = $(this).val();
+                                $(this).html('<option value="">-- Pilih Barang --</option>' + barangHtml);
+                                $(this).val(currentValue);
+                            });
+                        }
+                    });
+                } else {
+                    // Reset semua field
+                    $('#id_gudang_asal').html('<option value="">-- Pilih Gudang --</option>');
+                    $('#id_gudang_tujuan').html('<option value="">-- Pilih Gudang --</option>');
+                    $('#id_pelanggan').html('<option value="">-- Pilih Pelanggan --</option>');
+                    $('.select-barang').html('<option value="">-- Pilih Barang --</option>');
+                }
+            });
+
+            // Trigger change jika ada nilai awal
+            if ($('#id_perusahaan').val()) {
+                $('#id_perusahaan').trigger('change');
+            }
+        <?php endif; ?>
+
         // Toggle tipe tujuan
         $('#tipe_tujuan').change(function () {
             var tipe = $(this).val();
             if (tipe == 'gudang') {
                 $('#gudang_tujuan_field').show();
                 $('#pelanggan_field').hide();
+                $('#konsumen_field').hide();
                 $('#id_gudang_tujuan').attr('required', true);
                 $('#id_pelanggan').removeAttr('required');
+                $('#id_alamat_konsumen').removeAttr('required');
             } else if (tipe == 'pelanggan') {
                 $('#gudang_tujuan_field').hide();
                 $('#pelanggan_field').show();
+                $('#konsumen_field').hide();
                 $('#id_gudang_tujuan').removeAttr('required');
                 $('#id_pelanggan').attr('required', true);
+                $('#id_alamat_konsumen').removeAttr('required');
+            } else if (tipe == 'konsumen') {
+                $('#gudang_tujuan_field').hide();
+                $('#pelanggan_field').hide();
+                $('#konsumen_field').show();
+                $('#id_gudang_tujuan').removeAttr('required');
+                $('#id_pelanggan').removeAttr('required');
+                $('#id_alamat_konsumen').attr('required', true);
             } else {
                 $('#gudang_tujuan_field').hide();
                 $('#pelanggan_field').hide();
+                $('#konsumen_field').hide();
                 $('#id_gudang_tujuan').removeAttr('required');
                 $('#id_pelanggan').removeAttr('required');
+                $('#id_alamat_konsumen').removeAttr('required');
             }
         });
 
@@ -211,9 +357,18 @@
                 '<td>' +
                 '<select class="form-control select-barang" name="id_barang[]" required>' +
                 '<option value="">-- Pilih Barang --</option>';
-            <?php foreach ($barang as $row): ?>
-                html += '<option value="<?php echo $row->id_barang; ?>"><?php echo $row->nama_barang; ?> (<?php echo $row->sku; ?>)</option>';
-            <?php endforeach; ?>
+
+            // Ambil opsi barang dari baris pertama
+            var firstRowOptions = $('#table_barang tbody tr:first .select-barang').html();
+            if (firstRowOptions) {
+                html += firstRowOptions;
+            } else {
+                // Jika tidak ada baris pertama, gunakan opsi default
+                html += '<?php foreach ($barang as $row): ?>' +
+                        '<option value="<?php echo $row->id_barang; ?>"><?php echo $row->nama_barang; ?> (<?php echo $row->sku; ?>)</option>' +
+                        '<?php endforeach; ?>';
+            }
+
             html += '</select>' +
                 '</td>' +
                 '<td><input type="text" class="form-control stok-tersedia" readonly></td>' +
@@ -236,6 +391,52 @@
             } else {
                 alert('Minimal harus ada 1 barang!');
             }
+        });
+
+        // Modal tambah alamat
+        $('#btn-tambah-alamat').click(function () {
+            $('#modalTambahAlamat').modal('show');
+        });
+
+        $('#btn-simpan-alamat').click(function () {
+            var alamat_lengkap = $('#alamat_lengkap').val();
+            var keterangan = $('#keterangan_alamat').val();
+
+            if (!alamat_lengkap) {
+                alert('Alamat lengkap harus diisi!');
+                return;
+            }
+
+            $.ajax({
+                url: '<?php echo site_url('aktifitas/pemindahan/simpan_alamat'); ?>',
+                method: 'POST',
+                data: {
+                    alamat_lengkap: alamat_lengkap,
+                    keterangan_alamat: keterangan
+                },
+                dataType: 'json',
+                success: function (response) {
+                    if (response.status == 'success') {
+                        // Tambahkan opsi alamat baru
+                        var newOption = '<option value="' + response.id_alamat + '" selected>' + alamat_lengkap + '</option>';
+                        $('#id_alamat_konsumen').append(newOption);
+
+                        // Reset form
+                        $('#form-tambah-alamat')[0].reset();
+
+                        // Tutup modal
+                        $('#modalTambahAlamat').modal('hide');
+
+                        // Tampilkan pesan sukses
+                        alert('Alamat berhasil ditambahkan!');
+                    } else {
+                        alert('Gagal menambahkan alamat: ' + response.message);
+                    }
+                },
+                error: function () {
+                    alert('Terjadi kesalahan saat menambahkan alamat!');
+                }
+            });
         });
 
         // Trigger change on page load for existing rows

@@ -1,94 +1,151 @@
+<div class="form-group text-left mt-4">
+    <?php
+    $back_url = 'setup/user';
+    if (isset($role)) {
+        if ($role == 3)
+            $back_url = 'setup/user/sales';
+        elseif ($role == 4)
+            $back_url = 'setup/user/packing';
+        elseif ($role == 5)
+            $back_url = 'setup/user/retur';
+    }
+    echo back_button($back_url);
+    ?>
+</div>
+
 <div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary"><?php echo $title; ?></h6>
+    <div class="card-header bg-primary text-white d-flex align-items-center">
+        <?php echo responsive_title('Tambah User') ?>
     </div>
-    <div class="card-body">
-        <?php echo form_open(current_url()); ?>
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="nama">Nama Lengkap <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="nama" name="nama"
-                        value="<?php echo set_value('nama'); ?>" required>
-                    <?php echo form_error('nama', '<small class="text-danger">', '</small>'); ?>
-                </div>
+    <div class="card-body px-4 py-4">
+        <?php echo form_open('setup/user/tambah/' . $role); ?>
 
-                <div class="form-group">
-                    <label for="username">Username <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="username" name="username"
-                        value="<?php echo set_value('username'); ?>" required>
-                    <?php echo form_error('username', '<small class="text-danger">', '</small>'); ?>
-                </div>
+        <div class="form-group">
+            <?php echo form_label('Nama Lengkap <span class="text-danger">*</span>', 'nama'); ?>
+            <?php echo form_input(array(
+                'name' => 'nama',
+                'id' => 'nama',
+                'class' => 'form-control',
+                'value' => set_value('nama'),
+                'required' => '',
+                'maxlength' => '100'
+            )); ?>
+            <?php echo form_error('nama', '<small class="text-danger">', '</small>'); ?>
+        </div>
 
-                <div class="form-group">
-                    <label for="email">Email <span class="text-danger">*</span></label>
-                    <input type="email" class="form-control" id="email" name="email"
-                        value="<?php echo set_value('email'); ?>" required>
-                    <?php echo form_error('email', '<small class="text-danger">', '</small>'); ?>
-                </div>
-            </div>
+        <div class="form-group">
+            <?php echo form_label('Username <span class="text-danger">*</span>', 'username'); ?>
+            <?php echo form_input(array(
+                'name' => 'username',
+                'id' => 'username',
+                'class' => 'form-control',
+                'value' => set_value('username'),
+                'required' => '',
+                'maxlength' => '50'
+            )); ?>
+            <?php echo form_error('username', '<small class="text-danger">', '</small>'); ?>
+        </div>
 
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="id_role">Role <span class="text-danger">*</span></label>
-                    <select class="form-control" id="id_role" name="id_role" required>
-                        <option value="">-- Pilih Role --</option>
-                        <?php
-                        $roles = array(
-                            3 => 'Sales Online',
-                            4 => 'Admin Packing'
-                        );
-                        foreach ($roles as $id => $nama):
-                            ?>
-                            <option value="<?php echo $id; ?>" <?php echo ($role == $id) ? 'selected' : ''; ?>>
-                                <?php echo $nama; ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                    <?php echo form_error('id_role', '<small class="text-danger">', '</small>'); ?>
-                </div>
-
-                <div class="form-group">
-                    <label for="id_perusahaan">Perusahaan <span class="text-danger">*</span></label>
-                    <select class="form-control" id="id_perusahaan" name="id_perusahaan" required>
-                        <option value="">-- Pilih Perusahaan --</option>
-                        <?php foreach ($perusahaan as $row): ?>
-                            <option value="<?php echo $row->id_perusahaan; ?>"><?php echo $row->nama_perusahaan; ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                    <?php echo form_error('id_perusahaan', '<small class="text-danger">', '</small>'); ?>
-                </div>
-
-                <div class="form-group">
-                    <label for="telepon">Telepon</label>
-                    <input type="text" class="form-control" id="telepon" name="telepon"
-                        value="<?php echo set_value('telepon'); ?>">
-                    <?php echo form_error('telepon', '<small class="text-danger">', '</small>'); ?>
-                </div>
-            </div>
+        <div class="form-group">
+            <?php echo form_label('Email <span class="text-danger">*</span>', 'email'); ?>
+            <?php echo form_input(array(
+                'name' => 'email',
+                'id' => 'email',
+                'class' => 'form-control',
+                'value' => set_value('email'),
+                'required' => '',
+                'maxlength' => '100'
+            )); ?>
+            <?php echo form_error('email', '<small class="text-danger">', '</small>'); ?>
         </div>
 
         <div class="row">
             <div class="col-md-6">
                 <div class="form-group">
-                    <label for="password">Password <span class="text-danger">*</span></label>
-                    <input type="password" class="form-control" id="password" name="password" required>
+                    <?php echo form_label('Password <span class="text-danger">*</span>', 'password'); ?>
+                    <?php echo form_password(array(
+                        'name' => 'password',
+                        'id' => 'password',
+                        'class' => 'form-control',
+                        'required' => ''
+                    )); ?>
                     <?php echo form_error('password', '<small class="text-danger">', '</small>'); ?>
                 </div>
             </div>
-
             <div class="col-md-6">
                 <div class="form-group">
-                    <label for="confirm_password">Konfirmasi Password <span class="text-danger">*</span></label>
-                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                    <?php echo form_label('Konfirmasi Password <span class="text-danger">*</span>', 'confirm_password'); ?>
+                    <?php echo form_password(array(
+                        'name' => 'confirm_password',
+                        'id' => 'confirm_password',
+                        'class' => 'form-control',
+                        'required' => ''
+                    )); ?>
                     <?php echo form_error('confirm_password', '<small class="text-danger">', '</small>'); ?>
                 </div>
             </div>
         </div>
 
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <?php echo form_label('Telepon', 'telepon'); ?>
+                    <?php echo form_input(array(
+                        'name' => 'telepon',
+                        'id' => 'telepon',
+                        'class' => 'form-control',
+                        'value' => set_value('telepon'),
+                        'maxlength' => '20'
+                    )); ?>
+                    <?php echo form_error('telepon', '<small class="text-danger">', '</small>'); ?>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <?php echo form_label('Role <span class="text-danger">*</span>', 'id_role'); ?>
+                    <?php
+                    $role_options = array();
+                    if ($this->session->userdata('id_role') == 1) { // Super Admin
+                        $role_options = array(
+                            2 => 'Admin Perusahaan',
+                            3 => 'Sales Online',
+                            4 => 'Admin Packing',
+                            5 => 'Admin Return'
+                        );
+                    } else { // Admin Perusahaan
+                        $role_options = array(
+                            3 => 'Sales Online',
+                            4 => 'Admin Packing',
+                            5 => 'Admin Return'
+                        );
+                    }
+
+                    echo form_dropdown('id_role', $role_options, set_value('id_role', $role), 'class="form-control" id="id_role" required');
+                    ?>
+                    <?php echo form_error('id_role', '<small class="text-danger">', '</small>'); ?>
+                </div>
+            </div>
+        </div>
+
+        <?php if ($this->session->userdata('id_role') == 1): // Super Admin ?>
+            <div class="form-group">
+                <?php echo form_label('Perusahaan <span class="text-danger">*</span>', 'id_perusahaan'); ?>
+                <?php
+                $perusahaan_options = array('' => 'Pilih Perusahaan');
+                foreach ($perusahaan as $p) {
+                    $perusahaan_options[$p->id_perusahaan] = $p->nama_perusahaan;
+                }
+                echo form_dropdown('id_perusahaan', $perusahaan_options, set_value('id_perusahaan'), 'class="form-control" id="id_perusahaan" required');
+                ?>
+                <?php echo form_error('id_perusahaan', '<small class="text-danger">', '</small>'); ?>
+            </div>
+        <?php else: ?>
+            <?php echo form_hidden('id_perusahaan', $this->session->userdata('id_perusahaan')); ?>
+        <?php endif; ?>
+
         <div class="form-group">
-            <button type="submit" class="btn btn-primary">Simpan</button>
-            <a href="<?php echo site_url('setup/user'); ?>" class="btn btn-secondary">Batal</a>
+            <?php echo form_submit('submit', 'Simpan', array('class' => 'btn btn-primary')); ?>
+            <a href="<?php echo site_url($back_url); ?>" class="btn btn-secondary">Batal</a>
         </div>
         <?php echo form_close(); ?>
     </div>

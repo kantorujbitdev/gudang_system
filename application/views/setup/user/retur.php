@@ -2,12 +2,12 @@
     <div class="card-header py-3">
         <div class="row">
             <div class="col">
-                <?php echo responsive_title_blue('Manajemen Admin Packing') ?>
+                <?php echo responsive_title_blue('Manajemen Admin Retur') ?>
             </div>
             <div class="col text-right">
                 <?php if ($can_create): ?>
-                    <a href="<?php echo site_url('setup/user/tambah/4') ?>" class="btn btn-primary btn-sm">
-                        <i class="fas fa-plus"></i> Tambah Admin Packing
+                    <a href="<?php echo site_url('setup/user/tambah/5') ?>" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Tambah Admin Retur
                     </a>
                 <?php endif; ?>
                 <a href="<?php echo site_url('setup/user') ?>" class="btn btn-secondary btn-sm">
@@ -77,7 +77,7 @@
                         <?php endforeach;
                     else: ?>
                         <tr>
-                            <td colspan="8" class="text-center">Tidak ada data admin packing</td>
+                            <td colspan="8" class="text-center">Tidak ada data admin retur</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>

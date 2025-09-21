@@ -11,79 +11,97 @@ class Pemindahan_model extends CI_Model
     public function get_all()
     {
         $user_role = $this->session->userdata('id_role');
-
         $id_perusahaan = $this->session->userdata('id_perusahaan');
-        $this->db->select('ts.*, u.nama as user_nama, ga.nama_gudang as gudang_asal, gt.nama_gudang as gudang_tujuan');
-        $this->db->from('transfer_stok ts');
-        $this->db->join('user u', 'ts.id_user = u.id_user');
-        $this->db->join('gudang ga', 'ts.id_gudang_asal = ga.id_gudang');
-        $this->db->join('gudang gt', 'ts.id_gudang_tujuan = gt.id_gudang', 'left');
+        $id_user = $this->session->userdata('id_user');
+
+        $this->db->select('pb.*, u.nama as user_nama, ga.nama_gudang as gudang_asal, gt.nama_gudang as gudang_tujuan, p.nama_pelanggan, ak.alamat_lengkap');
+        $this->db->from('pemindahan_barang pb');
+        $this->db->join('user u', 'pb.id_user = u.id_user');
+        $this->db->join('gudang ga', 'pb.id_gudang_asal = ga.id_gudang');
+        $this->db->join('gudang gt', 'pb.id_gudang_tujuan = gt.id_gudang', 'left');
+        $this->db->join('pelanggan p', 'pb.id_pelanggan = p.id_pelanggan', 'left');
+        $this->db->join('alamat_konsumen ak', 'pb.id_alamat_konsumen = ak.id_alamat', 'left');
+
         // Filter berdasarkan role user
         if ($user_role != 1) { // Bukan Super Admin
             $this->db->where('pb.id_perusahaan', $id_perusahaan);
+
+            // Jika role Sales, hanya bisa lihat pemindahan ke pelanggan miliknya
+            if ($user_role == 3) {
+                $this->db->where('pb.tipe_tujuan', 'pelanggan');
+                $this->db->where('p.id_sales', $id_user);
+            }
         }
+
+        $this->db->where('pb.deleted_at', NULL);
+        $this->db->order_by('pb.created_at', 'DESC');
+
         return $this->db->get()->result();
     }
 
-    public function get($id_transfer)
+    public function get($id_pemindahan)
     {
-        $this->db->select('ts.*, u.nama as user_nama, ga.nama_gudang as gudang_asal, gt.nama_gudang as gudang_tujuan, p.nama_pelanggan');
-        $this->db->from('transfer_stok ts');
-        $this->db->join('user u', 'ts.id_user = u.id_user');
-        $this->db->join('gudang ga', 'ts.id_gudang_asal = ga.id_gudang');
-        $this->db->join('gudang gt', 'ts.id_gudang_tujuan = gt.id_gudang', 'left');
-        $this->db->join('pelanggan p', 'ts.id_pelanggan = p.id_pelanggan', 'left');
-        $this->db->where('ts.id_transfer', $id_transfer);
+        $this->db->select('pb.*, u.nama as user_nama, ga.nama_gudang as gudang_asal, gt.nama_gudang as gudang_tujuan, p.nama_pelanggan, ak.alamat_lengkap');
+        $this->db->from('pemindahan_barang pb');
+        $this->db->join('user u', 'pb.id_user = u.id_user');
+        $this->db->join('gudang ga', 'pb.id_gudang_asal = ga.id_gudang');
+        $this->db->join('gudang gt', 'pb.id_gudang_tujuan = gt.id_gudang', 'left');
+        $this->db->join('pelanggan p', 'pb.id_pelanggan = p.id_pelanggan', 'left');
+        $this->db->join('alamat_konsumen ak', 'pb.id_alamat_konsumen = ak.id_alamat', 'left');
+        $this->db->where('pb.id_pemindahan', $id_pemindahan);
+        $this->db->where('pb.deleted_at', NULL);
+
         return $this->db->get()->row();
     }
 
-    public function get_detail($id_transfer)
+    public function get_detail($id_pemindahan)
     {
-        $this->db->select('dts.*, b.nama_barang, b.satuan');
-        $this->db->from('detail_transfer_stok dts');
-        $this->db->join('barang b', 'dts.id_barang = b.id_barang');
-        $this->db->where('dts.id_transfer', $id_transfer);
+        $this->db->select('dpb.*, b.nama_barang, b.satuan, b.sku');
+        $this->db->from('detail_pemindahan_barang dpb');
+        $this->db->join('barang b', 'dpb.id_barang = b.id_barang');
+        $this->db->where('dpb.id_pemindahan', $id_pemindahan);
+
         return $this->db->get()->result();
     }
 
     public function insert($data)
     {
-        $this->db->insert('transfer_stok', $data);
+        $this->db->insert('pemindahan_barang', $data);
         return $this->db->insert_id();
     }
 
     public function insert_detail($data)
     {
-        $this->db->insert('detail_transfer_stok', $data);
+        $this->db->insert('detail_pemindahan_barang', $data);
         return $this->db->insert_id();
     }
 
-    public function update($id_transfer, $data)
+    public function update($id_pemindahan, $data)
     {
-        $this->db->where('id_transfer', $id_transfer);
-        return $this->db->update('transfer_stok', $data);
+        $this->db->where('id_pemindahan', $id_pemindahan);
+        return $this->db->update('pemindahan_barang', $data);
     }
 
-    public function update_status($id_transfer, $status)
+    public function update_status($id_pemindahan, $status)
     {
-        $this->db->where('id_transfer', $id_transfer);
+        $this->db->where('id_pemindahan', $id_pemindahan);
         $data = [
             'status' => $status,
             'updated_at' => date('Y-m-d H:i:s')
         ];
-        return $this->db->update('transfer_stok', $data);
+        return $this->db->update('pemindahan_barang', $data);
     }
 
-    public function delete($id_transfer)
+    public function delete($id_pemindahan)
     {
-        $this->db->where('id_transfer', $id_transfer);
-        return $this->db->delete('transfer_stok');
+        $this->db->where('id_pemindahan', $id_pemindahan);
+        return $this->db->update('pemindahan_barang', ['deleted_at' => date('Y-m-d H:i:s')]);
     }
 
-    public function delete_detail($id_transfer)
+    public function delete_detail($id_pemindahan)
     {
-        $this->db->where('id_transfer', $id_transfer);
-        return $this->db->delete('detail_transfer_stok');
+        $this->db->where('id_pemindahan', $id_pemindahan);
+        return $this->db->delete('detail_pemindahan_barang');
     }
 
     public function get_stok_barang($id_gudang, $id_barang)
@@ -93,12 +111,13 @@ class Pemindahan_model extends CI_Model
         return $this->db->get('stok_gudang')->row();
     }
 
-    public function update_stok($id_gudang, $id_barang, $jumlah)
+    public function update_stok($id_gudang, $id_barang, $jumlah, $reserved = 0)
     {
         $this->db->where('id_gudang', $id_gudang);
         $this->db->where('id_barang', $id_barang);
         $data = [
             'jumlah' => $jumlah,
+            'reserved' => $reserved,
             'updated_at' => date('Y-m-d H:i:s')
         ];
         return $this->db->update('stok_gudang', $data);
@@ -114,5 +133,51 @@ class Pemindahan_model extends CI_Model
     {
         $this->db->insert('log_status_transaksi', $data);
         return $this->db->insert_id();
+    }
+
+    public function get_pelanggan_by_sales($id_sales)
+    {
+        $this->db->where('id_sales', $id_sales);
+        $this->db->where('status_aktif', 1);
+        $this->db->where('deleted_at', NULL);
+        return $this->db->get('pelanggan')->result();
+    }
+
+    public function get_alamat_konsumen($id_user = null)
+    {
+        $this->db->where('status_aktif', 1);
+        if ($id_user) {
+            $this->db->where('id_user', $id_user);
+        }
+        $this->db->order_by('created_at', 'DESC');
+        return $this->db->get('alamat_konsumen')->result();
+    }
+
+    public function insert_alamat_konsumen($data)
+    {
+        $this->db->insert('alamat_konsumen', $data);
+        return $this->db->insert_id();
+    }
+
+    public function get_data_by_perusahaan($id_perusahaan)
+    {
+        $data = [];
+
+        // Get gudang
+        $this->db->where('id_perusahaan', $id_perusahaan);
+        $this->db->where('status_aktif', 1);
+        $data['gudang'] = $this->db->get('gudang')->result();
+
+        // Get barang
+        $this->db->where('id_perusahaan', $id_perusahaan);
+        $this->db->where('status_aktif', 1);
+        $data['barang'] = $this->db->get('barang')->result();
+
+        // Get pelanggan
+        $this->db->where('id_perusahaan', $id_perusahaan);
+        $this->db->where('status_aktif', 1);
+        $data['pelanggan'] = $this->db->get('pelanggan')->result();
+
+        return $data;
     }
 }

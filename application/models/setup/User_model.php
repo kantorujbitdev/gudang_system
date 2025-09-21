@@ -30,28 +30,37 @@ class User_model extends MY_Model
         $this->db->order_by('u.created_at', 'DESC');
         return $this->db->get()->result();
     }
+
     public function get_by_perusahaan($id_perusahaan)
     {
         $this->db->where('id_perusahaan', $id_perusahaan);
         $this->db->where('aktif', 1);
         return $this->db->get('user')->result();
     }
-    // public function get_by_role($id_role, $id_perusahaan = NULL)
-    // {
-    //     $this->db->select('u.*, r.nama_role, p.nama_perusahaan');
-    //     $this->db->from('user u');
-    //     $this->db->join('role_user r', 'u.id_role = r.id_role', 'left');
-    //     $this->db->join('perusahaan p', 'u.id_perusahaan = p.id_perusahaan', 'left');
-    //     $this->db->where('u.id_role', $id_role);
 
-    //     if ($id_perusahaan) {
-    //         $this->db->where('u.id_perusahaan', $id_perusahaan);
-    //     }
+    public function get_by_role($id_role, $id_perusahaan = NULL)
+    {
+        $user_role = $this->session->userdata('id_role');
+        $user_perusahaan = $this->session->userdata('id_perusahaan');
 
-    //     $this->db->where('u.aktif', 1);
-    //     $this->db->order_by('u.nama', 'ASC');
-    //     return $this->db->get()->result();
-    // }
+        $this->db->select('u.*, r.nama_role, p.nama_perusahaan');
+        $this->db->from('user u');
+        $this->db->join('role_user r', 'u.id_role = r.id_role');
+        $this->db->join('perusahaan p', 'u.id_perusahaan = p.id_perusahaan', 'left');
+        $this->db->where('u.id_role', $id_role);
+        $this->db->where('u.aktif', 1);
+
+        // Filter berdasarkan role user
+        if ($user_role != 1) { // Bukan Super Admin
+            $this->db->where('u.id_perusahaan', $user_perusahaan);
+        } else if ($id_perusahaan) {
+            // Super Admin bisa filter per perusahaan
+            $this->db->where('u.id_perusahaan', $id_perusahaan);
+        }
+
+        $this->db->order_by('u.created_at', 'DESC');
+        return $this->db->get()->result();
+    }
 
     public function get_sales($id_perusahaan = NULL)
     {
@@ -123,25 +132,5 @@ class User_model extends MY_Model
         return $this->db->update($this->table, array(
             'password_hash' => password_hash($new_password, PASSWORD_DEFAULT)
         ));
-    }
-    public function get_by_role($id_role)
-    {
-        $user_role = $this->session->userdata('id_role');
-        $user_perusahaan = $this->session->userdata('id_perusahaan');
-
-        $this->db->select('u.*, r.nama_role, p.nama_perusahaan');
-        $this->db->from('user u');
-        $this->db->join('role_user r', 'u.id_role = r.id_role');
-        $this->db->join('perusahaan p', 'u.id_perusahaan = p.id_perusahaan', 'left');
-        $this->db->where('u.id_role', $id_role);
-        $this->db->where('u.aktif', 1);
-
-        // Filter berdasarkan role user
-        if ($user_role != 1) { // Bukan Super Admin
-            $this->db->where('u.id_perusahaan', $user_perusahaan);
-        }
-
-        $this->db->order_by('u.created_at', 'DESC');
-        return $this->db->get()->result();
     }
 }

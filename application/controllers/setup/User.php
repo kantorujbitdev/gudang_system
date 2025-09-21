@@ -63,6 +63,16 @@ class User extends MY_Controller
         } else {
             $this->session->set_flashdata('error', 'Gagal menambahkan user!');
         }
+
+        // Redirect berdasarkan role yang ditambahkan
+        $role_redirect = $this->input->post('id_role');
+        if ($role_redirect == 3) {
+            return redirect('setup/user/sales');
+        } elseif ($role_redirect == 4) {
+            return redirect('setup/user/packing');
+        } elseif ($role_redirect == 5) {
+            return redirect('setup/user/retur');
+        }
         return redirect('setup/user');
     }
 
@@ -107,6 +117,16 @@ class User extends MY_Controller
         } else {
             $this->session->set_flashdata('error', 'Gagal memperbarui user!');
         }
+
+        // Redirect berdasarkan role yang diedit
+        $role_redirect = $this->input->post('id_role');
+        if ($role_redirect == 3) {
+            return redirect('setup/user/sales');
+        } elseif ($role_redirect == 4) {
+            return redirect('setup/user/packing');
+        } elseif ($role_redirect == 5) {
+            return redirect('setup/user/retur');
+        }
         return redirect('setup/user');
     }
 
@@ -133,10 +153,13 @@ class User extends MY_Controller
             $this->session->set_flashdata('error', 'Gagal menonaktifkan user');
         }
 
+        // Redirect berdasarkan role user yang dinonaktifkan
         if ($user->id_role == 3) {
             return redirect('setup/user/sales');
         } elseif ($user->id_role == 4) {
             return redirect('setup/user/packing');
+        } elseif ($user->id_role == 5) {
+            return redirect('setup/user/retur');
         }
         return redirect('setup/user');
     }
@@ -151,7 +174,10 @@ class User extends MY_Controller
         }
 
         // Ambil data user dengan role Sales (id_role = 3)
-        $this->data['users'] = $this->User_model->get_by_role(3);
+        $this->data['users'] = $this->user->get_sales();
+        $this->data['can_create'] = $this->check_permission('setup/user/sales', 'create');
+        $this->data['can_edit'] = $this->check_permission('setup/user/sales', 'edit');
+        $this->data['can_delete'] = $this->check_permission('setup/user/sales', 'delete');
 
         $this->render_view('setup/user/sales');
     }
@@ -166,21 +192,28 @@ class User extends MY_Controller
         }
 
         // Ambil data user dengan role Admin Packing (id_role = 4)
-        $this->data['users'] = $this->User_model->get_by_role(4);
+        $this->data['users'] = $this->user->get_packing();
+        $this->data['can_create'] = $this->check_permission('setup/user/packing', 'create');
+        $this->data['can_edit'] = $this->check_permission('setup/user/packing', 'edit');
+        $this->data['can_delete'] = $this->check_permission('setup/user/packing', 'delete');
 
         $this->render_view('setup/user/packing');
     }
+
     public function retur()
     {
-        $this->data['title'] = 'Manajemen Admin PaReturcking';
+        $this->data['title'] = 'Manajemen Admin Retur';
 
         // Hanya Super Admin dan Admin Perusahaan yang bisa akses
         if ($this->session->userdata('id_role') != 1 && $this->session->userdata('id_role') != 2) {
             show_404();
         }
 
-        // Ambil data user dengan role Admin Packing (id_role = 4)
-        $this->data['users'] = $this->User_model->get_by_role(5);
+        // Ambil data user dengan role Admin Retur (id_role = 5)
+        $this->data['users'] = $this->user->get_retur();
+        $this->data['can_create'] = $this->check_permission('setup/user/retur', 'create');
+        $this->data['can_edit'] = $this->check_permission('setup/user/retur', 'edit');
+        $this->data['can_delete'] = $this->check_permission('setup/user/retur', 'delete');
 
         $this->render_view('setup/user/retur');
     }
@@ -202,6 +235,33 @@ class User extends MY_Controller
         }
         $this->form_validation->set_rules('telepon', 'Telepon', 'trim|max_length[20]');
         $this->form_validation->set_rules('id_role', 'Role', 'required');
-        $this->form_validation->set_rules('id_perusahaan', 'Perusahaan', 'required');
+
+        // Perusahaan wajib diisi kecuali untuk Super Admin
+        $user_role = $this->session->userdata('id_role');
+        if ($user_role != 1) { // Bukan Super Admin
+            $this->form_validation->set_rules('id_perusahaan', 'Perusahaan', 'required');
+        }
+    }
+
+    // Callback untuk validasi username
+    public function check_username($username, $id_user)
+    {
+        if ($this->user->check_unique_username($username, $id_user)) {
+            return TRUE;
+        } else {
+            $this->form_validation->set_message('check_username', '{field} sudah digunakan');
+            return FALSE;
+        }
+    }
+
+    // Callback untuk validasi email
+    public function check_email($email, $id_user)
+    {
+        if ($this->user->check_unique_email($email, $id_user)) {
+            return TRUE;
+        } else {
+            $this->form_validation->set_message('check_email', '{field} sudah digunakan');
+            return FALSE;
+        }
     }
 }

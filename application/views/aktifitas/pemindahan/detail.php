@@ -3,7 +3,7 @@
         <div class="row">
             <div class="col">
                 <h6 class="m-0 font-weight-bold text-primary">Detail Pemindahan Barang:
-                    <?php echo $pemindahan->no_transfer; ?>
+                    <?php echo $pemindahan->no_transaksi; ?>
                 </h6>
             </div>
             <div class="col text-right">
@@ -18,24 +18,30 @@
             <div class="col-md-6">
                 <table class="table table-sm">
                     <tr>
-                        <th width="30%">No Transfer</th>
-                        <td><?php echo $pemindahan->no_transfer; ?></td>
+                        <th width="30%">No Transaksi</th>
+                        <td><?php echo $pemindahan->no_transaksi; ?></td>
                     </tr>
                     <tr>
                         <th>Tanggal</th>
-                        <td><?php echo date('d-m-Y H:i', strtotime($pemindahan->tanggal)); ?></td>
+                        <td><?php echo date('d-m-Y H:i', strtotime($pemindahan->tanggal_pemindahan)); ?></td>
                     </tr>
                     <tr>
                         <th>Gudang Asal</th>
                         <td><?php echo $pemindahan->gudang_asal; ?></td>
                     </tr>
                     <tr>
-                        <th>Tujuan</th>
+                        <th>Tipe Tujuan</th>
+                        <td><?php echo ucfirst($pemindahan->tipe_tujuan); ?></td>
+                    </tr>
+                    <tr>
+                        <th>Lokasi Tujuan</th>
                         <td>
                             <?php if ($pemindahan->id_gudang_tujuan): ?>
                                 <?php echo $pemindahan->gudang_tujuan; ?>
                             <?php elseif ($pemindahan->id_pelanggan): ?>
                                 <?php echo $pemindahan->nama_pelanggan; ?>
+                            <?php elseif ($pemindahan->id_alamat_konsumen): ?>
+                                <?php echo $pemindahan->alamat_lengkap; ?>
                             <?php else: ?>
                                 -
                             <?php endif; ?>
@@ -91,6 +97,7 @@
                 <thead>
                     <tr>
                         <th>No</th>
+                        <th>Kode Barang</th>
                         <th>Nama Barang</th>
                         <th>Satuan</th>
                         <th>Jumlah</th>
@@ -101,6 +108,7 @@
                     foreach ($detail as $row): ?>
                         <tr>
                             <td><?php echo $no++; ?></td>
+                            <td><?php echo $row->sku; ?></td>
                             <td><?php echo $row->nama_barang; ?></td>
                             <td><?php echo $row->satuan; ?></td>
                             <td><?php echo $row->jumlah; ?></td>
