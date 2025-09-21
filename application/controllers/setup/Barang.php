@@ -18,10 +18,196 @@ class Barang extends MY_Controller
         $this->check_menu_access('setup/barang');
     }
 
+    public function stok($id_barang)
+    {
+        $this->data['title'] = 'Manajemen Stok Barang';
+        $this->data['barang'] = $this->Barang_model->get($id_barang);
+
+        if (!$this->data['barang']) {
+            show_404();
+        }
+
+        $this->load->model('setup/Gudang_model');
+        $this->data['gudang'] = $this->Gudang_model->get_by_perusahaan($this->data['barang']->id_perusahaan);
+        $this->data['stok'] = $this->Barang_model->get_stok_by_barang($id_barang);
+        $data['extra_js'] = 'setup/barang/script';
+        $this->render_view('setup/barang/stok', $data);
+    }
+
+    public function tambah_stok()
+    {
+        if (!$this->input->is_ajax_request()) {
+            show_404();
+        }
+
+        $id_barang = $this->input->post('id_barang');
+        $id_gudang = $this->input->post('id_gudang');
+        $jumlah = $this->input->post('jumlah');
+
+        // Validasi
+        if (!$id_barang || !$id_gudang || !$jumlah || $jumlah <= 0) {
+            echo json_encode(['status' => 'error', 'message' => 'Data tidak valid']);
+            return;
+        }
+
+        // Cek barang
+        $barang = $this->Barang_model->get($id_barang);
+        if (!$barang) {
+            echo json_encode(['status' => 'error', 'message' => 'Barang tidak ditemukan']);
+            return;
+        }
+
+        // Cek gudang
+        $this->load->model('Gudang_model');
+        $gudang = $this->Gudang_model->get($id_gudang);
+        if (!$gudang) {
+            echo json_encode(['status' => 'error', 'message' => 'Gudang tidak ditemukan']);
+            return;
+        }
+
+        // Cek apakah stok sudah ada
+        $this->load->model('Stok_gudang_model');
+        $stok_exists = $this->Stok_gudang_model->get_by_barang_gudang($id_barang, $id_gudang);
+
+        if ($stok_exists) {
+            // Update stok yang sudah ada
+            $data_update = [
+                'jumlah' => $stok_exists->jumlah + $jumlah
+            ];
+
+            if ($this->Stok_gudang_model->update($stok_exists->id_stok, $data_update)) {
+                // Log stok
+                $this->load->model('Log_stok_model');
+                $log_data = [
+                    'id_barang' => $id_barang,
+                    'id_user' => $this->session->userdata('id_user'),
+                    'id_perusahaan' => $barang->id_perusahaan,
+                    'id_gudang' => $id_gudang,
+                    'jenis' => 'masuk',
+                    'jumlah' => $jumlah,
+                    'sisa_stok' => $stok_exists->jumlah + $jumlah,
+                    'keterangan' => 'Penambahan stok manual',
+                    'id_referensi' => null,
+                    'tipe_referensi' => 'penyesuaian'
+                ];
+                $this->Log_stok_model->insert($log_data);
+
+                echo json_encode(['status' => 'success', 'message' => 'Stok berhasil ditambahkan']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Gagal menambahkan stok']);
+            }
+        } else {
+            // Buat stok baru
+            $data_insert = [
+                'id_perusahaan' => $barang->id_perusahaan,
+                'id_barang' => $id_barang,
+                'id_gudang' => $id_gudang,
+                'jumlah' => $jumlah,
+                'reserved' => 0
+            ];
+
+            if ($this->Stok_gudang_model->insert($data_insert)) {
+                // Log stok
+                $this->load->model('Log_stok_model');
+                $log_data = [
+                    'id_barang' => $id_barang,
+                    'id_user' => $this->session->userdata('id_user'),
+                    'id_perusahaan' => $barang->id_perusahaan,
+                    'id_gudang' => $id_gudang,
+                    'jenis' => 'masuk',
+                    'jumlah' => $jumlah,
+                    'sisa_stok' => $jumlah,
+                    'keterangan' => 'Penambahan stok manual',
+                    'id_referensi' => null,
+                    'tipe_referensi' => 'penyesuaian'
+                ];
+                $this->Log_stok_model->insert($log_data);
+
+                echo json_encode(['status' => 'success', 'message' => 'Stok berhasil ditambahkan']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Gagal menambahkan stok']);
+            }
+        }
+    }
+
+    public function kurangi_stok()
+    {
+        if (!$this->input->is_ajax_request()) {
+            show_404();
+        }
+
+        $id_barang = $this->input->post('id_barang');
+        $id_gudang = $this->input->post('id_gudang');
+        $jumlah = $this->input->post('jumlah');
+
+        // Validasi
+        if (!$id_barang || !$id_gudang || !$jumlah || $jumlah <= 0) {
+            echo json_encode(['status' => 'error', 'message' => 'Data tidak valid']);
+            return;
+        }
+
+        // Cek barang
+        $barang = $this->Barang_model->get($id_barang);
+        if (!$barang) {
+            echo json_encode(['status' => 'error', 'message' => 'Barang tidak ditemukan']);
+            return;
+        }
+
+        // Cek gudang
+        $this->load->model('Gudang_model');
+        $gudang = $this->Gudang_model->get($id_gudang);
+        if (!$gudang) {
+            echo json_encode(['status' => 'error', 'message' => 'Gudang tidak ditemukan']);
+            return;
+        }
+
+        // Cek stok
+        $this->load->model('Stok_gudang_model');
+        $stok_exists = $this->Stok_gudang_model->get_by_barang_gudang($id_barang, $id_gudang);
+
+        if (!$stok_exists) {
+            echo json_encode(['status' => 'error', 'message' => 'Stok tidak ditemukan']);
+            return;
+        }
+
+        // Cek apakah stok mencukupi
+        if ($stok_exists->jumlah < $jumlah) {
+            echo json_encode(['status' => 'error', 'message' => 'Stok tidak mencukupi']);
+            return;
+        }
+
+        // Update stok
+        $data_update = [
+            'jumlah' => $stok_exists->jumlah - $jumlah
+        ];
+
+        if ($this->Stok_gudang_model->update($stok_exists->id_stok, $data_update)) {
+            // Log stok
+            $this->load->model('Log_stok_model');
+            $log_data = [
+                'id_barang' => $id_barang,
+                'id_user' => $this->session->userdata('id_user'),
+                'id_perusahaan' => $barang->id_perusahaan,
+                'id_gudang' => $id_gudang,
+                'jenis' => 'keluar',
+                'jumlah' => $jumlah,
+                'sisa_stok' => $stok_exists->jumlah - $jumlah,
+                'keterangan' => 'Pengurangan stok manual',
+                'id_referensi' => null,
+                'tipe_referensi' => 'penyesuaian'
+            ];
+            $this->Log_stok_model->insert($log_data);
+
+            echo json_encode(['status' => 'success', 'message' => 'Stok berhasil dikurangi']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Gagal mengurangi stok']);
+        }
+    }
+
     public function index()
     {
         $this->data['title'] = 'Manajemen Barang';
-        $this->data['barang'] = $this->Barang_model->get_all();
+        $this->data['barang'] = $this->Barang_model->get_barang_with_stok();
 
         $this->render_view('setup/barang/index');
     }

@@ -62,4 +62,93 @@
             }
         <?php endif; ?>
     });
+
+
+    $(document).ready(function () {
+        // Tambah stok
+        $('#submitTambahStok').click(function () {
+            var form = $('#tambahStokForm');
+            if (form[0].checkValidity()) {
+                $.ajax({
+                    url: "<?php echo site_url('setup/barang/tambah_stok'); ?>",
+                    type: "POST",
+                    data: form.serialize(),
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.status === 'success') {
+                            $('#tambahStokModal').modal('hide');
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Terjadi kesalahan saat memproses data');
+                    }
+                });
+            } else {
+                form[0].reportValidity();
+            }
+        });
+
+        // Edit stok
+        $('.edit-stok').click(function () {
+            var id_barang = $(this).data('id_barang');
+            var id_gudang = $(this).data('id_gudang');
+            var jumlah = $(this).data('jumlah');
+            var nama_gudang = $(this).data('nama_gudang');
+
+            $('#edit_id_barang').val(id_barang);
+            $('#edit_id_gudang').val(id_gudang);
+            $('#edit_nama_gudang').val(nama_gudang);
+            $('#edit_jumlah_sekarang').val(jumlah);
+            $('#edit_jumlah').val('');
+
+            $('#editStokModal').modal('show');
+        });
+
+        $('#submitEditStok').click(function () {
+            var form = $('#editStokForm');
+            var jumlah = parseInt($('#edit_jumlah').val());
+            var id_barang = $('#edit_id_barang').val();
+            var id_gudang = $('#edit_id_gudang').val();
+
+            if (form[0].checkValidity()) {
+                if (jumlah === 0) {
+                    alert('Jumlah tidak boleh nol');
+                    return;
+                }
+
+                var url = jumlah > 0 ?
+                    "<?php echo site_url('setup/barang/tambah_stok'); ?>" :
+                    "<?php echo site_url('setup/barang/kurangi_stok'); ?>";
+
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: {
+                        id_barang: id_barang,
+                        id_gudang: id_gudang,
+                        jumlah: Math.abs(jumlah)
+                    },
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.status === 'success') {
+                            $('#editStokModal').modal('hide');
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Terjadi kesalahan saat memproses data');
+                    }
+                });
+            } else {
+                form[0].reportValidity();
+            }
+        });
+    });
 </script>

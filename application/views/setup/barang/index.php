@@ -22,6 +22,7 @@
                         <th>Nama Barang</th>
                         <th>Kategori</th>
                         <th>Perusahaan</th>
+                        <th>Total Stok</th>
                         <th>Status</th>
                         <th>Aksi</th>
                     </tr>
@@ -44,6 +45,30 @@
                             <td><?php echo $row->nama_kategori ?: '-'; ?></td>
                             <td><?php echo $row->nama_perusahaan; ?></td>
                             <td>
+                                <?php
+                                $total_stok = isset($row->total_stok) ? $row->total_stok : 0;
+                                $total_reserved = isset($row->total_reserved) ? $row->total_reserved : 0;
+                                $stok_tersedia = $total_stok - $total_reserved;
+
+                                // Tentukan warna badge stok
+                                if ($stok_tersedia <= 0) {
+                                    $badge_class = 'danger'; // habis
+                                } elseif ($stok_tersedia <= 5) {
+                                    $badge_class = 'warning'; // sedikit
+                                } else {
+                                    $badge_class = 'success'; // cukup
+                                }
+                                ?>
+                                <span class="badge badge-<?php echo $badge_class; ?> p-2">
+                                    <?php echo $stok_tersedia . ' ' . $row->satuan; ?>
+                                </span>
+                                <?php if ($total_reserved > 0): ?>
+                                    <span class="badge badge-secondary">
+                                        Reserved: <?php echo $total_reserved; ?>
+                                    </span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
                                 <?php if ($row->status_aktif == 1): ?>
                                     <span class="badge badge-success">Aktif</span>
                                 <?php else: ?>
@@ -54,6 +79,10 @@
                                 <a href="<?php echo site_url('setup/barang/detail/' . $row->id_barang); ?>"
                                     class="btn btn-sm btn-info" title="Detail">
                                     <i class="fas fa-info-circle"></i> Detail
+                                </a>
+                                <a href="<?php echo site_url('setup/barang/stok/' . $row->id_barang); ?>"
+                                    class="btn btn-sm btn-primary" title="Kelola Stok">
+                                    <i class="fas fa-boxes"></i> Stok
                                 </a>
                                 <a href="<?php echo site_url('setup/barang/edit/' . $row->id_barang); ?>"
                                     class="btn btn-sm btn-warning" title="Edit">

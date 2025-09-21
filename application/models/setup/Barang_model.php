@@ -11,7 +11,30 @@ class Barang_model extends MY_Model
         $this->fillable = array('id_perusahaan', 'id_kategori', 'nama_barang', 'gambar', 'sku', 'deskripsi', 'satuan', 'status_aktif');
         $this->soft_delete = TRUE;
     }
+    public function get_barang_with_stok()
+    {
+        $user_role = $this->session->userdata('id_role');
+        $user_perusahaan = $this->session->userdata('id_perusahaan');
 
+        $this->db->select('b.*, k.nama_kategori, p.nama_perusahaan, 
+                        COALESCE(SUM(sg.jumlah), 0) as total_stok,
+                        COALESCE(SUM(sg.reserved), 0) as total_reserved');
+        $this->db->from('barang b');
+        $this->db->join('kategori k', 'b.id_kategori = k.id_kategori', 'left');
+        $this->db->join('perusahaan p', 'b.id_perusahaan = p.id_perusahaan', 'left');
+        $this->db->join('stok_gudang sg', 'b.id_barang = sg.id_barang', 'left');
+        $this->db->where('b.deleted_at IS NULL');
+
+        // Filter berdasarkan role user
+        if ($user_role != 1) { // Bukan Super Admin
+            $this->db->where('b.id_perusahaan', $user_perusahaan);
+        }
+
+        $this->db->group_by('b.id_barang');
+        $this->db->order_by('b.created_at', 'DESC');
+
+        return $this->db->get()->result();
+    }
     public function get_all()
     {
         $user_role = $this->session->userdata('id_role');
