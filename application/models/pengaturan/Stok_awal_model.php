@@ -7,7 +7,63 @@ class Stok_awal_model extends CI_Model
     {
         parent::__construct();
     }
+    public function get_barang_with_stok($id_perusahaan)
+    {
+        // Ambil semua barang aktif per perusahaan
+        $this->db->select('b.id_barang, b.nama_barang, b.sku, k.nama_kategori');
+        $this->db->from('barang b');
+        $this->db->join('kategori k', 'b.id_kategori = k.id_kategori', 'left');
+        $this->db->where('b.id_perusahaan', $id_perusahaan);
+        $this->db->where('b.status_aktif', 1);
+        $this->db->order_by('b.nama_barang', 'ASC');
+        $barang = $this->db->get()->result();
 
+        // Ambil semua gudang aktif per perusahaan
+        $this->db->select('id_gudang, nama_gudang');
+        $this->db->where('id_perusahaan', $id_perusahaan);
+        $this->db->where('status_aktif', 1);
+        $gudang = $this->db->get('gudang')->result();
+
+        $result = array();
+
+        foreach ($barang as $b) {
+            $row = array(
+                'id_barang' => $b->id_barang,
+                'nama_barang' => $b->nama_barang,
+                'sku' => $b->sku,
+                'nama_kategori' => $b->nama_kategori,
+                'gudang' => array()
+            );
+
+            foreach ($gudang as $g) {
+                // Cek stok awal
+                $stok_awal = $this->db->get_where('stok_awal', array(
+                    'id_barang' => $b->id_barang,
+                    'id_gudang' => $g->id_gudang,
+                    'id_perusahaan' => $id_perusahaan
+                ))->row();
+
+                // Cek stok terkini
+                $stok_terkini = $this->db->get_where('stok_gudang', array(
+                    'id_barang' => $b->id_barang,
+                    'id_gudang' => $g->id_gudang,
+                    'id_perusahaan' => $id_perusahaan
+                ))->row();
+
+                $row['gudang'][] = array(
+                    'id_gudang' => $g->id_gudang,
+                    'nama_gudang' => $g->nama_gudang,
+                    'stok_awal' => $stok_awal ? $stok_awal->qty_awal : 0,
+                    'stok_terkini' => $stok_terkini ? $stok_terkini->jumlah : 0,
+                    'has_stok_awal' => $stok_awal ? true : false
+                );
+            }
+
+            $result[] = $row;
+        }
+
+        return $result;
+    }
     public function get_all()
     {
         $id_perusahaan = $this->session->userdata('id_perusahaan');
@@ -57,21 +113,75 @@ class Stok_awal_model extends CI_Model
         $this->db->where('id_stok_awal', $id_stok_awal);
         return $this->db->delete('stok_awal');
     }
-
-    public function get_stok_gudang($id_barang, $id_gudang)
+    public function get_stok_awal_by_barang_gudang($id_barang, $id_gudang, $id_perusahaan = null)
     {
+        if ($id_perusahaan === null) {
+            $id_perusahaan = $this->session->userdata('id_perusahaan');
+        }
+
         $this->db->where('id_barang', $id_barang);
         $this->db->where('id_gudang', $id_gudang);
+        $this->db->where('id_perusahaan', $id_perusahaan);
+        return $this->db->get('stok_awal')->row();
+    }
+    public function get_stok_gudang($id_barang, $id_gudang, $id_perusahaan = null)
+    {
+        if ($id_perusahaan === null) {
+            $id_perusahaan = $this->session->userdata('id_perusahaan');
+        }
+
+        $this->db->where('id_barang', $id_barang);
+        $this->db->where('id_gudang', $id_gudang);
+        $this->db->where('id_perusahaan', $id_perusahaan);
         return $this->db->get('stok_gudang')->row();
     }
-
-    public function update_stok_gudang($id_barang, $id_gudang, $data)
+    private function update_stok_gudang($id_barang, $id_gudang, $jumlah, $id_perusahaan = null)
     {
-        $this->db->where('id_barang', $id_barang);
-        $this->db->where('id_gudang', $id_gudang);
-        return $this->db->update('stok_gudang', $data);
-    }
+        if ($id_perusahaan === null) {
+            $id_perusahaan = $this->session->userdata('id_perusahaan');
+        }
 
+        $stok = $this->stok_awal->get_stok_gudang($id_barang, $id_gudang, $id_perusahaan);
+
+        if ($stok) {
+            // Update stok yang ada
+            $data = [
+                'jumlah' => $jumlah,
+                'updated_at' => date('Y-m-d H:i:s')
+            ];
+            $this->stok_awal->update_stok_gudang($id_barang, $id_gudang, $data);
+        } else {
+            // Insert stok baru
+            $data = [
+                'id_perusahaan' => $id_perusahaan,
+                'id_barang' => $id_barang,
+                'id_gudang' => $id_gudang,
+                'jumlah' => $jumlah,
+                'reserved' => 0,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
+            ];
+            $this->stok_awal->insert_stok_gudang($data);
+        }
+
+        // Ambil stok terbaru untuk log
+        $stok_terbaru = $this->stok_awal->get_stok_gudang($id_barang, $id_gudang, $id_perusahaan);
+
+        $log_data = [
+            'id_barang' => $id_barang,
+            'id_user' => $this->session->userdata('id_user'),
+            'id_perusahaan' => $id_perusahaan,
+            'id_gudang' => $id_gudang,
+            'jenis' => 'penyesuaian',
+            'jumlah' => $jumlah,
+            'sisa_stok' => $stok_terbaru ? $stok_terbaru->jumlah : 0,
+            'keterangan' => 'Penyesuaian stok awal',
+            'tanggal' => date('Y-m-d H:i:s'),
+            'id_referensi' => null,
+            'tipe_referensi' => 'penyesuaian'
+        ];
+        $this->stok_awal->insert_log_stok($log_data);
+    }
     public function insert_stok_gudang($data)
     {
         $this->db->insert('stok_gudang', $data);

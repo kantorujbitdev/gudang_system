@@ -20,14 +20,124 @@ class Stok_awal extends MY_Controller
     {
         $this->data['title'] = 'Stok Awal';
         $id_perusahaan = $this->session->userdata('id_perusahaan');
-        $this->data['stok_awal'] = $this->stok_awal->get_stok_awal_by_perusahaan($id_perusahaan);
+
+        // Jika Super Admin, tampilkan pilihan perusahaan
+        if ($this->session->userdata('id_role') == 1) {
+            $this->load->model('setup/Perusahaan_model', 'perusahaan');
+            $this->data['perusahaan'] = $this->perusahaan->get_all();
+            $this->data['selected_perusahaan'] = $this->input->get('id_perusahaan') ?: $this->data['perusahaan'][0]->id_perusahaan;
+            $id_perusahaan = $this->data['selected_perusahaan'];
+        }
+
+        $this->data['barang'] = $this->stok_awal->get_barang_with_stok($id_perusahaan);
+        $this->data['gudang'] = $this->stok_awal->get_gudang_by_perusahaan($id_perusahaan);
         $this->data['can_create'] = $this->check_permission('pengaturan/stok_awal', 'create');
         $this->data['can_edit'] = $this->check_permission('pengaturan/stok_awal', 'edit');
         $this->data['can_delete'] = $this->check_permission('pengaturan/stok_awal', 'delete');
 
-        $this->render_view('pengaturan/stok_awal/index');
-    }
+        // Load script terpisah
+        $this->data['extra_js'] = 'pengaturan/stok_awal/script';
 
+        $this->render_view('pengaturan/stok_awal/index', $this->data);
+    }
+    public function ajax_tambah_stok()
+    {
+        header('Content-Type: application/json');
+
+        if (!$this->check_permission('pengaturan/stok_awal', 'create')) {
+            $this->session->set_flashdata('error', 'Anda tidak memiliki izin!');
+            echo json_encode(['status' => 'error', 'message' => 'Anda tidak memiliki izin!']);
+            return;
+        }
+
+        $id_barang = $this->input->post('id_barang');
+        $id_gudang = $this->input->post('id_gudang');
+        $qty_awal = $this->input->post('qty_awal');
+        $id_perusahaan = $this->input->post('id_perusahaan') ?: $this->session->userdata('id_perusahaan');
+
+        // Cek stok sudah ada
+        if ($this->stok_awal->get_stok_awal_by_barang_gudang($id_barang, $id_gudang, $id_perusahaan)) {
+            $this->session->set_flashdata('error', 'Stok awal sudah ada!');
+            echo json_encode(['status' => 'error', 'message' => 'Stok awal sudah ada!']);
+            return;
+        }
+
+        // Mulai transaksi
+        $this->db->trans_start();
+
+        try {
+            // Insert ke stok_awal
+            $data_insert = [
+                'id_barang' => $id_barang,
+                'id_gudang' => $id_gudang,
+                'id_perusahaan' => $id_perusahaan,
+                'qty_awal' => $qty_awal,
+                'keterangan' => $this->input->post('keterangan'),
+                'created_by' => $this->session->userdata('id_user'),
+                'created_at' => date('Y-m-d H:i:s')
+            ];
+
+            $this->stok_awal->insert($data_insert);
+
+            // Update stok_gudang
+            $stok = $this->stok_awal->get_stok_gudang($id_barang, $id_gudang, $id_perusahaan);
+
+            if ($stok) {
+                // Update stok yang ada
+                $data_stok = [
+                    'jumlah' => $qty_awal,
+                    'updated_at' => date('Y-m-d H:i:s')
+                ];
+                $this->stok_awal->update_stok_gudang($id_barang, $id_gudang, $data_stok);
+            } else {
+                // Insert stok baru
+                $data_stok = [
+                    'id_perusahaan' => $id_perusahaan,
+                    'id_barang' => $id_barang,
+                    'id_gudang' => $id_gudang,
+                    'jumlah' => $qty_awal,
+                    'reserved' => 0,
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s')
+                ];
+                $this->stok_awal->insert_stok_gudang($data_stok);
+            }
+
+            // Insert log stok
+            $stok_terbaru = $this->stok_awal->get_stok_gudang($id_barang, $id_gudang, $id_perusahaan);
+
+            $log_data = [
+                'id_barang' => $id_barang,
+                'id_user' => $this->session->userdata('id_user'),
+                'id_perusahaan' => $id_perusahaan,
+                'id_gudang' => $id_gudang,
+                'jenis' => 'penyesuaian',
+                'jumlah' => $qty_awal,
+                'sisa_stok' => $stok_terbaru ? $stok_terbaru->jumlah : 0,
+                'keterangan' => 'Penyesuaian stok awal',
+                'tanggal' => date('Y-m-d H:i:s'),
+                'id_referensi' => null,
+                'tipe_referensi' => 'penyesuaian'
+            ];
+            $this->stok_awal->insert_log_stok($log_data);
+
+            // Selesaikan transaksi
+            $this->db->trans_complete();
+
+            if ($this->db->trans_status() === FALSE) {
+                $this->session->set_flashdata('error', 'Transaksi gagal!');
+                echo json_encode(['status' => 'error', 'message' => 'Transaksi gagal!']);
+            } else {
+                $this->session->set_flashdata('success', 'Stok awal berhasil ditambahkan!');
+                echo json_encode(['status' => 'success', 'message' => 'Stok awal berhasil ditambahkan!']);
+            }
+        } catch (Exception $e) {
+            // Rollback transaksi jika ada error
+            $this->db->trans_rollback();
+            $this->session->set_flashdata('error', 'Error: ' . $e->getMessage());
+            echo json_encode(['status' => 'error', 'message' => 'Error: ' . $e->getMessage()]);
+        }
+    }
     public function tambah()
     {
         if (!$this->check_permission('pengaturan/stok_awal', 'create')) {

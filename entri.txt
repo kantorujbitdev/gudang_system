@@ -105,6 +105,11 @@ untuk menu sendiri akan dibuat dengan posisi top_menu dan susunannya seperti ini
 │ ├Packing
 │ ├Mutasi Barang
 │ └Ringkasan Stok
+Pengaturan
+│ ├Stok Awal
+│ ├Hak Akses
+│ ├Approval Flow
+│ └Pengaturan Sistem
 
 
 database yang digunakan yaitu
@@ -863,6 +868,24 @@ ALTER TABLE `user`
   ADD CONSTRAINT `user_ibfk_3` FOREIGN KEY (`created_by`) REFERENCES `user` (`id_user`);
 
 
+
+
+
+kita akan melengkapi kode kode yg belum sesuai ya bro,
+setelah pesan ini, saya akan kirim kode untuk fitur stok awal, agar dapat sesuai dengan yg dibutuhkan serta desain database yg sudah dimiliki.
+
+perlu di ingat bahwa role user ini penting sebab yg menentukan tampilan, terutama super admin yg tidak memiliki perusahaan, jadi jika membutuhkan id_perusahaan seharusnya ada pilihan untuk pilih perusahaan nya.
+
+jawab dengan singkat agar tidak gampang kena limit ya.
+tunggu hingga saya meminta anda mengecek kode baru anda perbaiki kode dan berikan saran
+
+halaman Stok Awal saat pertama kali dibuka sudah menampilkan list tabel barang mana saja yang sudah memiliki stok,
+saya ingin menambahkan untuk fitur ini dapat digunakan oleh super admin dan juga admin perusahaan,
+dimana, saat pertama kali dibuka semua barang muncul dengan keterangan- keterangannya,
+kode yg sudah dimili yaitu:
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 
 yang ingin saya tanyakan adalah, dari penjelasan rancangan sistem yang sedang di bangun,
 apakah rancangan databse ini sudah sesuai?

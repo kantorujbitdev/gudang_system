@@ -30,7 +30,7 @@ class Stok_model extends CI_Model
 
     public function get_stok_menipis()
     {
-        $filter = get_company_filter();
+        $filter = get_company_filter('b'); // filter di tabel barang
 
         $this->db->select('b.nama_barang, g.nama_gudang, sg.jumlah, 10 as min_stok');
         $this->db->from('stok_gudang sg');
@@ -66,7 +66,7 @@ class Stok_model extends CI_Model
 
     public function get_chart_stok()
     {
-        $filter = get_company_filter();
+        $filter = get_company_filter('b'); // filter di tabel barang
 
         $this->db->select('g.nama_gudang, SUM(sg.jumlah) as total_stok');
         $this->db->from('stok_gudang sg');
