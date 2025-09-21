@@ -477,36 +477,7 @@ INSERT INTO `role_user` (`id_role`, `nama_role`, `deskripsi`) VALUES
 
 -- Data untuk tabel menu (disesuaikan dengan struktur menu yang diinginkan)
 INSERT INTO `menu` (`id_menu`, `nama_menu`, `url`, `permission`, `icon`, `deskripsi`, `urutan`, `id_parent`, `status_aktif`, `tipe`) VALUES
-(1, 'Dashboard', 'dashboard', NULL, 'fas fa-tachometer-alt', NULL, 1, NULL, 1, 'menu'),
-(2, 'Setup', '#', NULL, 'fas fa-database', NULL, 2, NULL, 1, 'menu'),
-(3, 'Perusahaan', 'setup/perusahaan', NULL, 'fas fa-building', NULL, 1, 2, 1, 'submenu'),
-(4, 'Kategori Barang', 'setup/kategori', NULL, 'fas fa-tags', NULL, 2, 2, 1, 'submenu'),
-(5, 'Barang', 'setup/barang', NULL, 'fas fa-box', NULL, 3, 2, 1, 'submenu'),
-(6, 'Gudang', 'setup/gudang', NULL, 'fas fa-warehouse', NULL, 4, 2, 1, 'submenu'),
-(7, 'Pelanggan', 'setup/pelanggan', NULL, 'fas fa-users', NULL, 5, 2, 1, 'submenu'),
-(8, 'Supplier', 'setup/supplier', NULL, 'fas fa-truck', NULL, 6, 2, 1, 'submenu'),
-(9, 'Sales', 'setup/user/sales', NULL, 'fas fa-user-tag', NULL, 7, 2, 1, 'submenu'),
-(10, 'Admin Packing', 'setup/user/packing', NULL, 'fas fa-user-cog', NULL, 8, 2, 1, 'submenu'),
-(11, 'Aktifitas', '#', NULL, 'fas fa-exchange-alt', NULL, 3, NULL, 1, 'menu'),
-(12, 'Pemindahan Barang', 'aktifitas/pemindahan', NULL, 'fas fa-truck-loading', NULL, 1, 11, 1, 'submenu'),
-(13, 'Penerimaan Barang', 'aktifitas/penerimaan', NULL, 'fas fa-clipboard-check', NULL, 2, 11, 1, 'submenu'),
-(14, 'Retur Penjualan', 'aktifitas/retur_penjualan', NULL, 'fas fa-undo-alt', NULL, 3, 11, 1, 'submenu'),
-(15, 'Retur Pembelian', 'aktifitas/retur_pembelian', NULL, 'fas fa-undo', NULL, 4, 11, 1, 'submenu'),
-(16, 'Daftar', '#', NULL, 'fas fa-list', NULL, 4, NULL, 1, 'menu'),
-(17, 'Pemindahan Barang', 'daftar/pemindahan', NULL, 'fas fa-truck', NULL, 1, 16, 1, 'submenu'),
-(18, 'Penerimaan Barang', 'daftar/penerimaan', NULL, 'fas fa-clipboard-list', NULL, 2, 16, 1, 'submenu'),
-(19, 'Retur Penjualan', 'daftar/retur_penjualan', NULL, 'fas fa-undo-alt', NULL, 3, 16, 1, 'submenu'),
-(20, 'Retur Pembelian', 'daftar/retur_pembelian', NULL, 'fas fa-undo', NULL, 4, 16, 1, 'submenu'),
-(21, 'Laporan', '#', NULL, 'fas fa-chart-bar', NULL, 5, NULL, 1, 'menu'),
-(22, 'Sales', 'laporan/sales', NULL, 'fas fa-chart-line', NULL, 1, 21, 1, 'submenu'),
-(23, 'Packing', 'laporan/packing', NULL, 'fas fa-boxes', NULL, 2, 21, 1, 'submenu'),
-(24, 'Mutasi Barang', 'laporan/mutasi', NULL, 'fas fa-exchange-alt', NULL, 3, 21, 1, 'submenu'),
-(25, 'Ringkasan Stok', 'laporan/summary', NULL, 'fas fa-file-invoice-dollar', NULL, 4, 21, 1, 'submenu'),
-(26, 'Pengaturan', '#', NULL, 'fas fa-cog', NULL, 6, NULL, 1, 'menu'),
-(27, 'Stok Awal', 'pengaturan/stok_awal', NULL, 'fas fa-dolly-flatbed', NULL, 1, 26, 1, 'submenu'),
-(28, 'Hak Akses', 'pengaturan/hak_akses', NULL, 'fas fa-user-shield', NULL, 2, 26, 1, 'submenu'),
-(29, 'Approval Flow', 'pengaturan/approval', NULL, 'fas fa-tasks', NULL, 3, 26, 1, 'submenu'),
-(30, 'Pengaturan Sistem', 'pengaturan/sistem', NULL, 'fas fa-sliders-h', NULL, 4, 26, 1, 'submenu');
+(1, 'Dashboard', 'dashboard', NULL, 'fas fa-tachometer-alt', NULL, 1, NULL, 1, 'menu'), (2, 'Setup', '#', NULL, 'fas fa-database', NULL, 2, NULL, 1, 'menu'), (3, 'Perusahaan', 'setup/perusahaan', NULL, 'fas fa-building', NULL, 1, 2, 1, 'submenu'), (4, 'Kategori Barang', 'setup/kategori', NULL, 'fas fa-tags', NULL, 2, 2, 1, 'submenu'), (5, 'Barang', 'setup/barang', NULL, 'fas fa-box', NULL, 3, 2, 1, 'submenu'), (6, 'Gudang', 'setup/gudang', NULL, 'fas fa-warehouse', NULL, 4, 2, 1, 'submenu'), (7, 'Pelanggan', 'setup/pelanggan', NULL, 'fas fa-users', NULL, 5, 2, 1, 'submenu'), (8, 'Supplier', 'setup/supplier', NULL, 'fas fa-truck', NULL, 6, 2, 1, 'submenu'), (9, 'Sales', 'setup/user/sales', NULL, 'fas fa-user-tag', NULL, 7, 2, 1, 'submenu'), (10, 'Admin Packing', 'setup/user/packing', NULL, 'fas fa-user-cog', NULL, 8, 2, 1, 'submenu'), (11, 'Aktifitas', '#', NULL, 'fas fa-exchange-alt', NULL, 3, NULL, 1, 'menu'), (12, 'Pemindahan Barang', 'aktifitas/pemindahan', NULL, 'fas fa-truck-loading', NULL, 1, 11, 1, 'submenu'), (13, 'Penerimaan Barang', 'aktifitas/penerimaan', NULL, 'fas fa-clipboard-check', NULL, 2, 11, 1, 'submenu'), (14, 'Retur Penjualan', 'aktifitas/retur_penjualan', NULL, 'fas fa-undo-alt', NULL, 3, 11, 1, 'submenu'), (15, 'Retur Pembelian', 'aktifitas/retur_pembelian', NULL, 'fas fa-undo', NULL, 4, 11, 1, 'submenu'), (16, 'Daftar', '#', NULL, 'fas fa-list', NULL, 4, NULL, 1, 'menu'), (17, 'Pemindahan Barang', 'daftar/pemindahan', NULL, 'fas fa-truck', NULL, 1, 16, 1, 'submenu'), (18, 'Penerimaan Barang', 'daftar/penerimaan', NULL, 'fas fa-clipboard-list', NULL, 2, 16, 1, 'submenu'), (19, 'Retur Penjualan', 'daftar/retur_penjualan', NULL, 'fas fa-undo-alt', NULL, 3, 16, 1, 'submenu'), (20, 'Retur Pembelian', 'daftar/retur_pembelian', NULL, 'fas fa-undo', NULL, 4, 16, 1, 'submenu'), (21, 'Laporan', '#', NULL, 'fas fa-chart-bar', NULL, 5, NULL, 1, 'menu'), (22, 'Sales', 'laporan/sales', NULL, 'fas fa-chart-line', NULL, 1, 21, 1, 'submenu'), (23, 'Packing', 'laporan/packing', NULL, 'fas fa-boxes', NULL, 2, 21, 1, 'submenu'), (24, 'Mutasi Barang', 'laporan/mutasi', NULL, 'fas fa-exchange-alt', NULL, 3, 21, 1, 'submenu'), (25, 'Ringkasan Stok', 'laporan/summary', NULL, 'fas fa-file-invoice-dollar', NULL, 4, 21, 1, 'submenu'), (26, 'Pengaturan', '#', NULL, 'fas fa-cog', NULL, 6, NULL, 1, 'menu'), (27, 'Stok Awal', 'pengaturan/stok_awal', NULL, 'fas fa-dolly-flatbed', NULL, 1, 26, 1, 'submenu'), (28, 'Hak Akses', 'pengaturan/hak_akses', NULL, 'fas fa-user-shield', NULL, 2, 26, 1, 'submenu'), (29, 'Approval Flow', 'pengaturan/approval', NULL, 'fas fa-tasks', NULL, 3, 26, 1, 'submenu'), (30, 'Pengaturan Sistem', 'pengaturan/sistem', NULL, 'fas fa-sliders-h', NULL, 4, 26, 1, 'submenu');
 
 -- Data untuk tabel user
 INSERT INTO `user` (`id_user`, `nama`, `username`, `password_hash`, `id_role`, `id_perusahaan`, `email`, `telepon`, `created_by`, `aktif`, `created_at`, `updated_at`, `last_login`, `foto_profil`, `remember_token`, `token_expires`) VALUES
@@ -549,124 +520,24 @@ INSERT INTO `barang` (`id_barang`, `id_perusahaan`, `id_kategori`, `nama_barang`
 
 -- Data untuk tabel approval_flow
 INSERT INTO `approval_flow` (`id_approval`, `tipe_transaksi`, `status_dari`, `status_ke`, `id_role`, `urutan`, `status_aktif`) VALUES
-(1, 'pemindahan_barang', 'Draft', 'Packing', 4, 1, 1),
-(2, 'pemindahan_barang', 'Packing', 'Shipping', 4, 2, 1),
-(3, 'pemindahan_barang', 'Shipping', 'Delivered', 4, 3, 1),
-(4, 'pemindahan_barang', 'Draft', 'Cancelled', 4, 4, 1),
-(5, 'pemindahan_barang', 'Packing', 'Cancelled', 4, 5, 1),
-(6, 'pemindahan_barang', 'Shipping', 'Cancelled', 4, 6, 1),
-(7, 'penerimaan_barang', 'Draft', 'Received', 2, 1, 1),
-(8, 'penerimaan_barang', 'Received', 'Completed', 2, 2, 1),
-(9, 'penerimaan_barang', 'Draft', 'Cancelled', 2, 3, 1),
-(10, 'penerimaan_barang', 'Received', 'Cancelled', 2, 4, 1),
-(11, 'retur_penjualan', 'Requested', 'Verification', 5, 1, 1),
-(12, 'retur_penjualan', 'Verification', 'Approved', 5, 2, 1),
-(13, 'retur_penjualan', 'Verification', 'Rejected', 5, 3, 1),
-(14, 'retur_penjualan', 'Approved', 'Completed', 5, 4, 1),
-(15, 'retur_pembelian', 'Requested', 'Verification', 5, 1, 1),
-(16, 'retur_pembelian', 'Verification', 'Approved', 5, 2, 1),
-(17, 'retur_pembelian', 'Verification', 'Rejected', 5, 3, 1),
-(18, 'retur_pembelian', 'Approved', 'Completed', 5, 4, 1);
+(1, 'pemindahan_barang', 'Draft', 'Packing', 4, 1, 1), (2, 'pemindahan_barang', 'Packing', 'Shipping', 4, 2, 1), (3, 'pemindahan_barang', 'Shipping', 'Delivered', 4, 3, 1), (4, 'pemindahan_barang', 'Draft', 'Cancelled', 4, 4, 1), (5, 'pemindahan_barang', 'Packing', 'Cancelled', 4, 5, 1), (6, 'pemindahan_barang', 'Shipping', 'Cancelled', 4, 6, 1), (7, 'penerimaan_barang', 'Draft', 'Received', 2, 1, 1), (8, 'penerimaan_barang', 'Received', 'Completed', 2, 2, 1), (9, 'penerimaan_barang', 'Draft', 'Cancelled', 2, 3, 1), (10, 'penerimaan_barang', 'Received', 'Cancelled', 2, 4, 1), (11, 'retur_penjualan', 'Requested', 'Verification', 5, 1, 1), (12, 'retur_penjualan', 'Verification', 'Approved', 5, 2, 1), (13, 'retur_penjualan', 'Verification', 'Rejected', 5, 3, 1), (14, 'retur_penjualan', 'Approved', 'Completed', 5, 4, 1), (15, 'retur_pembelian', 'Requested', 'Verification', 5, 1, 1), (16, 'retur_pembelian', 'Verification', 'Approved', 5, 2, 1), (17, 'retur_pembelian', 'Verification', 'Rejected', 5, 3, 1), (18, 'retur_pembelian', 'Approved', 'Completed', 5, 4, 1);
 
 -- Data untuk tabel hak_akses_menu
 INSERT INTO `hak_akses_menu` (`id_hak_akses`, `id_role`, `id_menu`, `can_view`, `can_create`, `can_edit`, `can_delete`) VALUES
 -- Super Admin (id_role = 1) - Akses penuh ke semua menu
-(1, 1, 1, 1, 1, 1, 1),
-(2, 1, 2, 1, 1, 1, 1),
-(3, 1, 3, 1, 1, 1, 1),
-(4, 1, 4, 1, 1, 1, 1),
-(5, 1, 5, 1, 1, 1, 1),
-(6, 1, 6, 1, 1, 1, 1),
-(7, 1, 7, 1, 1, 1, 1),
-(8, 1, 8, 1, 1, 1, 1),
-(9, 1, 9, 1, 1, 1, 1),
-(10, 1, 10, 1, 1, 1, 1),
-(11, 1, 11, 1, 1, 1, 1),
-(12, 1, 12, 1, 1, 1, 1),
-(13, 1, 13, 1, 1, 1, 1),
-(14, 1, 14, 1, 1, 1, 1),
-(15, 1, 15, 1, 1, 1, 1),
-(16, 1, 16, 1, 1, 1, 1),
-(17, 1, 17, 1, 1, 1, 1),
-(18, 1, 18, 1, 1, 1, 1),
-(19, 1, 19, 1, 1, 1, 1),
-(20, 1, 20, 1, 1, 1, 1),
-(21, 1, 21, 1, 1, 1, 1),
-(22, 1, 22, 1, 1, 1, 1),
-(23, 1, 23, 1, 1, 1, 1),
-(24, 1, 24, 1, 1, 1, 1),
-(25, 1, 25, 1, 1, 1, 1),
-(26, 1, 26, 1, 1, 1, 1),
-(27, 1, 27, 1, 1, 1, 1),
-(28, 1, 28, 1, 1, 1, 1),
-(29, 1, 29, 1, 1, 1, 1),
-(30, 1, 30, 1, 1, 1, 1),
+(1, 1, 1, 1, 1, 1, 1), (2, 1, 2, 1, 1, 1, 1), (3, 1, 3, 1, 1, 1, 1), (4, 1, 4, 1, 1, 1, 1), (5, 1, 5, 1, 1, 1, 1), (6, 1, 6, 1, 1, 1, 1), (7, 1, 7, 1, 1, 1, 1), (8, 1, 8, 1, 1, 1, 1), (9, 1, 9, 1, 1, 1, 1), (10, 1, 10, 1, 1, 1, 1), (11, 1, 11, 1, 1, 1, 1), (12, 1, 12, 1, 1, 1, 1), (13, 1, 13, 1, 1, 1, 1), (14, 1, 14, 1, 1, 1, 1), (15, 1, 15, 1, 1, 1, 1), (16, 1, 16, 1, 1, 1, 1), (17, 1, 17, 1, 1, 1, 1), (18, 1, 18, 1, 1, 1, 1), (19, 1, 19, 1, 1, 1, 1), (20, 1, 20, 1, 1, 1, 1), (21, 1, 21, 1, 1, 1, 1), (22, 1, 22, 1, 1, 1, 1), (23, 1, 23, 1, 1, 1, 1), (24, 1, 24, 1, 1, 1, 1), (25, 1, 25, 1, 1, 1, 1), (26, 1, 26, 1, 1, 1, 1), (27, 1, 27, 1, 1, 1, 1), (28, 1, 28, 1, 1, 1, 1), (29, 1, 29, 1, 1, 1, 1), (30, 1, 30, 1, 1, 1, 1),
 
 -- Admin Perusahaan (id_role = 2) - Akses penuh di perusahaannya
-(31, 2, 1, 1, 1, 1, 1),
-(32, 2, 2, 1, 1, 1, 1),
-(33, 2, 3, 1, 1, 1, 1),
-(34, 2, 4, 1, 1, 1, 1),
-(35, 2, 5, 1, 1, 1, 1),
-(36, 2, 6, 1, 1, 1, 1),
-(37, 2, 7, 1, 1, 1, 1),
-(38, 2, 8, 1, 1, 1, 1),
-(39, 2, 9, 1, 1, 1, 1),
-(40, 2, 10, 1, 1, 1, 1),
-(41, 2, 11, 1, 1, 1, 1),
-(42, 2, 12, 1, 1, 1, 1),
-(43, 2, 13, 1, 1, 1, 1),
-(44, 2, 14, 1, 1, 1, 1),
-(45, 2, 15, 1, 1, 1, 1),
-(46, 2, 16, 1, 1, 1, 1),
-(47, 2, 17, 1, 1, 1, 1),
-(48, 2, 18, 1, 1, 1, 1),
-(49, 2, 19, 1, 1, 1, 1),
-(50, 2, 20, 1, 1, 1, 1),
-(51, 2, 21, 1, 1, 1, 1),
-(52, 2, 22, 1, 1, 1, 1),
-(53, 2, 23, 1, 1, 1, 1),
-(54, 2, 24, 1, 1, 1, 1),
-(55, 2, 25, 1, 1, 1, 1),
-(56, 2, 26, 1, 1, 1, 1),
-(57, 2, 27, 1, 1, 1, 1),
-(58, 2, 28, 1, 1, 1, 1),
-(59, 2, 29, 1, 1, 1, 1),
-(60, 2, 30, 1, 1, 1, 1),
+(31, 2, 1, 1, 1, 1, 1), (32, 2, 2, 1, 1, 1, 1), (33, 2, 3, 1, 1, 1, 1), (34, 2, 4, 1, 1, 1, 1), (35, 2, 5, 1, 1, 1, 1), (36, 2, 6, 1, 1, 1, 1), (37, 2, 7, 1, 1, 1, 1), (38, 2, 8, 1, 1, 1, 1), (39, 2, 9, 1, 1, 1, 1), (40, 2, 10, 1, 1, 1, 1), (41, 2, 11, 1, 1, 1, 1), (42, 2, 12, 1, 1, 1, 1), (43, 2, 13, 1, 1, 1, 1), (44, 2, 14, 1, 1, 1, 1), (45, 2, 15, 1, 1, 1, 1), (46, 2, 16, 1, 1, 1, 1), (47, 2, 17, 1, 1, 1, 1), (48, 2, 18, 1, 1, 1, 1), (49, 2, 19, 1, 1, 1, 1), (50, 2, 20, 1, 1, 1, 1), (51, 2, 21, 1, 1, 1, 1), (52, 2, 22, 1, 1, 1, 1), (53, 2, 23, 1, 1, 1, 1), (54, 2, 24, 1, 1, 1, 1), (55, 2, 25, 1, 1, 1, 1), (56, 2, 26, 1, 1, 1, 1), (57, 2, 27, 1, 1, 1, 1), (58, 2, 28, 1, 1, 1, 1), (59, 2, 29, 1, 1, 1, 1), (60, 2, 30, 1, 1, 1, 1),
 
 -- Sales Online (id_role = 3) - Hanya bisa melihat dan membuat pemindahan barang ke konsumen miliknya
-(61, 3, 1, 1, 0, 0, 0),
-(62, 3, 2, 1, 0, 0, 0),
-(63, 3, 4, 1, 0, 0, 0),
-(64, 3, 5, 1, 0, 0, 0),
-(65, 3, 6, 1, 0, 0, 0),
-(66, 3, 7, 1, 0, 0, 0),
-(67, 3, 11, 1, 1, 1, 0),
-(68, 3, 12, 1, 1, 1, 0),
-(69, 3, 16, 1, 1, 1, 0),
-(70, 3, 17, 1, 1, 1, 0),
-(71, 3, 21, 1, 1, 0, 0),
-(72, 3, 22, 1, 1, 0, 0),
+(61, 3, 1, 1, 0, 0, 0), (62, 3, 2, 1, 0, 0, 0), (63, 3, 4, 1, 0, 0, 0), (64, 3, 5, 1, 0, 0, 0), (65, 3, 6, 1, 0, 0, 0), (66, 3, 7, 1, 0, 0, 0), (67, 3, 11, 1, 1, 1, 0), (68, 3, 12, 1, 1, 1, 0), (69, 3, 16, 1, 1, 1, 0), (70, 3, 17, 1, 1, 1, 0), (71, 3, 21, 1, 1, 0, 0), (72, 3, 22, 1, 1, 0, 0),
 
 -- Admin Packing (id_role = 4) - Bisa mengelola packing dan pengiriman
-(73, 4, 1, 1, 0, 0, 0),
-(74, 4, 11, 1, 0, 0, 0),
-(75, 4, 12, 1, 1, 1, 0),
-(76, 4, 16, 1, 1, 1, 0),
-(77, 4, 17, 1, 1, 1, 0),
-(78, 4, 21, 1, 1, 0, 0),
-(79, 4, 23, 1, 1, 0, 0),
+(73, 4, 1, 1, 0, 0, 0), (74, 4, 11, 1, 0, 0, 0), (75, 4, 12, 1, 1, 1, 0), (76, 4, 16, 1, 1, 1, 0), (77, 4, 17, 1, 1, 1, 0), (78, 4, 21, 1, 1, 0, 0), (79, 4, 23, 1, 1, 0, 0),
 
 -- Admin Return (id_role = 5) - Bisa memproses retur
-(80, 5, 1, 1, 0, 0, 0),
-(81, 5, 11, 1, 0, 0, 0),
-(82, 5, 13, 1, 0, 0, 0),
-(83, 5, 14, 1, 1, 1, 0),
-(84, 5, 15, 1, 1, 1, 0),
-(85, 5, 16, 1, 0, 0, 0),
-(86, 5, 19, 1, 1, 1, 0),
-(87, 5, 20, 1, 1, 1, 0),
-(88, 5, 21, 1, 1, 0, 0);
+(80, 5, 1, 1, 0, 0, 0), (81, 5, 11, 1, 0, 0, 0), (82, 5, 13, 1, 0, 0, 0), (83, 5, 14, 1, 1, 1, 0), (84, 5, 15, 1, 1, 1, 0), (85, 5, 16, 1, 0, 0, 0), (86, 5, 19, 1, 1, 1, 0), (87, 5, 20, 1, 1, 1, 0), (88, 5, 21, 1, 1, 0, 0);
 
 -- Indexes dan constraints untuk semua tabel
 ALTER TABLE `approval_flow`
@@ -990,6 +861,8 @@ ALTER TABLE `user`
   ADD CONSTRAINT `user_ibfk_1` FOREIGN KEY (`id_role`) REFERENCES `role_user` (`id_role`),
   ADD CONSTRAINT `user_ibfk_2` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`),
   ADD CONSTRAINT `user_ibfk_3` FOREIGN KEY (`created_by`) REFERENCES `user` (`id_user`);
+
+
 
 yang ingin saya tanyakan adalah, dari penjelasan rancangan sistem yang sedang di bangun,
 apakah rancangan databse ini sudah sesuai?
@@ -1330,3 +1203,39 @@ Saldo awal
 Masuk
 Keluar
 Saldo akhi
+
+Pemindahan Barang terbagi menjadi 3
+    1. Gudang → Gudang lain (ke gudang di perusahaan yg sama).
+    2. Gudang → Pelanggan (distributor resmi).
+    3. Gudang → Konsumen (melalui pemindahan barang ke konsumen milik Sales).
+
+jadi,
+jika memilih Tipe Tujuan Gudang
+berarti harus ada form Gudang awal dan Gudang Tujuan gudang awal 
+
+jika memilih Tipe Tujuan Pelanggan
+berarti harus ada form Pemilihan Pelanggan yang di ambil dari tabel pelanggan
+
+dan jika memilih Tipe Tujua
+berarti harus ada form Input data konsume
+yg berisi Nama dan Alamat
+
+
+
+masih belum jalan, kita skip dahulu deh yaaa,
+Masih di halaman tambah pemindahan, namun lanjut kita kasih validasi saja terlebih dahulu.
+-jika memilih Tipe Tujuan Gudang
+berarti harus ada form Gudang awal dan Gudang Tujuan gudang awal tidak boleh sama dengan gudang tujuan
+
+-jika memilih Tipe Tujuan Pelanggan
+berarti harus ada form Pemilihan Pelanggan yang di ambil dari tabel pelanggan
+
+-jika memilih Tipe Tujuan Konsumen
+berarti harus ada form Input data konsume
+yg berisi Nama dan Alamat Konsumen dan TOKO
+
+selanjutanya untuk barang yg belum ada stok awal dan stok nya 0 tidak boleh tampil di input item barang pada halaman ini ya bro
+
+
+
+
