@@ -867,17 +867,14 @@ ALTER TABLE `user`
   ADD CONSTRAINT `user_ibfk_2` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`),
   ADD CONSTRAINT `user_ibfk_3` FOREIGN KEY (`created_by`) REFERENCES `user` (`id_user`);
 
-
-
-
-
 kita akan melengkapi kode kode yg belum sesuai ya bro,
-setelah pesan ini, saya akan kirim kode untuk fitur stok awal, agar dapat sesuai dengan yg dibutuhkan serta desain database yg sudah dimiliki.
+setelah pesan ini, saya akan kirim kode untuk fitur pemindahan barang, agar dapat sesuai dengan yg dibutuhkan serta desain database yg sudah dimiliki.
 
-perlu di ingat bahwa role user ini penting sebab yg menentukan tampilan, terutama super admin yg tidak memiliki perusahaan, jadi jika membutuhkan id_perusahaan seharusnya ada pilihan untuk pilih perusahaan nya.
+perlu di ingat bahwa role user ini penting sebab yg menentukan tampilan, terutama super admin yg tidak memiliki perusahaan, jadi jika super admin membutuhkan id_perusahaan maka seharusnya ada pilihan untuk pilih perusahaan nya.
 
 jawab dengan singkat agar tidak gampang kena limit ya.
 tunggu hingga saya meminta anda mengecek kode baru anda perbaiki kode dan berikan saran
+
 
 halaman Stok Awal saat pertama kali dibuka sudah menampilkan list tabel barang mana saja yang sudah memiliki stok,
 saya ingin menambahkan untuk fitur ini dapat digunakan oleh super admin dan juga admin perusahaan,
@@ -1260,5 +1257,97 @@ yg berisi Nama dan Alamat Konsumen dan TOKO
 selanjutanya untuk barang yg belum ada stok awal dan stok nya 0 tidak boleh tampil di input item barang pada halaman ini ya bro
 
 
+mengapa data konsumen ini disimpan di tabel pemindahan_barang?
+bisakah kita buat ke tabel terpisah misalkan kita buat tabel seperti ini,
+isi dari nama_toko_konsumen nya ini berupa pilihan dropdown dari tabel toko_konsumen (menghindari input manual)
+
+tabel toko_konsumen
+id_toko_konsumen
+nama_toko_konsumen varchar(50) DEFAULT NULL
+secara default kita beri value
+1. Shopee
+2. TikTok Shop
+3. Tokopedia
+4. Lazada
+5. Blibli
+6. Facebook Marketplace
 
 
+tabel konsumen
+id_konsumen
+nama_konsumen varchar(100) DEFAULT NULL
+id_toko_konsumen varchar(100) DEFAULT NULL
+alamat_konsumen text DEFAULT NULL
+
+lalu selanjutnya baru kode kode nya yg disesuaikan.
+bagaimana?
+
+
+
+-- Tabel toko_konsumen
+CREATE TABLE `toko_konsumen` (
+  `id_toko_konsumen` int(11) NOT NULL AUTO_INCREMENT,
+  `nama_toko_konsumen` varchar(50) NOT NULL,
+  `status_aktif` tinyint(1) DEFAULT 1,
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_toko_konsumen`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Tabel konsumen
+CREATE TABLE `konsumen` (
+  `id_konsumen` int(11) NOT NULL AUTO_INCREMENT,
+  `nama_konsumen` varchar(100) NOT NULL,
+  `id_toko_konsumen` int(11) NOT NULL,
+  `alamat_konsumen` text DEFAULT NULL,
+  `id_perusahaan` int(11) NOT NULL,
+  `status_aktif` tinyint(1) DEFAULT 1,
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_konsumen`),
+  KEY `id_toko_konsumen` (`id_toko_konsumen`),
+  KEY `id_perusahaan` (`id_perusahaan`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Ubah tabel pemindahan_barang untuk menambahkan id_konsumen
+ALTER TABLE `pemindahan_barang` 
+ADD COLUMN `id_konsumen` int(11) DEFAULT NULL AFTER `id_pelanggan`;
+
+-- Tambahkan constraint untuk tabel konsumen
+ALTER TABLE `konsumen`
+ADD CONSTRAINT `konsumen_ibfk_1` FOREIGN KEY (`id_toko_konsumen`) REFERENCES `toko_konsumen` (`id_toko_konsumen`),
+ADD CONSTRAINT `konsumen_ibfk_2` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`);
+
+-- Tambahkan constraint untuk tabel pemindahan_barang
+ALTER TABLE `pemindahan_barang`
+ADD CONSTRAINT `pemindahan_barang_ibfk_6` FOREIGN KEY (`id_konsumen`) REFERENCES `konsumen` (`id_konsumen`);
+
+-- Insert data toko_konsumen
+INSERT INTO `toko_konsumen` (`id_toko_konsumen`, `nama_toko_konsumen`) VALUES
+(1, 'Shopee'),
+(2, 'TikTok Shop'),
+(3, 'Tokopedia'),
+(4, 'Lazada'),
+(5, 'Blibli'),
+(6, 'Facebook Marketplace');
+
+
+seteleh menerapkan semua saran dari anda, nampaknya ada beberapa yg perlu di perbaiki kembali, yaitu,
+1. form tambah pemindahan barang -> seharusnya tidak perlu ada pilih aksi, langsung saja untuk menambahkan konsumen baru dan langsung catat ke tabel konsumen baru untuk dan selanjutnya baru masuk ke tabel pemindahan jika proses nya hingga terjadi pemindaha
+2. form tambah pemindahan barang -> Daftar Barang -> jika mau mau melakukan pemindahan 2 buah barang atau lebih (ada 2 barang yg ingin di lakukan pemindahan), stok barang yg tersedia tidak dimuat dengan baik, sehingga proses tidak dapat dilanjutkan
+3. form tambah pemindahan barang -> Daftar Barang -> seharunya untuk barang yg sudah di pilih, tidak dapat dipilih kembali dalam proses pemindahan barang yg sama
+4. untuk super admin, form tambah pemindahan barang -> pilih perusahaan terkadang suka muncul forbide 403 di url http://localhost/gudang_system/aktifitas/pemindahan/get_data_by_perusahaan
+
+sekarang kita perbaiki ini dahulu yah.
+
+
+
+cara yang terakhir ini sudah saya terapkan bro namun sepertinya bug lama masih terjadi dan belum solved, bahkan saya memikirkan perbaikan dan tambahan poin baru lagi, yaitu:
+1. form tambah pemindahan barang -> Daftar Barang -> jika mau mau melakukan pemindahan 2 buah barang atau lebih (ada 2 barang yg ingin di lakukan pemindahan), stok barang yg tersedia tidak dimuat dengan baik, sehingga proses tidak dapat dilanjutkan
+2. form tambah pemindahan barang -> Daftar Barang -> seharunya untuk barang yg sudah di pilih, tidak dapat dipilih kembali dalam proses pemindahan barang yg sama ini sudah jalan, hanya saja stok masih belum berhasil di dapat dan di tampilkan
+3. khusus untuk super admin, form tambah pemindahan barang -> pilih perusahaan terkadang suka muncul forbide 403 di url http://localhost/gudang_system/aktifitas/pemindahan/get_data_by_perusahaan saya curiga ini membutuhkan token kembali ketika pilih ulang atau ganti ganti perusahaan
+4. label lokasi tujuan sebaiknya kita hilangkan saja, agar tampilan lebih OK
+5. Tipe tujuan bisa tidak kita buat default langsung menuju Konsumen, dan langsung menampilkan form tambahan yg sudah di diskusikan, jadi tidak perlu lagi ada text "Pilih Tipe" namun langsung saja Konsumen, Pelanggan, Gudang.
+6. form tambah pemindahan barang -> Daftar Barang -> Sepertinya bagian form ini (Nama Konsumen / Toko / Alamat Konsumen) perlu di tataulang, baik dari sisi responsive dan urutannya
+
+
+jadi saat ini ada 6 poin yg perlu dibantu untuk perbaikan.
+beri kode untuk solved issue ini dan bantu saya

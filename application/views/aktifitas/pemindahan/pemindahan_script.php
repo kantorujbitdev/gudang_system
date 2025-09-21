@@ -5,6 +5,27 @@
         if (!csrf_token) {
             csrf_token = $('input[name="<?php echo $this->security->get_csrf_token_name(); ?>"]').val();
         }
+        var csrf_name = $('#csrf_name').val();
+
+        // Fungsi untuk refresh CSRF token
+        function refreshCSRFToken(callback) {
+            $.ajax({
+                url: '<?php echo site_url('aktifitas/pemindahan/refresh_csrf'); ?>',
+                method: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    csrf_token = response.csrf_token;
+                    csrf_name = response.csrf_name;
+
+                    // Update all CSRF fields in the form
+                    $('input[name="' + csrf_name + '"]').val(csrf_token);
+
+                    if (typeof callback === 'function') {
+                        callback();
+                    }
+                }
+            });
+        }
 
         // Untuk Super Admin, ambil data berdasarkan perusahaan
         <?php if ($this->session->userdata('id_role') == 1): ?>
@@ -12,49 +33,74 @@
                 var id_perusahaan = $(this).val();
 
                 if (id_perusahaan) {
-                    $.ajax({
-                        url: '<?php echo site_url('aktifitas/pemindahan/get_data_by_perusahaan'); ?>',
-                        method: 'POST',
-                        data: {
-                            <?php echo $this->security->get_csrf_token_name(); ?>: csrf_token,
-                            id_perusahaan: id_perusahaan
-                        },
-                        dataType: 'json',
-                        success: function (response) {
-                            // Update gudang asal
-                            var gudangAsalHtml = '<option value="">-- Pilih Gudang --</option>';
-                            $.each(response.gudang, function (i, item) {
-                                gudangAsalHtml += '<option value="' + item.id_gudang + '">' + item.nama_gudang + '</option>';
-                            });
-                            $('#id_gudang_asal').html(gudangAsalHtml);
+                    // Refresh CSRF token sebelum request
+                    refreshCSRFToken(function () {
+                        $.ajax({
+                            url: '<?php echo site_url('aktifitas/pemindahan/get_data_by_perusahaan'); ?>',
+                            method: 'POST',
+                            data: {
+                                <?php echo $this->security->get_csrf_token_name(); ?>: csrf_token,
+                                id_perusahaan: id_perusahaan
+                            },
+                            dataType: 'json',
+                            success: function (response) {
+                                // Update gudang asal
+                                var gudangAsalHtml = '<option value="">-- Pilih Gudang --</option>';
+                                $.each(response.gudang, function (i, item) {
+                                    gudangAsalHtml += '<option value="' + item.id_gudang + '">' + item.nama_gudang + '</option>';
+                                });
+                                $('#id_gudang_asal').html(gudangAsalHtml);
 
-                            // Update gudang tujuan
-                            var gudangTujuanHtml = '<option value="">-- Pilih Gudang Tujuan --</option>';
-                            $.each(response.gudang, function (i, item) {
-                                gudangTujuanHtml += '<option value="' + item.id_gudang + '">' + item.nama_gudang + '</option>';
-                            });
-                            $('#id_gudang_tujuan').html(gudangTujuanHtml);
+                                // Update gudang tujuan
+                                var gudangTujuanHtml = '<option value="">-- Pilih Gudang Tujuan --</option>';
+                                $.each(response.gudang, function (i, item) {
+                                    gudangTujuanHtml += '<option value="' + item.id_gudang + '">' + item.nama_gudang + '</option>';
+                                });
+                                $('#id_gudang_tujuan').html(gudangTujuanHtml);
 
-                            // Update pelanggan
-                            var pelangganHtml = '<option value="">-- Pilih Pelanggan --</option>';
-                            $.each(response.pelanggan, function (i, item) {
-                                pelangganHtml += '<option value="' + item.id_pelanggan + '">' + item.nama_pelanggan + ' (' + item.tipe_pelanggan + ')</option>';
-                            });
-                            $('#id_pelanggan').html(pelangganHtml);
+                                // Update pelanggan
+                                var pelangganHtml = '<option value="">-- Pilih Pelanggan --</option>';
+                                $.each(response.pelanggan, function (i, item) {
+                                    pelangganHtml += '<option value="' + item.id_pelanggan + '">' + item.nama_pelanggan + ' (' + item.tipe_pelanggan + ')</option>';
+                                });
+                                $('#id_pelanggan').html(pelangganHtml);
 
-                            // Update barang
-                            var barangHtml = '<option value="">-- Pilih Barang --</option>';
-                            $.each(response.barang, function (i, item) {
-                                barangHtml += '<option value="' + item.id_barang + '">' + item.nama_barang + ' (' + item.sku + ')</option>';
-                            });
+                                // Update barang
+                                var barangHtml = '<option value="">-- Pilih Barang --</option>';
+                                $.each(response.barang, function (i, item) {
+                                    barangHtml += '<option value="' + item.id_barang + '">' + item.nama_barang + ' (' + item.sku + ')</option>';
+                                });
 
-                            // Update semua select barang di tabel
-                            $('.select-barang').each(function () {
-                                var currentValue = $(this).val();
-                                $(this).html(barangHtml);
-                                $(this).val(currentValue);
-                            });
-                        }
+                                // Update semua select barang di tabel
+                                $('.select-barang').each(function () {
+                                    var currentValue = $(this).val();
+                                    $(this).html(barangHtml);
+                                    $(this).val(currentValue);
+
+                                    // Trigger change untuk memperbarui stok
+                                    if (currentValue) {
+                                        $(this).trigger('change');
+                                    }
+                                });
+
+                                // Update CSRF token from response
+                                if (response.csrf_token) {
+                                    csrf_token = response.csrf_token;
+                                    $('input[name="' + csrf_name + '"]').val(csrf_token);
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                console.error('AJAX Error:', status, error);
+                                if (xhr.status === 403) {
+                                    // Refresh CSRF token and retry
+                                    refreshCSRFToken(function () {
+                                        $('#id_perusahaan').trigger('change');
+                                    });
+                                } else {
+                                    alert('Terjadi kesalahan saat mengambil data perusahaan: ' + error);
+                                }
+                            }
+                        });
                     });
                 } else {
                     // Reset semua field
@@ -84,6 +130,7 @@
             $('#id_gudang_tujuan').removeAttr('required');
             $('#id_pelanggan').removeAttr('required');
             $('#nama_konsumen').removeAttr('required');
+            $('#id_toko_konsumen').removeAttr('required');
             $('#alamat_konsumen').removeAttr('required');
 
             if (tipe == 'gudang') {
@@ -95,6 +142,7 @@
             } else if (tipe == 'konsumen') {
                 $('#konsumen_field').show();
                 $('#nama_konsumen').attr('required', true);
+                $('#id_toko_konsumen').attr('required', true);
                 $('#alamat_konsumen').attr('required', true);
             }
         });
@@ -135,23 +183,67 @@
             var row = $(this).closest('tr');
 
             if (id_gudang && id_barang) {
-                $.ajax({
-                    url: '<?php echo site_url('aktifitas/pemindahan/get_stok_barang'); ?>',
-                    method: 'POST',
-                    data: {
-                        <?php echo $this->security->get_csrf_token_name(); ?>: csrf_token,
-                        id_gudang: id_gudang,
-                        id_barang: id_barang
-                    },
-                    dataType: 'json',
-                    success: function (response) {
-                        row.find('.stok-tersedia').val(response.tersedia);
-                    }
+                // Refresh CSRF token sebelum request
+                refreshCSRFToken(function () {
+                    $.ajax({
+                        url: '<?php echo site_url('aktifitas/pemindahan/get_stok_barang'); ?>',
+                        method: 'POST',
+                        data: {
+                            <?php echo $this->security->get_csrf_token_name(); ?>: csrf_token,
+                            id_gudang: id_gudang,
+                            id_barang: id_barang
+                        },
+                        dataType: 'json',
+                        success: function (response) {
+                            row.find('.stok-tersedia').val(response.tersedia);
+
+                            // Cek duplikasi barang
+                            cekDuplikasiBarang();
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('AJAX Error:', status, error);
+                            if (xhr.status === 403) {
+                                // Refresh CSRF token and retry
+                                refreshCSRFToken(function () {
+                                    row.find('.select-barang').trigger('change');
+                                });
+                            } else {
+                                alert('Terjadi kesalahan saat mengambil data stok: ' + error);
+                            }
+                        }
+                    });
                 });
             } else {
                 row.find('.stok-tersedia').val('');
             }
         });
+
+        // Fungsi untuk mengecek duplikasi barang
+        function cekDuplikasiBarang() {
+            var selectedBarang = [];
+            $('.select-barang').each(function () {
+                var val = $(this).val();
+                if (val) {
+                    selectedBarang.push(val);
+                }
+            });
+
+            $('.select-barang').each(function () {
+                var currentValue = $(this).val();
+                $(this).find('option').each(function () {
+                    var optionValue = $(this).val();
+                    if (optionValue && optionValue != currentValue) {
+                        if (selectedBarang.indexOf(optionValue) > -1) {
+                            $(this).attr('disabled', true);
+                        } else {
+                            $(this).removeAttr('disabled');
+                        }
+                    } else {
+                        $(this).removeAttr('disabled');
+                    }
+                });
+            });
+        }
 
         // Tambah barang
         $('#btn-tambah-barang').click(function () {
@@ -177,6 +269,9 @@
 
             // Trigger change event untuk select-barang yang baru
             $('#table_barang tbody tr:last .select-barang').trigger('change');
+
+            // Cek duplikasi barang
+            cekDuplikasiBarang();
         });
 
         // Hapus barang
@@ -188,56 +283,53 @@
                 $('#table_barang tbody tr').each(function (index) {
                     $(this).find('td:first').text(index + 1);
                 });
+
+                // Cek duplikasi barang
+                cekDuplikasiBarang();
             } else {
                 alert('Minimal harus ada 1 barang!');
             }
         });
 
-        // Modal tambah alamat
-        $('#btn-tambah-alamat').click(function () {
-            $('#modalTambahAlamat').modal('show');
-        });
+        // Validasi form sebelum submit
+        $('#form-pemindahan').submit(function (e) {
+            var valid = true;
 
-        $('#btn-simpan-alamat').click(function () {
-            var alamat_lengkap = $('#alamat_lengkap').val();
-            var keterangan = $('#keterangan_alamat').val();
-
-            if (!alamat_lengkap) {
-                alert('Alamat lengkap harus diisi!');
-                return;
-            }
-
-            $.ajax({
-                url: '<?php echo site_url('aktifitas/pemindahan/simpan_alamat'); ?>',
-                method: 'POST',
-                data: {
-                    <?php echo $this->security->get_csrf_token_name(); ?>: csrf_token,
-                    alamat_lengkap: alamat_lengkap,
-                    keterangan_alamat: keterangan
-                },
-                dataType: 'json',
-                success: function (response) {
-                    if (response.status == 'success') {
-                        // Tambahkan opsi alamat baru
-                        var newOption = '<option value="' + response.id_alamat + '" selected>' + alamat_lengkap + '</option>';
-                        $('#id_alamat_konsumen').append(newOption);
-
-                        // Reset form
-                        $('#form-tambah-alamat')[0].reset();
-
-                        // Tutup modal
-                        $('#modalTambahAlamat').modal('hide');
-
-                        // Tampilkan pesan sukses
-                        alert('Alamat berhasil ditambahkan!');
-                    } else {
-                        alert('Gagal menambahkan alamat: ' + response.message);
+            // Cek apakah ada duplikasi barang
+            var selectedBarang = [];
+            $('.select-barang').each(function () {
+                var val = $(this).val();
+                if (val) {
+                    if (selectedBarang.indexOf(val) > -1) {
+                        valid = false;
                     }
-                },
-                error: function () {
-                    alert('Terjadi kesalahan saat menambahkan alamat!');
+                    selectedBarang.push(val);
                 }
             });
+
+            if (!valid) {
+                e.preventDefault();
+                alert('Tidak boleh ada barang yang duplikat dalam satu transaksi!');
+                return false;
+            }
+
+            // Cek stok untuk setiap barang
+            $('.select-barang').each(function () {
+                var row = $(this).closest('tr');
+                var id_barang = $(this).val();
+                var jumlah = parseInt(row.find('input[name="jumlah[]"]').val());
+                var stokTersedia = parseInt(row.find('.stok-tersedia').val());
+
+                if (id_barang && jumlah > stokTersedia) {
+                    valid = false;
+                }
+            });
+
+            if (!valid) {
+                e.preventDefault();
+                alert('Jumlah barang melebihi stok yang tersedia!');
+                return false;
+            }
         });
 
         // Trigger change on page load for existing rows

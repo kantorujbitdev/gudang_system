@@ -23,7 +23,7 @@
                         <th>Tanggal</th>
                         <th>Asal</th>
                         <th>Tipe Tujuan</th>
-                        <th>Lokasi Tujuan</th>
+                        <th>Tujuan</th>
                         <th>User</th>
                         <th>Status</th>
                         <th>Aksi</th>
@@ -40,11 +40,17 @@
                             <td><?php echo ucfirst($row->tipe_tujuan); ?></td>
                             <td>
                                 <?php if ($row->id_gudang_tujuan): ?>
+                                    <span class="badge badge-info">Gudang</span><br>
                                     <?php echo $row->gudang_tujuan; ?>
                                 <?php elseif ($row->id_pelanggan): ?>
+                                    <span class="badge badge-warning">Pelanggan</span><br>
                                     <?php echo $row->nama_pelanggan; ?>
-                                <?php elseif ($row->id_alamat_konsumen): ?>
-                                    <?php echo substr($row->alamat_lengkap, 0, 30) . '...'; ?>
+                                <?php elseif ($row->id_konsumen): ?>
+                                    <span class="badge badge-success">Konsumen</span><br>
+                                    <?php echo $row->nama_konsumen; ?>
+                                    <?php if ($row->nama_toko_konsumen): ?>
+                                        <br><small class="text-muted"><?php echo $row->nama_toko_konsumen; ?></small>
+                                    <?php endif; ?>
                                 <?php else: ?>
                                     -
                                 <?php endif; ?>

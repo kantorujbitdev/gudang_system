@@ -31,17 +31,51 @@
                     </tr>
                     <tr>
                         <th>Tipe Tujuan</th>
-                        <td><?php echo ucfirst($pemindahan->tipe_tujuan); ?></td>
+                        <td>
+                            <?php
+                            $tipe_class = '';
+                            switch ($pemindahan->tipe_tujuan) {
+                                case 'gudang':
+                                    $tipe_class = 'badge-info';
+                                    break;
+                                case 'pelanggan':
+                                    $tipe_class = 'badge-warning';
+                                    break;
+                                case 'konsumen':
+                                    $tipe_class = 'badge-success';
+                                    break;
+                            }
+                            ?>
+                            <span
+                                class="badge <?php echo $tipe_class; ?>"><?php echo ucfirst($pemindahan->tipe_tujuan); ?></span>
+                        </td>
                     </tr>
                     <tr>
-                        <th>Lokasi Tujuan</th>
+                        <th>Tujuan</th>
                         <td>
                             <?php if ($pemindahan->id_gudang_tujuan): ?>
-                                <?php echo $pemindahan->gudang_tujuan; ?>
+                                <div class="mb-1">
+                                    <span class="badge badge-info">Gudang</span>
+                                </div>
+                                <div><?php echo $pemindahan->gudang_tujuan; ?></div>
                             <?php elseif ($pemindahan->id_pelanggan): ?>
-                                <?php echo $pemindahan->nama_pelanggan; ?>
-                            <?php elseif ($pemindahan->id_alamat_konsumen): ?>
-                                <?php echo $pemindahan->alamat_lengkap; ?>
+                                <div class="mb-1">
+                                    <span class="badge badge-warning">Pelanggan</span>
+                                </div>
+                                <div><?php echo $pemindahan->nama_pelanggan; ?></div>
+                            <?php elseif ($pemindahan->id_konsumen): ?>
+                                <div class="mb-1">
+                                    <span class="badge badge-success">Konsumen</span>
+                                </div>
+                                <div><strong><?php echo $pemindahan->nama_konsumen; ?></strong></div>
+                                <?php if ($pemindahan->nama_toko_konsumen): ?>
+                                    <div class="text-muted small">Toko: <?php echo $pemindahan->nama_toko_konsumen; ?></div>
+                                <?php endif; ?>
+                                <?php if ($pemindahan->alamat_konsumen): ?>
+                                    <div class="mt-1">
+                                        <small><?php echo nl2br(htmlspecialchars($pemindahan->alamat_konsumen)); ?></small>
+                                    </div>
+                                <?php endif; ?>
                             <?php else: ?>
                                 -
                             <?php endif; ?>
@@ -85,6 +119,12 @@
                         <th>Keterangan</th>
                         <td><?php echo $pemindahan->keterangan ?: '-'; ?></td>
                     </tr>
+                    <?php if ($pemindahan->id_konsumen && $pemindahan->alamat_konsumen): ?>
+                        <tr>
+                            <th>Alamat Lengkap</th>
+                            <td><?php echo nl2br(htmlspecialchars($pemindahan->alamat_konsumen)); ?></td>
+                        </tr>
+                    <?php endif; ?>
                 </table>
             </div>
         </div>
@@ -96,11 +136,11 @@
             <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
-                        <th>No</th>
-                        <th>Kode Barang</th>
-                        <th>Nama Barang</th>
-                        <th>Satuan</th>
-                        <th>Jumlah</th>
+                        <th width="5%">No</th>
+                        <th width="15%">Kode Barang</th>
+                        <th width="45%">Nama Barang</th>
+                        <th width="10%">Satuan</th>
+                        <th width="15%">Jumlah</th>
                     </tr>
                 </thead>
                 <tbody>

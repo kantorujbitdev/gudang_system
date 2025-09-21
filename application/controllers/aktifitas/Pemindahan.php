@@ -10,15 +10,63 @@ class Pemindahan extends MY_Controller
         $this->load->model('setup/Barang_model', 'barang');
         $this->load->model('setup/Gudang_model', 'gudang');
         $this->load->model('setup/Pelanggan_model', 'pelanggan');
+        $this->load->model('setup/Konsumen_model', 'konsumen');
+        $this->load->model('setup/Toko_konsumen_model', 'toko_konsumen');
         $this->load->helper('form');
         $this->load->library('form_validation');
 
         // Cek akses menu
         $this->check_menu_access('aktifitas/pemindahan');
     }
+
+    // Perbaikan masalah CSRF token
+    public function get_data_by_perusahaan()
+    {
+        // Set header untuk JSON response
+        header('Content-Type: application/json');
+
+        // Cek CSRF token
+        $csrf_token_name = $this->security->get_csrf_token_name();
+        $csrf_hash = $this->security->get_csrf_hash();
+
+        // Ambil token dari POST
+        $posted_token = $this->input->post($csrf_token_name);
+
+        // Validasi token
+        if ($posted_token !== $csrf_hash) {
+            echo json_encode(['error' => 'Invalid CSRF token']);
+            return;
+        }
+
+        $id_perusahaan = $this->input->post('id_perusahaan');
+
+        if ($id_perusahaan) {
+            $data = $this->pemindahan->get_data_by_perusahaan($id_perusahaan);
+
+            // Update CSRF token untuk response
+            $new_token = $this->security->get_csrf_hash();
+            $data['csrf_token'] = $new_token;
+            $data['csrf_name'] = $csrf_token_name;
+
+            echo json_encode($data);
+        } else {
+            echo json_encode([]);
+        }
+    }
+
     public function get_barang_by_gudang()
     {
         header('Content-Type: application/json');
+
+        // Cek CSRF token
+        $csrf_token_name = $this->security->get_csrf_token_name();
+        $posted_token = $this->input->post($csrf_token_name);
+
+        if ($posted_token !== $this->security->get_csrf_hash()) {
+            echo json_encode(['error' => 'Invalid CSRF token']);
+            return;
+        }
+
         $id_gudang = $this->input->post('id_gudang');
 
         if ($id_gudang) {
@@ -75,8 +123,8 @@ class Pemindahan extends MY_Controller
             $this->data['pelanggan'] = $this->pelanggan->get_by_perusahaan($id_perusahaan);
         }
 
-        // Get alamat konsumen
-        $this->data['alamat_konsumen'] = $this->pemindahan->get_alamat_konsumen($id_user);
+        // Get toko konsumen
+        $this->data['toko_konsumen'] = $this->toko_konsumen->get_all();
 
         // Filter barang berdasarkan perusahaan
         if ($user_role == 1) {
@@ -114,12 +162,39 @@ class Pemindahan extends MY_Controller
         $tipe_tujuan = $this->input->post('tipe_tujuan');
         $data_insert['tipe_tujuan'] = $tipe_tujuan;
 
+        // Validasi gudang asal dan tujuan
         if ($tipe_tujuan == 'gudang') {
-            $data_insert['id_gudang_tujuan'] = $this->input->post('id_gudang_tujuan');
+            $id_gudang_asal = $this->input->post('id_gudang_asal');
+            $id_gudang_tujuan = $this->input->post('id_gudang_tujuan');
+
+            if ($id_gudang_asal == $id_gudang_tujuan) {
+                $this->session->set_flashdata('error', 'Gudang asal dan tujuan tidak boleh sama!');
+                return redirect('aktifitas/pemindahan/tambah');
+            }
+
+            // Validasi gudang tujuan harus di perusahaan yang sama
+            $gudang_asal = $this->gudang->get($id_gudang_asal);
+            $gudang_tujuan = $this->gudang->get($id_gudang_tujuan);
+
+            if ($gudang_asal->id_perusahaan != $gudang_tujuan->id_perusahaan) {
+                $this->session->set_flashdata('error', 'Gudang tujuan harus di perusahaan yang sama!');
+                return redirect('aktifitas/pemindahan/tambah');
+            }
+
+            $data_insert['id_gudang_tujuan'] = $id_gudang_tujuan;
         } elseif ($tipe_tujuan == 'pelanggan') {
             $data_insert['id_pelanggan'] = $this->input->post('id_pelanggan');
         } elseif ($tipe_tujuan == 'konsumen') {
-            $data_insert['id_alamat_konsumen'] = $this->input->post('id_alamat_konsumen');
+            // Buat konsumen baru
+            $data_konsumen = [
+                'nama_konsumen' => $this->input->post('nama_konsumen'),
+                'id_toko_konsumen' => $this->input->post('id_toko_konsumen'),
+                'alamat_konsumen' => $this->input->post('alamat_konsumen'),
+                'id_perusahaan' => $id_perusahaan
+            ];
+
+            $id_konsumen = $this->konsumen->insert($data_konsumen);
+            $data_insert['id_konsumen'] = $id_konsumen;
         }
 
         $id_pemindahan = $this->pemindahan->insert($data_insert);
@@ -129,8 +204,24 @@ class Pemindahan extends MY_Controller
             $barang_ids = $this->input->post('id_barang');
             $jumlahs = $this->input->post('jumlah');
 
+            // Cek duplikasi barang
+            $unique_barang = array_unique($barang_ids);
+            if (count($barang_ids) != count($unique_barang)) {
+                $this->session->set_flashdata('error', 'Tidak boleh ada barang yang duplikat dalam satu transaksi!');
+                return redirect('aktifitas/pemindahan/tambah');
+            }
+
             foreach ($barang_ids as $key => $id_barang) {
                 if ($id_barang && $jumlahs[$key] > 0) {
+                    // Validasi stok
+                    $stok = $this->pemindahan->get_stok_barang($this->input->post('id_gudang_asal'), $id_barang);
+                    $stok_tersedia = $stok ? ($stok->jumlah - $stok->reserved) : 0;
+
+                    if ($jumlahs[$key] > $stok_tersedia) {
+                        $this->session->set_flashdata('error', 'Stok barang tidak mencukupi!');
+                        return redirect('aktifitas/pemindahan/tambah');
+                    }
+
                     $this->pemindahan->insert_detail([
                         'id_pemindahan' => $id_pemindahan,
                         'id_barang' => $id_barang,
@@ -149,6 +240,15 @@ class Pemindahan extends MY_Controller
 
         $this->session->set_flashdata('error', 'Gagal membuat pemindahan barang!');
         return redirect('aktifitas/pemindahan/tambah');
+    }
+    // Add a method to refresh CSRF token
+    public function refresh_csrf()
+    {
+        header('Content-Type: application/json');
+        echo json_encode([
+            'csrf_token' => $this->security->get_csrf_hash(),
+            'csrf_name' => $this->security->get_csrf_token_name()
+        ]);
     }
 
     public function edit($id_pemindahan)
@@ -189,8 +289,8 @@ class Pemindahan extends MY_Controller
             $this->data['pelanggan'] = $this->pelanggan->get_by_perusahaan($id_perusahaan);
         }
 
-        // Get alamat konsumen
-        $this->data['alamat_konsumen'] = $this->pemindahan->get_alamat_konsumen($id_user);
+        // Get toko konsumen
+        $this->data['toko_konsumen'] = $this->toko_konsumen->get_all();
 
         // Filter barang berdasarkan perusahaan
         if ($user_role == 1) {
@@ -224,16 +324,56 @@ class Pemindahan extends MY_Controller
         $tipe_tujuan = $this->input->post('tipe_tujuan');
         $data_update['tipe_tujuan'] = $tipe_tujuan;
 
+        // Validasi gudang asal dan tujuan
         if ($tipe_tujuan == 'gudang') {
-            $data_update['id_gudang_tujuan'] = $this->input->post('id_gudang_tujuan');
+            $id_gudang_asal = $this->input->post('id_gudang_asal');
+            $id_gudang_tujuan = $this->input->post('id_gudang_tujuan');
+
+            if ($id_gudang_asal == $id_gudang_tujuan) {
+                $this->session->set_flashdata('error', 'Gudang asal dan tujuan tidak boleh sama!');
+                return redirect('aktifitas/pemindahan/edit/' . $id_pemindahan);
+            }
+
+            // Validasi gudang tujuan harus di perusahaan yang sama
+            $gudang_asal = $this->gudang->get($id_gudang_asal);
+            $gudang_tujuan = $this->gudang->get($id_gudang_tujuan);
+
+            if ($gudang_asal->id_perusahaan != $gudang_tujuan->id_perusahaan) {
+                $this->session->set_flashdata('error', 'Gudang tujuan harus di perusahaan yang sama!');
+                return redirect('aktifitas/pemindahan/edit/' . $id_pemindahan);
+            }
+
+            $data_update['id_gudang_tujuan'] = $id_gudang_tujuan;
             $data_update['id_pelanggan'] = NULL;
-            $data_update['id_alamat_konsumen'] = NULL;
+            $data_update['id_konsumen'] = NULL;
         } elseif ($tipe_tujuan == 'pelanggan') {
             $data_update['id_pelanggan'] = $this->input->post('id_pelanggan');
             $data_update['id_gudang_tujuan'] = NULL;
-            $data_update['id_alamat_konsumen'] = NULL;
+            $data_update['id_konsumen'] = NULL;
         } elseif ($tipe_tujuan == 'konsumen') {
-            $data_update['id_alamat_konsumen'] = $this->input->post('id_alamat_konsumen');
+            // Update data konsumen jika ada
+            if ($this->data['pemindahan']->id_konsumen) {
+                $data_konsumen = [
+                    'nama_konsumen' => $this->input->post('nama_konsumen'),
+                    'id_toko_konsumen' => $this->input->post('id_toko_konsumen'),
+                    'alamat_konsumen' => $this->input->post('alamat_konsumen')
+                ];
+
+                $this->konsumen->update($this->data['pemindahan']->id_konsumen, $data_konsumen);
+                $data_update['id_konsumen'] = $this->data['pemindahan']->id_konsumen;
+            } else {
+                // Buat konsumen baru
+                $data_konsumen = [
+                    'nama_konsumen' => $this->input->post('nama_konsumen'),
+                    'id_toko_konsumen' => $this->input->post('id_toko_konsumen'),
+                    'alamat_konsumen' => $this->input->post('alamat_konsumen'),
+                    'id_perusahaan' => $id_perusahaan
+                ];
+
+                $id_konsumen = $this->konsumen->insert($data_konsumen);
+                $data_update['id_konsumen'] = $id_konsumen;
+            }
+
             $data_update['id_gudang_tujuan'] = NULL;
             $data_update['id_pelanggan'] = NULL;
         }
@@ -244,8 +384,24 @@ class Pemindahan extends MY_Controller
             $barang_ids = $this->input->post('id_barang');
             $jumlahs = $this->input->post('jumlah');
 
+            // Cek duplikasi barang
+            $unique_barang = array_unique($barang_ids);
+            if (count($barang_ids) != count($unique_barang)) {
+                $this->session->set_flashdata('error', 'Tidak boleh ada barang yang duplikat dalam satu transaksi!');
+                return redirect('aktifitas/pemindahan/edit/' . $id_pemindahan);
+            }
+
             foreach ($barang_ids as $key => $id_barang) {
                 if ($id_barang && $jumlahs[$key] > 0) {
+                    // Validasi stok
+                    $stok = $this->pemindahan->get_stok_barang($this->input->post('id_gudang_asal'), $id_barang);
+                    $stok_tersedia = $stok ? ($stok->jumlah - $stok->reserved) : 0;
+
+                    if ($jumlahs[$key] > $stok_tersedia) {
+                        $this->session->set_flashdata('error', 'Stok barang tidak mencukupi!');
+                        return redirect('aktifitas/pemindahan/edit/' . $id_pemindahan);
+                    }
+
                     $this->pemindahan->insert_detail([
                         'id_pemindahan' => $id_pemindahan,
                         'id_barang' => $id_barang,
@@ -330,7 +486,7 @@ class Pemindahan extends MY_Controller
             if ($status == 'Shipping' && $current_status != 'Shipping') {
                 $this->kurangi_stok($id_pemindahan);
             }
-            if ($status == 'Delivered' && $pemindahan->id_gudang_tujuan) {
+            if ($status == 'Delivered' && $pemindahan->tipe_tujuan == 'gudang' && $pemindahan->id_gudang_tujuan) {
                 $this->tambah_stok($id_pemindahan);
             }
             if ($status == 'Cancelled' && $current_status == 'Shipping') {
@@ -361,6 +517,7 @@ class Pemindahan extends MY_Controller
 
     public function get_stok_barang()
     {
+        header('Content-Type: application/json');
         $id_gudang = $this->input->post('id_gudang');
         $id_barang = $this->input->post('id_barang');
 
@@ -373,39 +530,22 @@ class Pemindahan extends MY_Controller
         ]);
     }
 
-    public function simpan_alamat()
+    public function get_alamat_pelanggan()
     {
-        $this->load->library('form_validation');
+        $id_pelanggan = $this->input->post('id_pelanggan');
+        $alamat = $this->pemindahan->get_alamat_pelanggan($id_pelanggan);
 
-        $this->form_validation->set_rules('alamat_lengkap', 'Alamat Lengkap', 'required');
-
-        if ($this->form_validation->run() == FALSE) {
-            echo json_encode([
-                'status' => 'error',
-                'message' => validation_errors()
-            ]);
-            return;
-        }
-
-        $data = [
-            'id_user' => $this->session->userdata('id_user'),
-            'alamat_lengkap' => $this->input->post('alamat_lengkap'),
-            'keterangan' => $this->input->post('keterangan_alamat'),
-            'status_aktif' => 1,
-            'created_at' => date('Y-m-d H:i:s')
-        ];
-
-        $id_alamat = $this->pemindahan->insert_alamat_konsumen($data);
-
-        if ($id_alamat) {
+        if ($alamat) {
             echo json_encode([
                 'status' => 'success',
-                'id_alamat' => $id_alamat
+                'alamat' => $alamat->alamat,
+                'telepon' => $alamat->telepon,
+                'email' => $alamat->email
             ]);
         } else {
             echo json_encode([
                 'status' => 'error',
-                'message' => 'Gagal menyimpan alamat'
+                'message' => 'Alamat tidak ditemukan'
             ]);
         }
     }
@@ -560,24 +700,5 @@ class Pemindahan extends MY_Controller
         ];
 
         $this->pemindahan->insert_log_status($log_data);
-    }
-    public function get_alamat_pelanggan()
-    {
-        $id_pelanggan = $this->input->post('id_pelanggan');
-        $alamat = $this->pemindahan->get_alamat_pelanggan($id_pelanggan);
-
-        if ($alamat) {
-            echo json_encode([
-                'status' => 'success',
-                'alamat' => $alamat->alamat,
-                'telepon' => $alamat->telepon,
-                'email' => $alamat->email
-            ]);
-        } else {
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Alamat tidak ditemukan'
-            ]);
-        }
     }
 }

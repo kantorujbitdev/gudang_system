@@ -6,6 +6,7 @@
         <?php echo form_open(current_url(), array('id' => 'form-pemindahan')); ?>
         <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>"
             value="<?php echo $this->security->get_csrf_hash(); ?>">
+        <input type="hidden" id="csrf_name" value="<?php echo $this->security->get_csrf_token_name(); ?>">
 
         <div class="row">
             <?php if ($this->session->userdata('id_role') == 1): // Super Admin ?>
@@ -53,20 +54,16 @@
                 <div class="form-group">
                     <label for="tipe_tujuan">Tipe Tujuan <span class="text-danger">*</span></label>
                     <select class="form-control" id="tipe_tujuan" name="tipe_tujuan" required>
-                        <option value="">-- Pilih Tipe --</option>
-                        <option value="gudang" <?php echo (isset($pemindahan) && $pemindahan->tipe_tujuan == 'gudang') ? 'selected' : ''; ?>>Gudang</option>
+                        <option value="konsumen" <?php echo (!isset($pemindahan) || $pemindahan->tipe_tujuan == 'konsumen') ? 'selected' : ''; ?>>Konsumen</option>
                         <option value="pelanggan" <?php echo (isset($pemindahan) && $pemindahan->tipe_tujuan == 'pelanggan') ? 'selected' : ''; ?>>Pelanggan</option>
-                        <option value="konsumen" <?php echo (isset($pemindahan) && $pemindahan->tipe_tujuan == 'konsumen') ? 'selected' : ''; ?>>Konsumen</option>
+                        <option value="gudang" <?php echo (isset($pemindahan) && $pemindahan->tipe_tujuan == 'gudang') ? 'selected' : ''; ?>>Gudang</option>
                     </select>
                     <?php echo form_error('tipe_tujuan', '<small class="text-danger">', '</small>'); ?>
                 </div>
 
-                <!-- Lokasi Tujuan -->
-                <div class="form-group">
-                    <label>Lokasi Tujuan</label>
-
-                    <!-- Gudang Tujuan -->
-                    <div id="gudang_tujuan_field" style="display: none;">
+                <!-- Gudang Tujuan -->
+                <div id="gudang_tujuan_field" style="display: none;">
+                    <div class="form-group">
                         <label for="id_gudang_tujuan">Gudang Tujuan</label>
                         <select class="form-control" id="id_gudang_tujuan" name="id_gudang_tujuan">
                             <option value="">-- Pilih Gudang Tujuan --</option>
@@ -77,9 +74,11 @@
                             <?php endforeach; ?>
                         </select>
                     </div>
+                </div>
 
-                    <!-- Pelanggan -->
-                    <div id="pelanggan_field" style="display: none;">
+                <!-- Pelanggan -->
+                <div id="pelanggan_field" style="display: none;">
+                    <div class="form-group">
                         <label for="id_pelanggan">Pelanggan</label>
                         <select class="form-control" id="id_pelanggan" name="id_pelanggan">
                             <option value="">-- Pilih Pelanggan --</option>
@@ -99,20 +98,32 @@
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Konsumen -->
-                    <div id="konsumen_field" style="display: none;">
+                <!-- Konsumen -->
+                <div class="form-group">
+                    <label for="id_toko_konsumen">Toko</label>
+                    <select class="form-control" id="id_toko_konsumen" name="id_toko_konsumen">
+                        <option value="">-- Pilih Toko --</option>
+                        <?php foreach ($toko_konsumen as $row): ?>
+                            <option value="<?php echo $row->id_toko_konsumen; ?>" <?php echo (isset($pemindahan) && $pemindahan->id_konsumen && $pemindahan->id_toko_konsumen == $row->id_toko_konsumen) ? 'selected' : ''; ?>>
+                                <?php echo $row->nama_toko_konsumen; ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div id="konsumen_field">
+                    <div class="form-group">
                         <label for="nama_konsumen">Nama Konsumen</label>
                         <input type="text" class="form-control" id="nama_konsumen" name="nama_konsumen"
-                            value="<?php echo set_value('nama_konsumen', isset($pemindahan) ? $pemindahan->nama_konsumen : ''); ?>">
+                            value="<?php echo set_value('nama_konsumen', isset($pemindahan) && $pemindahan->id_konsumen ? $pemindahan->nama_konsumen : ''); ?>">
+                    </div>
 
-                        <label for="toko_konsumen">Toko</label>
-                        <input type="text" class="form-control" id="toko_konsumen" name="toko_konsumen"
-                            value="<?php echo set_value('toko_konsumen', isset($pemindahan) ? $pemindahan->toko_konsumen : ''); ?>">
-
+                    <div class="form-group">
                         <label for="alamat_konsumen">Alamat Konsumen</label>
                         <textarea class="form-control" id="alamat_konsumen" name="alamat_konsumen"
-                            rows="3"><?php echo set_value('alamat_konsumen', isset($pemindahan) ? $pemindahan->alamat_konsumen : ''); ?></textarea>
+                            rows="3"><?php echo set_value('alamat_konsumen', isset($pemindahan) && $pemindahan->id_konsumen ? $pemindahan->alamat_konsumen : ''); ?></textarea>
                     </div>
                 </div>
             </div>
@@ -206,37 +217,5 @@
             <a href="<?php echo site_url('aktifitas/pemindahan'); ?>" class="btn btn-secondary">Batal</a>
         </div>
         <?php echo form_close(); ?>
-    </div>
-</div>
-
-<!-- Modal Tambah Alamat -->
-<div class="modal fade" id="modalTambahAlamat" tabindex="-1" role="dialog" aria-labelledby="modalTambahAlamatLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalTambahAlamatLabel">Tambah Alamat Baru</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="form-tambah-alamat">
-                    <div class="form-group">
-                        <label for="alamat_lengkap">Alamat Lengkap <span class="text-danger">*</span></label>
-                        <textarea class="form-control" id="alamat_lengkap" name="alamat_lengkap" rows="3"
-                            required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="keterangan_alamat">Keterangan</label>
-                        <input type="text" class="form-control" id="keterangan_alamat" name="keterangan_alamat">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                <button type="button" class="btn btn-primary" id="btn-simpan-alamat">Simpan</button>
-            </div>
-        </div>
     </div>
 </div>
