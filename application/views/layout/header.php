@@ -16,6 +16,8 @@
     <link href="<?php echo base_url('assets/css/dataTables.bootstrap4.min.css'); ?>" rel="stylesheet">
     <link href="<?php echo base_url('assets/css/custom.css'); ?>" rel="stylesheet">
 
+    <meta name="csrf-token" content="<?php echo $this->security->get_csrf_hash(); ?>">
+
     <!-- Favicon -->
     <link rel="icon" href="<?php echo base_url('assets/images/logo.png'); ?>" type="image/x-icon">
 </head>

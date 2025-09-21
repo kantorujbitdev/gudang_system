@@ -16,6 +16,18 @@ class Pemindahan extends MY_Controller
         // Cek akses menu
         $this->check_menu_access('aktifitas/pemindahan');
     }
+    public function get_barang_by_gudang()
+    {
+        header('Content-Type: application/json');
+        $id_gudang = $this->input->post('id_gudang');
+
+        if ($id_gudang) {
+            $barang = $this->pemindahan->get_barang_by_gudang_with_stock($id_gudang);
+            echo json_encode($barang);
+        } else {
+            echo json_encode([]);
+        }
+    }
 
     public function index()
     {
@@ -30,6 +42,7 @@ class Pemindahan extends MY_Controller
 
     public function tambah()
     {
+        $data['extra_js'] = 'aktifitas/pemindahan/pemindahan_script';
         if (!$this->check_permission('aktifitas/pemindahan', 'create')) {
             $this->session->set_flashdata('error', 'Anda tidak memiliki izin untuk membuat pemindahan barang!');
             return redirect('aktifitas/pemindahan');
@@ -77,7 +90,7 @@ class Pemindahan extends MY_Controller
         $this->form_validation->set_rules('tipe_tujuan', 'Tipe Tujuan', 'required');
 
         if ($this->form_validation->run() == FALSE) {
-            return $this->render_view('aktifitas/pemindahan/form');
+            return $this->render_view('aktifitas/pemindahan/form', $data);
         }
 
         // Generate nomor transaksi
@@ -140,6 +153,8 @@ class Pemindahan extends MY_Controller
 
     public function edit($id_pemindahan)
     {
+        $data['extra_js'] = 'aktifitas/pemindahan/pemindahan_script';
+
         if (!$this->check_permission('aktifitas/pemindahan', 'edit')) {
             $this->session->set_flashdata('error', 'Anda tidak memiliki izin untuk mengubah pemindahan barang!');
             return redirect('aktifitas/pemindahan');
@@ -198,7 +213,7 @@ class Pemindahan extends MY_Controller
         $this->form_validation->set_rules('tipe_tujuan', 'Tipe Tujuan', 'required');
 
         if ($this->form_validation->run() == FALSE) {
-            return $this->render_view('aktifitas/pemindahan/form');
+            return $this->render_view('aktifitas/pemindahan/form', $data);
         }
 
         $data_update = [
@@ -356,13 +371,6 @@ class Pemindahan extends MY_Controller
             'reserved' => $stok ? $stok->reserved : 0,
             'tersedia' => $stok ? ($stok->jumlah - $stok->reserved) : 0
         ]);
-    }
-
-    public function get_data_by_perusahaan()
-    {
-        $id_perusahaan = $this->input->post('id_perusahaan');
-        $data = $this->pemindahan->get_data_by_perusahaan($id_perusahaan);
-        echo json_encode($data);
     }
 
     public function simpan_alamat()
@@ -552,5 +560,24 @@ class Pemindahan extends MY_Controller
         ];
 
         $this->pemindahan->insert_log_status($log_data);
+    }
+    public function get_alamat_pelanggan()
+    {
+        $id_pelanggan = $this->input->post('id_pelanggan');
+        $alamat = $this->pemindahan->get_alamat_pelanggan($id_pelanggan);
+
+        if ($alamat) {
+            echo json_encode([
+                'status' => 'success',
+                'alamat' => $alamat->alamat,
+                'telepon' => $alamat->telepon,
+                'email' => $alamat->email
+            ]);
+        } else {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Alamat tidak ditemukan'
+            ]);
+        }
     }
 }

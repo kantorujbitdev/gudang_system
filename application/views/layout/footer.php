@@ -53,6 +53,9 @@
 <?php $this->load->view('layout/js'); ?>
 <?php $this->load->view('layout/modal'); ?>
 
+<?php if (!empty($extra_js))
+    $this->load->view($extra_js); ?>
+
 <script>
     // Auto hide alerts
     setTimeout(function () {

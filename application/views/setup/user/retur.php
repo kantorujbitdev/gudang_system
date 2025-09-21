@@ -10,9 +10,6 @@
                         <i class="fas fa-plus"></i> Tambah Admin Retur
                     </a>
                 <?php endif; ?>
-                <a href="<?php echo site_url('setup/user') ?>" class="btn btn-secondary btn-sm">
-                    <i class="fas fa-arrow-left"></i> Kembali
-                </a>
             </div>
         </div>
     </div>

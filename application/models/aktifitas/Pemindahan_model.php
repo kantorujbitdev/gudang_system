@@ -7,7 +7,30 @@ class Pemindahan_model extends CI_Model
     {
         parent::__construct();
     }
+    public function get_barang_by_gudang_with_stock($id_gudang)
+    {
+        $this->db->select('b.*, sg.jumlah, sg.reserved');
+        $this->db->from('barang b');
+        $this->db->join('stok_gudang sg', 'b.id_barang = sg.id_barang AND sg.id_gudang = ' . $id_gudang, 'inner');
+        $this->db->where('b.status_aktif', 1);
+        $this->db->where('b.deleted_at', NULL);
+        $this->db->where('sg.jumlah >', 0);
+        $this->db->order_by('b.nama_barang', 'ASC');
+        return $this->db->get()->result();
+    }
 
+    public function get_barang_by_perusahaan_with_stock($id_perusahaan)
+    {
+        $this->db->select('b.*, sg.jumlah, sg.reserved');
+        $this->db->from('barang b');
+        $this->db->join('stok_gudang sg', 'b.id_barang = sg.id_barang', 'inner');
+        $this->db->where('b.id_perusahaan', $id_perusahaan);
+        $this->db->where('b.status_aktif', 1);
+        $this->db->where('b.deleted_at', NULL);
+        $this->db->where('sg.jumlah >', 0);
+        $this->db->order_by('b.nama_barang', 'ASC');
+        return $this->db->get()->result();
+    }
     public function get_all()
     {
         $user_role = $this->session->userdata('id_role');
@@ -159,6 +182,7 @@ class Pemindahan_model extends CI_Model
         return $this->db->insert_id();
     }
 
+
     public function get_data_by_perusahaan($id_perusahaan)
     {
         $data = [];
@@ -179,5 +203,15 @@ class Pemindahan_model extends CI_Model
         $data['pelanggan'] = $this->db->get('pelanggan')->result();
 
         return $data;
+    }
+
+    public function get_alamat_pelanggan($id_pelanggan)
+    {
+        $this->db->select('p.alamat, p.telepon, p.email');
+        $this->db->from('pelanggan p');
+        $this->db->where('p.id_pelanggan', $id_pelanggan);
+        $this->db->where('p.status_aktif', 1);
+        $this->db->where('p.deleted_at', NULL);
+        return $this->db->get()->row();
     }
 }
