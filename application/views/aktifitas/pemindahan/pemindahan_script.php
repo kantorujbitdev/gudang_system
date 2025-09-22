@@ -1,15 +1,5 @@
 <script>
     $(document).ready(function () {
-        // Get CSRF token and name from the form
-        var csrf_token = $('input[name="<?php echo $this->security->get_csrf_token_name(); ?>"]').val();
-        var csrf_name = '<?php echo $this->security->get_csrf_token_name(); ?>';
-
-        // Function to update CSRF token in all forms
-        function updateCSRFToken(new_token) {
-            csrf_token = new_token;
-            $('input[name="' + csrf_name + '"]').val(new_token);
-        }
-
         // For Super Admin, get data based on company
         <?php if ($this->session->userdata('id_role') == 1): ?>
             $('#id_perusahaan').change(function () {
@@ -22,8 +12,8 @@
                         url: '<?php echo site_url('aktifitas/pemindahan/get_data_by_perusahaan'); ?>',
                         method: 'POST',
                         data: {
-                            <?php echo $this->security->get_csrf_token_name(); ?>: csrf_token,
                             id_perusahaan: id_perusahaan
+                            // HAPUS CSRF token
                         },
                         dataType: 'json',
                         success: function (response) {
@@ -60,11 +50,6 @@
                                 $(this).html(barangHtml);
                                 $(this).val(currentValue);
                             });
-
-                            // Update CSRF token
-                            if (response.csrf_token) {
-                                updateCSRFToken(response.csrf_token);
-                            }
                         },
                         error: function () {
                             alert('Terjadi kesalahan saat mengambil data perusahaan');
@@ -125,8 +110,8 @@
                     url: '<?php echo site_url('aktifitas/pemindahan/get_alamat_pelanggan'); ?>',
                     method: 'POST',
                     data: {
-                        <?php echo $this->security->get_csrf_token_name(); ?>: csrf_token,
                         id_pelanggan: id_pelanggan
+                        // HAPUS CSRF token
                     },
                     dataType: 'json',
                     success: function (response) {
@@ -158,9 +143,9 @@
                     url: '<?php echo site_url('aktifitas/pemindahan/get_stok_barang'); ?>',
                     method: 'POST',
                     data: {
-                        <?php echo $this->security->get_csrf_token_name(); ?>: csrf_token,
                         id_gudang: id_gudang,
                         id_barang: id_barang
+                        // HAPUS CSRF token
                     },
                     dataType: 'json',
                     success: function (response) {
@@ -306,9 +291,9 @@
                     url: '<?php echo site_url('aktifitas/pemindahan/get_stok_barang'); ?>',
                     method: 'POST',
                     data: {
-                        <?php echo $this->security->get_csrf_token_name(); ?>: csrf_token,
                         id_gudang: id_gudang,
                         id_barang: id_barang
+                        // HAPUS CSRF token
                     },
                     dataType: 'json',
                     success: function (response) {

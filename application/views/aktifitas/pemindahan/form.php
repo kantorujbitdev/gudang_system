@@ -1,13 +1,15 @@
+<?php
+// Load data master JavaScript
+echo isset($data_master_js) ? $data_master_js : '';
+?>
+<script src="<?php echo base_url('assets/js/data_master.js'); ?>"></script>
+
 <div class="card shadow mb-4">
     <div class="card-header py-3">
         <h6 class="m-0 font-weight-bold text-primary"><?php echo $title; ?></h6>
     </div>
     <div class="card-body">
         <?php echo form_open(current_url(), array('id' => 'form-pemindahan')); ?>
-        <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>"
-            value="<?php echo $this->security->get_csrf_hash(); ?>">
-        <input type="hidden" id="csrf_name" value="<?php echo $this->security->get_csrf_token_name(); ?>">
-
         <div class="row">
             <?php if ($this->session->userdata('id_role') == 1): // Super Admin ?>
                 <div class="col-md-6">

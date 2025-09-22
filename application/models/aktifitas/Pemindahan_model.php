@@ -11,26 +11,61 @@ class Pemindahan_model extends CI_Model
     {
         $data = [];
 
-        // Get gudang
+        // Get gudang aktif saja
         $this->db->where('id_perusahaan', $id_perusahaan);
         $this->db->where('status_aktif', 1);
-        $data['gudang'] = $this->db->get('gudang')->result();
+        $this->db->where('deleted_at IS NULL');
+        $gudang = $this->db->get('gudang')->result();
+        $data['gudang'] = $gudang;
 
-        // Get barang
+        // Get pelanggan aktif saja
         $this->db->where('id_perusahaan', $id_perusahaan);
         $this->db->where('status_aktif', 1);
-        $this->db->where('deleted_at', NULL);
-        $data['barang'] = $this->db->get('barang')->result();
+        $this->db->where('deleted_at IS NULL');
+        $pelanggan = $this->db->get('pelanggan')->result();
+        $data['pelanggan'] = $pelanggan;
 
-        // Get pelanggan
-        $this->db->where('id_perusahaan', $id_perusahaan);
-        $this->db->where('status_aktif', 1);
-        $this->db->where('deleted_at', NULL);
-        $data['pelanggan'] = $this->db->get('pelanggan')->result();
+        // Get barang yang ada stoknya di gudang perusahaan tersebut
+        $this->db->select('b.*, sg.id_gudang, sg.jumlah, sg.reserved');
+        $this->db->from('barang b');
+        $this->db->join('stok_gudang sg', 'b.id_barang = sg.id_barang AND sg.id_gudang IN (SELECT id_gudang FROM gudang WHERE id_perusahaan = ' . $id_perusahaan . ')', 'inner');
+        $this->db->where('b.id_perusahaan', $id_perusahaan);
+        $this->db->where('b.status_aktif', 1);
+        $this->db->where('b.deleted_at IS NULL');
+        $this->db->where('sg.jumlah >', 0);
+        $this->db->group_by('b.id_barang');
+        $this->db->order_by('b.nama_barang', 'ASC');
+        $barang = $this->db->get()->result();
+        $data['barang'] = $barang;
 
         return $data;
     }
+    public function get_all_stok()
+    {
+        $this->db->select('sg.*');
+        $this->db->from('stok_gudang sg');
+        $this->db->join('barang b', 'sg.id_barang = b.id_barang');
+        $this->db->join('gudang g', 'sg.id_gudang = g.id_gudang');
+        $this->db->where('b.status_aktif', 1);
+        $this->db->where('b.deleted_at', NULL);
+        $this->db->where('g.status_aktif', 1);
+        $this->db->where('g.deleted_at', NULL);
+        return $this->db->get()->result();
+    }
 
+    public function get_stok_by_perusahaan($id_perusahaan)
+    {
+        $this->db->select('sg.*');
+        $this->db->from('stok_gudang sg');
+        $this->db->join('barang b', 'sg.id_barang = b.id_barang');
+        $this->db->join('gudang g', 'sg.id_gudang = g.id_gudang');
+        $this->db->where('b.id_perusahaan', $id_perusahaan);
+        $this->db->where('b.status_aktif', 1);
+        $this->db->where('b.deleted_at', NULL);
+        $this->db->where('g.status_aktif', 1);
+        $this->db->where('g.deleted_at', NULL);
+        return $this->db->get()->result();
+    }
     public function get_barang_by_gudang_with_stock($id_gudang)
     {
         $this->db->select('b.*, sg.jumlah, sg.reserved');
