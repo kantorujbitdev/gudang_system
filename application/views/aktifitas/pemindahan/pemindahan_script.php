@@ -1,109 +1,78 @@
 <script>
     $(document).ready(function () {
-        // Ambil CSRF token
-        var csrf_token = $('meta[name="csrf-token"]').attr('content');
-        if (!csrf_token) {
-            csrf_token = $('input[name="<?php echo $this->security->get_csrf_token_name(); ?>"]').val();
-        }
-        var csrf_name = $('#csrf_name').val();
+        // Get CSRF token and name from the form
+        var csrf_token = $('input[name="<?php echo $this->security->get_csrf_token_name(); ?>"]').val();
+        var csrf_name = '<?php echo $this->security->get_csrf_token_name(); ?>';
 
-        // Fungsi untuk refresh CSRF token
-        function refreshCSRFToken(callback) {
-            $.ajax({
-                url: '<?php echo site_url('aktifitas/pemindahan/refresh_csrf'); ?>',
-                method: 'GET',
-                dataType: 'json',
-                success: function (response) {
-                    csrf_token = response.csrf_token;
-                    csrf_name = response.csrf_name;
-
-                    // Update all CSRF fields in the form
-                    $('input[name="' + csrf_name + '"]').val(csrf_token);
-
-                    if (typeof callback === 'function') {
-                        callback();
-                    }
-                }
-            });
+        // Function to update CSRF token in all forms
+        function updateCSRFToken(new_token) {
+            csrf_token = new_token;
+            $('input[name="' + csrf_name + '"]').val(new_token);
         }
 
-        // Untuk Super Admin, ambil data berdasarkan perusahaan
+        // For Super Admin, get data based on company
         <?php if ($this->session->userdata('id_role') == 1): ?>
             $('#id_perusahaan').change(function () {
                 var id_perusahaan = $(this).val();
 
                 if (id_perusahaan) {
-                    // Refresh CSRF token sebelum request
-                    refreshCSRFToken(function () {
-                        $.ajax({
-                            url: '<?php echo site_url('aktifitas/pemindahan/get_data_by_perusahaan'); ?>',
-                            method: 'POST',
-                            data: {
-                                <?php echo $this->security->get_csrf_token_name(); ?>: csrf_token,
-                                id_perusahaan: id_perusahaan
-                            },
-                            dataType: 'json',
-                            success: function (response) {
-                                // Update gudang asal
-                                var gudangAsalHtml = '<option value="">-- Pilih Gudang --</option>';
-                                $.each(response.gudang, function (i, item) {
-                                    gudangAsalHtml += '<option value="' + item.id_gudang + '">' + item.nama_gudang + '</option>';
-                                });
-                                $('#id_gudang_asal').html(gudangAsalHtml);
+                    $('#id_gudang_asal').html('<option value="">Loading...</option>');
 
-                                // Update gudang tujuan
-                                var gudangTujuanHtml = '<option value="">-- Pilih Gudang Tujuan --</option>';
-                                $.each(response.gudang, function (i, item) {
-                                    gudangTujuanHtml += '<option value="' + item.id_gudang + '">' + item.nama_gudang + '</option>';
-                                });
-                                $('#id_gudang_tujuan').html(gudangTujuanHtml);
+                    $.ajax({
+                        url: '<?php echo site_url('aktifitas/pemindahan/get_data_by_perusahaan'); ?>',
+                        method: 'POST',
+                        data: {
+                            <?php echo $this->security->get_csrf_token_name(); ?>: csrf_token,
+                            id_perusahaan: id_perusahaan
+                        },
+                        dataType: 'json',
+                        success: function (response) {
+                            // Update gudang asal
+                            var gudangAsalHtml = '<option value="">-- Pilih Gudang --</option>';
+                            $.each(response.gudang, function (i, item) {
+                                gudangAsalHtml += '<option value="' + item.id_gudang + '">' + item.nama_gudang + '</option>';
+                            });
+                            $('#id_gudang_asal').html(gudangAsalHtml);
 
-                                // Update pelanggan
-                                var pelangganHtml = '<option value="">-- Pilih Pelanggan --</option>';
-                                $.each(response.pelanggan, function (i, item) {
-                                    pelangganHtml += '<option value="' + item.id_pelanggan + '">' + item.nama_pelanggan + ' (' + item.tipe_pelanggan + ')</option>';
-                                });
-                                $('#id_pelanggan').html(pelangganHtml);
+                            // Update gudang tujuan
+                            var gudangTujuanHtml = '<option value="">-- Pilih Gudang Tujuan --</option>';
+                            $.each(response.gudang, function (i, item) {
+                                gudangTujuanHtml += '<option value="' + item.id_gudang + '">' + item.nama_gudang + '</option>';
+                            });
+                            $('#id_gudang_tujuan').html(gudangTujuanHtml);
 
-                                // Update barang
-                                var barangHtml = '<option value="">-- Pilih Barang --</option>';
-                                $.each(response.barang, function (i, item) {
-                                    barangHtml += '<option value="' + item.id_barang + '">' + item.nama_barang + ' (' + item.sku + ')</option>';
-                                });
+                            // Update pelanggan
+                            var pelangganHtml = '<option value="">-- Pilih Pelanggan --</option>';
+                            $.each(response.pelanggan, function (i, item) {
+                                pelangganHtml += '<option value="' + item.id_pelanggan + '">' + item.nama_pelanggan + ' (' + item.tipe_pelanggan + ')</option>';
+                            });
+                            $('#id_pelanggan').html(pelangganHtml);
 
-                                // Update semua select barang di tabel
-                                $('.select-barang').each(function () {
-                                    var currentValue = $(this).val();
-                                    $(this).html(barangHtml);
-                                    $(this).val(currentValue);
+                            // Update barang
+                            var barangHtml = '<option value="">-- Pilih Barang --</option>';
+                            $.each(response.barang, function (i, item) {
+                                barangHtml += '<option value="' + item.id_barang + '">' + item.nama_barang + ' (' + item.sku + ')</option>';
+                            });
 
-                                    // Trigger change untuk memperbarui stok
-                                    if (currentValue) {
-                                        $(this).trigger('change');
-                                    }
-                                });
+                            // Update all select barang in table
+                            $('.select-barang').each(function () {
+                                var currentValue = $(this).val();
+                                $(this).html(barangHtml);
+                                $(this).val(currentValue);
+                            });
 
-                                // Update CSRF token from response
-                                if (response.csrf_token) {
-                                    csrf_token = response.csrf_token;
-                                    $('input[name="' + csrf_name + '"]').val(csrf_token);
-                                }
-                            },
-                            error: function (xhr, status, error) {
-                                console.error('AJAX Error:', status, error);
-                                if (xhr.status === 403) {
-                                    // Refresh CSRF token and retry
-                                    refreshCSRFToken(function () {
-                                        $('#id_perusahaan').trigger('change');
-                                    });
-                                } else {
-                                    alert('Terjadi kesalahan saat mengambil data perusahaan: ' + error);
-                                }
+                            // Update CSRF token
+                            if (response.csrf_token) {
+                                updateCSRFToken(response.csrf_token);
                             }
-                        });
+                        },
+                        error: function () {
+                            alert('Terjadi kesalahan saat mengambil data perusahaan');
+                            $('#id_gudang_asal').html('<option value="">-- Pilih Gudang --</option>');
+                        }
                     });
                 } else {
-                    // Reset semua field
+                    // Reset all fields
                     $('#id_gudang_asal').html('<option value="">-- Pilih Gudang --</option>');
                     $('#id_gudang_tujuan').html('<option value="">-- Pilih Gudang Tujuan --</option>');
                     $('#id_pelanggan').html('<option value="">-- Pilih Pelanggan --</option>');
@@ -111,7 +80,7 @@
                 }
             });
 
-            // Trigger change jika ada nilai awal
+            // Trigger change if there's initial value
             if ($('#id_perusahaan').val()) {
                 $('#id_perusahaan').trigger('change');
             }
@@ -121,12 +90,12 @@
         $('#tipe_tujuan').change(function () {
             var tipe = $(this).val();
 
-            // Sembunyikan semua field
+            // Hide all fields
             $('#gudang_tujuan_field').hide();
             $('#pelanggan_field').hide();
             $('#konsumen_field').hide();
 
-            // Hapus required semua
+            // Remove required from all
             $('#id_gudang_tujuan').removeAttr('required');
             $('#id_pelanggan').removeAttr('required');
             $('#nama_konsumen').removeAttr('required');
@@ -183,48 +152,37 @@
             var row = $(this).closest('tr');
 
             if (id_gudang && id_barang) {
-                // Refresh CSRF token sebelum request
-                refreshCSRFToken(function () {
-                    $.ajax({
-                        url: '<?php echo site_url('aktifitas/pemindahan/get_stok_barang'); ?>',
-                        method: 'POST',
-                        data: {
-                            <?php echo $this->security->get_csrf_token_name(); ?>: csrf_token,
-                            id_gudang: id_gudang,
-                            id_barang: id_barang
-                        },
-                        dataType: 'json',
-                        success: function (response) {
-                            row.find('.stok-tersedia').val(response.tersedia);
+                row.find('.stok-tersedia').val('Loading...');
 
-                            // Cek duplikasi barang
-                            cekDuplikasiBarang();
-                        },
-                        error: function (xhr, status, error) {
-                            console.error('AJAX Error:', status, error);
-                            if (xhr.status === 403) {
-                                // Refresh CSRF token and retry
-                                refreshCSRFToken(function () {
-                                    row.find('.select-barang').trigger('change');
-                                });
-                            } else {
-                                alert('Terjadi kesalahan saat mengambil data stok: ' + error);
-                            }
-                        }
-                    });
+                $.ajax({
+                    url: '<?php echo site_url('aktifitas/pemindahan/get_stok_barang'); ?>',
+                    method: 'POST',
+                    data: {
+                        <?php echo $this->security->get_csrf_token_name(); ?>: csrf_token,
+                        id_gudang: id_gudang,
+                        id_barang: id_barang
+                    },
+                    dataType: 'json',
+                    success: function (response) {
+                        row.find('.stok-tersedia').val(response.tersedia);
+                        checkDuplicateItems();
+                    },
+                    error: function () {
+                        row.find('.stok-tersedia').val('Error');
+                    }
                 });
             } else {
                 row.find('.stok-tersedia').val('');
             }
         });
 
-        // Fungsi untuk mengecek duplikasi barang
-        function cekDuplikasiBarang() {
-            var selectedBarang = [];
+        // Function to check duplicate items
+        function checkDuplicateItems() {
+            var selectedItems = [];
             $('.select-barang').each(function () {
                 var val = $(this).val();
                 if (val) {
-                    selectedBarang.push(val);
+                    selectedItems.push(val);
                 }
             });
 
@@ -233,7 +191,7 @@
                 $(this).find('option').each(function () {
                     var optionValue = $(this).val();
                     if (optionValue && optionValue != currentValue) {
-                        if (selectedBarang.indexOf(optionValue) > -1) {
+                        if (selectedItems.indexOf(optionValue) > -1) {
                             $(this).attr('disabled', true);
                         } else {
                             $(this).removeAttr('disabled');
@@ -245,21 +203,24 @@
             });
         }
 
-        // Tambah barang
+        // Add item
         $('#btn-tambah-barang').click(function () {
             var no = $('#table_barang tbody tr').length + 1;
-            var barangOptions = $('.select-barang:first').html();
 
-            if (!barangOptions) {
-                barangOptions = '<option value="">-- Pilih Barang --</option>';
+            // Get item options from first row or initial data
+            var itemOptions = '';
+            if ($('.select-barang').length > 0) {
+                itemOptions = $('.select-barang:first').html();
+            } else {
+                itemOptions = '<option value="">-- Pilih Barang --</option>';
                 <?php foreach ($barang as $row): ?>
-                    barangOptions += '<option value="<?php echo $row->id_barang; ?>"><?php echo $row->nama_barang; ?> (<?php echo $row->sku; ?>)</option>';
+                    itemOptions += '<option value="<?php echo $row->id_barang; ?>"><?php echo $row->nama_barang; ?> (<?php echo $row->sku; ?>)</option>';
                 <?php endforeach; ?>
             }
 
             var html = '<tr>' +
                 '<td>' + no + '</td>' +
-                '<td><select class="form-control select-barang" name="id_barang[]" required>' + barangOptions + '</select></td>' +
+                '<td><select class="form-control select-barang" name="id_barang[]" required>' + itemOptions + '</select></td>' +
                 '<td><input type="text" class="form-control stok-tersedia" readonly></td>' +
                 '<td><input type="number" class="form-control" name="jumlah[]" min="1" required></td>' +
                 '<td><button type="button" class="btn btn-sm btn-danger btn-hapus-barang"><i class="fas fa-trash"></i></button></td>' +
@@ -267,14 +228,15 @@
 
             $('#table_barang tbody').append(html);
 
-            // Trigger change event untuk select-barang yang baru
-            $('#table_barang tbody tr:last .select-barang').trigger('change');
+            // Trigger change event for new select-barang
+            var newRow = $('#table_barang tbody tr:last');
+            newRow.find('.select-barang').trigger('change');
 
-            // Cek duplikasi barang
-            cekDuplikasiBarang();
+            // Check duplicate items
+            checkDuplicateItems();
         });
 
-        // Hapus barang
+        // Delete item
         $(document).on('click', '.btn-hapus-barang', function () {
             if ($('#table_barang tbody tr').length > 1) {
                 $(this).closest('tr').remove();
@@ -284,26 +246,26 @@
                     $(this).find('td:first').text(index + 1);
                 });
 
-                // Cek duplikasi barang
-                cekDuplikasiBarang();
+                // Check duplicate items
+                checkDuplicateItems();
             } else {
                 alert('Minimal harus ada 1 barang!');
             }
         });
 
-        // Validasi form sebelum submit
+        // Form validation before submit
         $('#form-pemindahan').submit(function (e) {
             var valid = true;
 
-            // Cek apakah ada duplikasi barang
-            var selectedBarang = [];
+            // Check for duplicate items
+            var selectedItems = [];
             $('.select-barang').each(function () {
                 var val = $(this).val();
                 if (val) {
-                    if (selectedBarang.indexOf(val) > -1) {
+                    if (selectedItems.indexOf(val) > -1) {
                         valid = false;
                     }
-                    selectedBarang.push(val);
+                    selectedItems.push(val);
                 }
             });
 
@@ -313,7 +275,7 @@
                 return false;
             }
 
-            // Cek stok untuk setiap barang
+            // Check stock for each item
             $('.select-barang').each(function () {
                 var row = $(this).closest('tr');
                 var id_barang = $(this).val();
@@ -333,7 +295,28 @@
         });
 
         // Trigger change on page load for existing rows
-        $('.select-barang').trigger('change');
+        $('.select-barang').each(function () {
+            var row = $(this).closest('tr');
+            var id_gudang = $('#id_gudang_asal').val();
+            var id_barang = $(this).val();
+
+            if (id_gudang && id_barang) {
+                // Load stock for existing rows
+                $.ajax({
+                    url: '<?php echo site_url('aktifitas/pemindahan/get_stok_barang'); ?>',
+                    method: 'POST',
+                    data: {
+                        <?php echo $this->security->get_csrf_token_name(); ?>: csrf_token,
+                        id_gudang: id_gudang,
+                        id_barang: id_barang
+                    },
+                    dataType: 'json',
+                    success: function (response) {
+                        row.find('.stok-tersedia').val(response.tersedia);
+                    }
+                });
+            }
+        });
 
         // Trigger tipe tujuan change on page load
         $('#tipe_tujuan').trigger('change');

@@ -867,6 +867,52 @@ ALTER TABLE `user`
   ADD CONSTRAINT `user_ibfk_2` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`),
   ADD CONSTRAINT `user_ibfk_3` FOREIGN KEY (`created_by`) REFERENCES `user` (`id_user`);
 
+  
+-- Tabel toko_konsumen
+CREATE TABLE `toko_konsumen` (
+  `id_toko_konsumen` int(11) NOT NULL AUTO_INCREMENT,
+  `nama_toko_konsumen` varchar(50) NOT NULL,
+  `status_aktif` tinyint(1) DEFAULT 1,
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_toko_konsumen`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Tabel konsumen
+CREATE TABLE `konsumen` (
+  `id_konsumen` int(11) NOT NULL AUTO_INCREMENT,
+  `nama_konsumen` varchar(100) NOT NULL,
+  `id_toko_konsumen` int(11) NOT NULL,
+  `alamat_konsumen` text DEFAULT NULL,
+  `id_perusahaan` int(11) NOT NULL,
+  `status_aktif` tinyint(1) DEFAULT 1,
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_konsumen`),
+  KEY `id_toko_konsumen` (`id_toko_konsumen`),
+  KEY `id_perusahaan` (`id_perusahaan`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Ubah tabel pemindahan_barang untuk menambahkan id_konsumen
+ALTER TABLE `pemindahan_barang` 
+ADD COLUMN `id_konsumen` int(11) DEFAULT NULL AFTER `id_pelanggan`;
+
+-- Tambahkan constraint untuk tabel konsumen
+ALTER TABLE `konsumen`
+ADD CONSTRAINT `konsumen_ibfk_1` FOREIGN KEY (`id_toko_konsumen`) REFERENCES `toko_konsumen` (`id_toko_konsumen`),
+ADD CONSTRAINT `konsumen_ibfk_2` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`);
+
+-- Tambahkan constraint untuk tabel pemindahan_barang
+ALTER TABLE `pemindahan_barang`
+ADD CONSTRAINT `pemindahan_barang_ibfk_6` FOREIGN KEY (`id_konsumen`) REFERENCES `konsumen` (`id_konsumen`);
+
+-- Insert data toko_konsumen
+INSERT INTO `toko_konsumen` (`id_toko_konsumen`, `nama_toko_konsumen`) VALUES
+(1, 'Shopee'),
+(2, 'TikTok Shop'),
+(3, 'Tokopedia'),
+(4, 'Lazada'),
+(5, 'Blibli'),
+(6, 'Facebook Marketplace');
+
 kita akan melengkapi kode kode yg belum sesuai ya bro,
 setelah pesan ini, saya akan kirim kode untuk fitur pemindahan barang, agar dapat sesuai dengan yg dibutuhkan serta desain database yg sudah dimiliki.
 
@@ -1284,50 +1330,6 @@ bagaimana?
 
 
 
--- Tabel toko_konsumen
-CREATE TABLE `toko_konsumen` (
-  `id_toko_konsumen` int(11) NOT NULL AUTO_INCREMENT,
-  `nama_toko_konsumen` varchar(50) NOT NULL,
-  `status_aktif` tinyint(1) DEFAULT 1,
-  `created_at` datetime DEFAULT current_timestamp(),
-  PRIMARY KEY (`id_toko_konsumen`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- Tabel konsumen
-CREATE TABLE `konsumen` (
-  `id_konsumen` int(11) NOT NULL AUTO_INCREMENT,
-  `nama_konsumen` varchar(100) NOT NULL,
-  `id_toko_konsumen` int(11) NOT NULL,
-  `alamat_konsumen` text DEFAULT NULL,
-  `id_perusahaan` int(11) NOT NULL,
-  `status_aktif` tinyint(1) DEFAULT 1,
-  `created_at` datetime DEFAULT current_timestamp(),
-  PRIMARY KEY (`id_konsumen`),
-  KEY `id_toko_konsumen` (`id_toko_konsumen`),
-  KEY `id_perusahaan` (`id_perusahaan`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- Ubah tabel pemindahan_barang untuk menambahkan id_konsumen
-ALTER TABLE `pemindahan_barang` 
-ADD COLUMN `id_konsumen` int(11) DEFAULT NULL AFTER `id_pelanggan`;
-
--- Tambahkan constraint untuk tabel konsumen
-ALTER TABLE `konsumen`
-ADD CONSTRAINT `konsumen_ibfk_1` FOREIGN KEY (`id_toko_konsumen`) REFERENCES `toko_konsumen` (`id_toko_konsumen`),
-ADD CONSTRAINT `konsumen_ibfk_2` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`);
-
--- Tambahkan constraint untuk tabel pemindahan_barang
-ALTER TABLE `pemindahan_barang`
-ADD CONSTRAINT `pemindahan_barang_ibfk_6` FOREIGN KEY (`id_konsumen`) REFERENCES `konsumen` (`id_konsumen`);
-
--- Insert data toko_konsumen
-INSERT INTO `toko_konsumen` (`id_toko_konsumen`, `nama_toko_konsumen`) VALUES
-(1, 'Shopee'),
-(2, 'TikTok Shop'),
-(3, 'Tokopedia'),
-(4, 'Lazada'),
-(5, 'Blibli'),
-(6, 'Facebook Marketplace');
 
 
 seteleh menerapkan semua saran dari anda, nampaknya ada beberapa yg perlu di perbaiki kembali, yaitu,

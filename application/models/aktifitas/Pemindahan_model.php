@@ -7,6 +7,29 @@ class Pemindahan_model extends CI_Model
     {
         parent::__construct();
     }
+    public function get_data_by_perusahaan($id_perusahaan)
+    {
+        $data = [];
+
+        // Get gudang
+        $this->db->where('id_perusahaan', $id_perusahaan);
+        $this->db->where('status_aktif', 1);
+        $data['gudang'] = $this->db->get('gudang')->result();
+
+        // Get barang
+        $this->db->where('id_perusahaan', $id_perusahaan);
+        $this->db->where('status_aktif', 1);
+        $this->db->where('deleted_at', NULL);
+        $data['barang'] = $this->db->get('barang')->result();
+
+        // Get pelanggan
+        $this->db->where('id_perusahaan', $id_perusahaan);
+        $this->db->where('status_aktif', 1);
+        $this->db->where('deleted_at', NULL);
+        $data['pelanggan'] = $this->db->get('pelanggan')->result();
+
+        return $data;
+    }
 
     public function get_barang_by_gudang_with_stock($id_gudang)
     {
@@ -20,6 +43,7 @@ class Pemindahan_model extends CI_Model
         return $this->db->get()->result();
     }
 
+
     public function get_barang_by_perusahaan_with_stock($id_perusahaan)
     {
         $this->db->select('b.*, sg.jumlah, sg.reserved');
@@ -32,7 +56,6 @@ class Pemindahan_model extends CI_Model
         $this->db->order_by('b.nama_barang', 'ASC');
         return $this->db->get()->result();
     }
-
     public function get_all()
     {
         $user_role = $this->session->userdata('id_role');
@@ -169,37 +192,6 @@ class Pemindahan_model extends CI_Model
         $this->db->where('deleted_at', NULL);
         return $this->db->get('pelanggan')->result();
     }
-
-    public function get_data_by_perusahaan($id_perusahaan)
-    {
-        $data = [];
-
-        // Get gudang
-        $this->db->where('id_perusahaan', $id_perusahaan);
-        $this->db->where('status_aktif', 1);
-        $data['gudang'] = $this->db->get('gudang')->result();
-
-        // Get barang
-        $this->db->where('id_perusahaan', $id_perusahaan);
-        $this->db->where('status_aktif', 1);
-        $data['barang'] = $this->db->get('barang')->result();
-
-        // Get pelanggan
-        $this->db->where('id_perusahaan', $id_perusahaan);
-        $this->db->where('status_aktif', 1);
-        $data['pelanggan'] = $this->db->get('pelanggan')->result();
-
-        // Get konsumen
-        $this->db->select('k.*, tk.nama_toko_konsumen');
-        $this->db->from('konsumen k');
-        $this->db->join('toko_konsumen tk', 'k.id_toko_konsumen = tk.id_toko_konsumen');
-        $this->db->where('k.id_perusahaan', $id_perusahaan);
-        $this->db->where('k.status_aktif', 1);
-        $data['konsumen'] = $this->db->get()->result();
-
-        return $data;
-    }
-
     public function get_alamat_pelanggan($id_pelanggan)
     {
         $this->db->select('p.alamat, p.telepon, p.email');

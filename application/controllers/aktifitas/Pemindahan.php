@@ -19,34 +19,18 @@ class Pemindahan extends MY_Controller
         $this->check_menu_access('aktifitas/pemindahan');
     }
 
-    // Perbaikan masalah CSRF token
     public function get_data_by_perusahaan()
     {
-        // Set header untuk JSON response
         header('Content-Type: application/json');
-
-        // Cek CSRF token
-        $csrf_token_name = $this->security->get_csrf_token_name();
-        $csrf_hash = $this->security->get_csrf_hash();
-
-        // Ambil token dari POST
-        $posted_token = $this->input->post($csrf_token_name);
-
-        // Validasi token
-        if ($posted_token !== $csrf_hash) {
-            echo json_encode(['error' => 'Invalid CSRF token']);
-            return;
-        }
 
         $id_perusahaan = $this->input->post('id_perusahaan');
 
         if ($id_perusahaan) {
             $data = $this->pemindahan->get_data_by_perusahaan($id_perusahaan);
 
-            // Update CSRF token untuk response
-            $new_token = $this->security->get_csrf_hash();
-            $data['csrf_token'] = $new_token;
-            $data['csrf_name'] = $csrf_token_name;
+            // Generate new CSRF token
+            $data['csrf_token'] = $this->security->get_csrf_hash();
+            $data['csrf_name'] = $this->security->get_csrf_token_name();
 
             echo json_encode($data);
         } else {
@@ -54,18 +38,33 @@ class Pemindahan extends MY_Controller
         }
     }
 
-    public function get_barang_by_gudang()
+    public function get_stok_barang()
     {
         header('Content-Type: application/json');
 
-        // Cek CSRF token
-        $csrf_token_name = $this->security->get_csrf_token_name();
-        $posted_token = $this->input->post($csrf_token_name);
+        $id_gudang = $this->input->post('id_gudang');
+        $id_barang = $this->input->post('id_barang');
 
-        if ($posted_token !== $this->security->get_csrf_hash()) {
-            echo json_encode(['error' => 'Invalid CSRF token']);
-            return;
+        if ($id_gudang && $id_barang) {
+            $stok = $this->pemindahan->get_stok_barang($id_gudang, $id_barang);
+
+            echo json_encode([
+                'stok' => $stok ? $stok->jumlah : 0,
+                'reserved' => $stok ? $stok->reserved : 0,
+                'tersedia' => $stok ? ($stok->jumlah - $stok->reserved) : 0
+            ]);
+        } else {
+            echo json_encode([
+                'stok' => 0,
+                'reserved' => 0,
+                'tersedia' => 0
+            ]);
         }
+    }
+
+    public function get_barang_by_gudang()
+    {
+        header('Content-Type: application/json');
 
         $id_gudang = $this->input->post('id_gudang');
 
@@ -75,6 +74,37 @@ class Pemindahan extends MY_Controller
         } else {
             echo json_encode([]);
         }
+    }
+
+    public function get_alamat_pelanggan()
+    {
+        header('Content-Type: application/json');
+
+        $id_pelanggan = $this->input->post('id_pelanggan');
+        $alamat = $this->pemindahan->get_alamat_pelanggan($id_pelanggan);
+
+        if ($alamat) {
+            echo json_encode([
+                'status' => 'success',
+                'alamat' => $alamat->alamat,
+                'telepon' => $alamat->telepon,
+                'email' => $alamat->email
+            ]);
+        } else {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Alamat tidak ditemukan'
+            ]);
+        }
+    }
+
+    public function refresh_csrf()
+    {
+        header('Content-Type: application/json');
+        echo json_encode([
+            'csrf_token' => $this->security->get_csrf_hash(),
+            'csrf_name' => $this->security->get_csrf_token_name()
+        ]);
     }
 
     public function index()
@@ -240,15 +270,6 @@ class Pemindahan extends MY_Controller
 
         $this->session->set_flashdata('error', 'Gagal membuat pemindahan barang!');
         return redirect('aktifitas/pemindahan/tambah');
-    }
-    // Add a method to refresh CSRF token
-    public function refresh_csrf()
-    {
-        header('Content-Type: application/json');
-        echo json_encode([
-            'csrf_token' => $this->security->get_csrf_hash(),
-            'csrf_name' => $this->security->get_csrf_token_name()
-        ]);
     }
 
     public function edit($id_pemindahan)
@@ -513,41 +534,6 @@ class Pemindahan extends MY_Controller
         }
 
         $this->render_view('aktifitas/pemindahan/detail');
-    }
-
-    public function get_stok_barang()
-    {
-        header('Content-Type: application/json');
-        $id_gudang = $this->input->post('id_gudang');
-        $id_barang = $this->input->post('id_barang');
-
-        $stok = $this->pemindahan->get_stok_barang($id_gudang, $id_barang);
-
-        echo json_encode([
-            'stok' => $stok ? $stok->jumlah : 0,
-            'reserved' => $stok ? $stok->reserved : 0,
-            'tersedia' => $stok ? ($stok->jumlah - $stok->reserved) : 0
-        ]);
-    }
-
-    public function get_alamat_pelanggan()
-    {
-        $id_pelanggan = $this->input->post('id_pelanggan');
-        $alamat = $this->pemindahan->get_alamat_pelanggan($id_pelanggan);
-
-        if ($alamat) {
-            echo json_encode([
-                'status' => 'success',
-                'alamat' => $alamat->alamat,
-                'telepon' => $alamat->telepon,
-                'email' => $alamat->email
-            ]);
-        } else {
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Alamat tidak ditemukan'
-            ]);
-        }
     }
 
     private function generate_no_transaksi()
