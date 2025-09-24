@@ -252,6 +252,10 @@ class Barang extends MY_Controller
                 $data = [
                     'nama_barang' => $nama_barang,
                     'sku' => $sku,
+                    'kode_barang' => $this->input->post('kode_barang'),
+                    'ukuran' => $this->input->post('ukuran'),
+                    'motor' => $this->input->post('motor'),
+                    'warna' => $this->input->post('warna'),
                     'id_perusahaan' => $id_perusahaan,
                     'id_kategori' => $this->input->post('id_kategori'),
                     'satuan' => $this->input->post('satuan'),
@@ -309,6 +313,10 @@ class Barang extends MY_Controller
                 $data = [
                     'nama_barang' => $nama_barang,
                     'sku' => $sku,
+                    'kode_barang' => $this->input->post('kode_barang'),
+                    'ukuran' => $this->input->post('ukuran'),
+                    'motor' => $this->input->post('motor'),
+                    'warna' => $this->input->post('warna'),
                     'id_perusahaan' => $id_perusahaan,
                     'id_kategori' => $this->input->post('id_kategori'),
                     'satuan' => $this->input->post('satuan'),
@@ -414,10 +422,15 @@ class Barang extends MY_Controller
      *  Private Helpers
      *  ============================
      */
+
     private function _set_validation_rules($is_edit = false)
     {
         $this->form_validation->set_rules('nama_barang', 'Nama Barang', 'required|trim|max_length[100]');
         $this->form_validation->set_rules('sku', 'SKU', 'required|trim|max_length[50]');
+        $this->form_validation->set_rules('kode_barang', 'Kode Barang', 'trim|max_length[100]');
+        $this->form_validation->set_rules('ukuran', 'Ukuran', 'trim|max_length[100]');
+        $this->form_validation->set_rules('motor', 'Motor', 'trim|max_length[100]');
+        $this->form_validation->set_rules('warna', 'Warna', 'trim|max_length[100]');
         $this->form_validation->set_rules('id_kategori', 'Kategori', 'required');
         $this->form_validation->set_rules('satuan', 'Satuan', 'required|trim|max_length[20]');
         $this->form_validation->set_rules('deskripsi', 'Deskripsi', 'trim');

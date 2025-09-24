@@ -25,8 +25,24 @@
                         <td><?php echo $barang->sku; ?></td>
                     </tr>
                     <tr>
+                        <td><strong>Kode Barang</strong></td>
+                        <td><?php echo $barang->kode_barang ?: '-'; ?></td>
+                    </tr>
+                    <tr>
                         <td><strong>Nama Barang</strong></td>
                         <td><?php echo $barang->nama_barang; ?></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ukuran</strong></td>
+                        <td><?php echo $barang->ukuran ?: '-'; ?></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Motor</strong></td>
+                        <td><?php echo $barang->motor ?: '-'; ?></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Warna</strong></td>
+                        <td><?php echo $barang->warna ?: '-'; ?></td>
                     </tr>
                     <tr>
                         <td><strong>Kategori</strong></td>

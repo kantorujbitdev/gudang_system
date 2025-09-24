@@ -8,76 +8,127 @@
     <div class="card-body px-4 py-4">
         <?php echo form_open_multipart(isset($barang) ? 'setup/barang/edit/' . $barang->id_barang : 'setup/barang/tambah'); ?>
         <?php echo form_hidden($this->security->get_csrf_token_name(), $this->security->get_csrf_hash()); ?>
-        <div class="form-group">
-            <?php echo form_label('Nama Barang <span class="text-danger">*</span>', 'nama_barang'); ?>
-            <?php echo form_input(array(
-                'name' => 'nama_barang',
-                'id' => 'nama_barang',
-                'class' => 'form-control',
-                'value' => set_value('nama_barang', isset($barang) ? $barang->nama_barang : ''),
-                'required' => '',
-                'maxlength' => '100'
-            )); ?>
-            <?php echo form_error('nama_barang', '<small class="text-danger">', '</small>'); ?>
-        </div>
-
-        <div class="form-group">
-            <?php echo form_label('SKU <span class="text-danger">*</span>', 'sku'); ?>
-            <?php echo form_input(array(
-                'name' => 'sku',
-                'id' => 'sku',
-                'class' => 'form-control',
-                'value' => set_value('sku', isset($barang) ? $barang->sku : ''),
-                'required' => '',
-                'maxlength' => '50'
-            )); ?>
-            <?php echo form_error('sku', '<small class="text-danger">', '</small>'); ?>
-        </div>
-
-        <?php if ($this->session->userdata('id_role') == 1): ?>
-            <div class="form-group">
-                <?php echo form_label('Perusahaan <span class="text-danger">*</span>', 'id_perusahaan'); ?>
-                <?php
-                $options = array();
-                $selected_perusahaan = isset($barang) ? $barang->id_perusahaan : '';
-                foreach ($perusahaan as $p) {
-                    $options[$p->id_perusahaan] = $p->nama_perusahaan;
-                }
-
-                echo form_dropdown(
-                    'id_perusahaan',
-                    $options,
-                    set_value('id_perusahaan', $selected_perusahaan),
-                    array('class' => 'form-control', 'required' => '', 'id' => 'id_perusahaan')
-                );
-                ?>
-                <?php echo form_error('id_perusahaan', '<small class="text-danger">', '</small>'); ?>
-            </div>
-        <?php endif; ?>
-
-        <div class="form-group">
-            <?php echo form_label('Kategori <span class="text-danger">*</span>', 'id_kategori'); ?>
-            <?php
-            $options = array();
-            if (isset($kategori)) {
-                foreach ($kategori as $k) {
-                    $options[$k->id_kategori] = $k->nama_kategori;
-                }
-            }
-
-            $selected_kategori = isset($barang) ? $barang->id_kategori : '';
-            echo form_dropdown(
-                'id_kategori',
-                $options,
-                set_value('id_kategori', $selected_kategori),
-                array('class' => 'form-control', 'required' => '', 'id' => 'id_kategori')
-            );
-            ?>
-            <?php echo form_error('id_kategori', '<small class="text-danger">', '</small>'); ?>
-        </div>
 
         <div class="row">
             <div class="col-md-6">
+                <div class="form-group">
+                    <?php echo form_label('Nama Barang <span class="text-danger">*</span>', 'nama_barang'); ?>
+                    <?php echo form_input(array(
+                        'name' => 'nama_barang',
+                        'id' => 'nama_barang',
+                        'class' => 'form-control',
+                        'value' => set_value('nama_barang', isset($barang) ? $barang->nama_barang : ''),
+                        'required' => '',
+                        'maxlength' => '100'
+                    )); ?>
+                    <?php echo form_error('nama_barang', '<small class="text-danger">', '</small>'); ?>
+                </div>
+
+                <div class="form-group">
+                    <?php echo form_label('SKU <span class="text-danger">*</span>', 'sku'); ?>
+                    <?php echo form_input(array(
+                        'name' => 'sku',
+                        'id' => 'sku',
+                        'class' => 'form-control',
+                        'value' => set_value('sku', isset($barang) ? $barang->sku : ''),
+                        'required' => '',
+                        'maxlength' => '50'
+                    )); ?>
+                    <?php echo form_error('sku', '<small class="text-danger">', '</small>'); ?>
+                </div>
+
+                <div class="form-group">
+                    <?php echo form_label('Kode Barang', 'kode_barang'); ?>
+                    <?php echo form_input(array(
+                        'name' => 'kode_barang',
+                        'id' => 'kode_barang',
+                        'class' => 'form-control',
+                        'value' => set_value('kode_barang', isset($barang) ? $barang->kode_barang : ''),
+                        'maxlength' => '100'
+                    )); ?>
+                    <?php echo form_error('kode_barang', '<small class="text-danger">', '</small>'); ?>
+                </div>
+
+                <div class="form-group">
+                    <?php echo form_label('Ukuran', 'ukuran'); ?>
+                    <?php echo form_input(array(
+                        'name' => 'ukuran',
+                        'id' => 'ukuran',
+                        'class' => 'form-control',
+                        'value' => set_value('ukuran', isset($barang) ? $barang->ukuran : ''),
+                        'maxlength' => '100'
+                    )); ?>
+                    <?php echo form_error('ukuran', '<small class="text-danger">', '</small>'); ?>
+                </div>
+
+                <div class="form-group">
+                    <?php echo form_label('Motor', 'motor'); ?>
+                    <?php echo form_input(array(
+                        'name' => 'motor',
+                        'id' => 'motor',
+                        'class' => 'form-control',
+                        'value' => set_value('motor', isset($barang) ? $barang->motor : ''),
+                        'maxlength' => '100'
+                    )); ?>
+                    <?php echo form_error('motor', '<small class="text-danger">', '</small>'); ?>
+                </div>
+
+                <div class="form-group">
+                    <?php echo form_label('Warna', 'warna'); ?>
+                    <?php echo form_input(array(
+                        'name' => 'warna',
+                        'id' => 'warna',
+                        'class' => 'form-control',
+                        'value' => set_value('warna', isset($barang) ? $barang->warna : ''),
+                        'maxlength' => '100'
+                    )); ?>
+                    <?php echo form_error('warna', '<small class="text-danger">', '</small>'); ?>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <?php if ($this->session->userdata('id_role') == 1): ?>
+                    <div class="form-group">
+                        <?php echo form_label('Perusahaan <span class="text-danger">*</span>', 'id_perusahaan'); ?>
+                        <?php
+                        $options = array();
+                        $selected_perusahaan = isset($barang) ? $barang->id_perusahaan : '';
+                        foreach ($perusahaan as $p) {
+                            $options[$p->id_perusahaan] = $p->nama_perusahaan;
+                        }
+
+                        echo form_dropdown(
+                            'id_perusahaan',
+                            $options,
+                            set_value('id_perusahaan', $selected_perusahaan),
+                            array('class' => 'form-control', 'required' => '', 'id' => 'id_perusahaan')
+                        );
+                        ?>
+                        <?php echo form_error('id_perusahaan', '<small class="text-danger">', '</small>'); ?>
+                    </div>
+                <?php endif; ?>
+
+                <div class="form-group">
+                    <?php echo form_label('Kategori <span class="text-danger">*</span>', 'id_kategori'); ?>
+                    <?php
+                    $options = array();
+                    if (isset($kategori)) {
+                        foreach ($kategori as $k) {
+                            $options[$k->id_kategori] = $k->nama_kategori;
+                        }
+                    }
+
+                    $selected_kategori = isset($barang) ? $barang->id_kategori : '';
+                    echo form_dropdown(
+                        'id_kategori',
+                        $options,
+                        set_value('id_kategori', $selected_kategori),
+                        array('class' => 'form-control', 'required' => '', 'id' => 'id_kategori')
+                    );
+                    ?>
+                    <?php echo form_error('id_kategori', '<small class="text-danger">', '</small>'); ?>
+                </div>
+
                 <div class="form-group">
                     <?php echo form_label('Satuan <span class="text-danger">*</span>', 'satuan'); ?>
                     <?php echo form_input(array(
@@ -90,66 +141,66 @@
                     )); ?>
                     <?php echo form_error('satuan', '<small class="text-danger">', '</small>'); ?>
                 </div>
-            </div>
-        </div>
 
-        <div class="form-group">
-            <?php echo form_label('Gambar', 'gambar'); ?>
-            <div class="custom-file">
-                <?php echo form_upload(array(
-                    'name' => 'gambar',
-                    'id' => 'gambar',
-                    'class' => 'custom-file-input',
-                    'accept' => 'image/*'
-                )); ?>
-                <label class="custom-file-label" for="gambar">Pilih gambar</label>
-            </div>
-            <?php if (isset($barang) && $barang->gambar): ?>
-                <div class="mt-2">
-                    <img src="<?php echo base_url('uploads/barang/' . $barang->gambar); ?>" class="img-thumbnail"
-                        style="max-width: 150px;" alt="Gambar Barang">
-                    <br>
-                    <small class="text-muted">Gambar saat ini</small>
+                <div class="form-group">
+                    <?php echo form_label('Gambar', 'gambar'); ?>
+                    <div class="custom-file">
+                        <?php echo form_upload(array(
+                            'name' => 'gambar',
+                            'id' => 'gambar',
+                            'class' => 'custom-file-input',
+                            'accept' => 'image/*'
+                        )); ?>
+                        <label class="custom-file-label" for="gambar">Pilih gambar</label>
+                    </div>
+                    <?php if (isset($barang) && $barang->gambar): ?>
+                        <div class="mt-2">
+                            <img src="<?php echo base_url('uploads/barang/' . $barang->gambar); ?>" class="img-thumbnail"
+                                style="max-width: 150px;" alt="Gambar Barang">
+                            <br>
+                            <small class="text-muted">Gambar saat ini</small>
+                        </div>
+                    <?php endif; ?>
+                    <?php echo form_error('gambar', '<small class="text-danger">', '</small>'); ?>
                 </div>
-            <?php endif; ?>
-            <?php echo form_error('gambar', '<small class="text-danger">', '</small>'); ?>
-        </div>
 
-        <div class="form-group">
-            <?php echo form_label('Deskripsi', 'deskripsi'); ?>
-            <?php echo form_textarea(array(
-                'name' => 'deskripsi',
-                'id' => 'deskripsi',
-                'class' => 'form-control',
-                'rows' => 3,
-                'value' => set_value('deskripsi', isset($barang) ? $barang->deskripsi : '')
-            )); ?>
-            <?php echo form_error('deskripsi', '<small class="text-danger">', '</small>'); ?>
-        </div>
-
-        <?php if (isset($barang)): ?>
-            <div class="form-group">
-                <?php echo form_label('Status', 'status_aktif'); ?>
-                <div class="form-check">
-                    <?php echo form_radio(array(
-                        'name' => 'status_aktif',
-                        'id' => 'status_aktif_1',
-                        'value' => 1,
-                        'checked' => set_value('status_aktif', $barang->status_aktif) == 1 ? TRUE : FALSE
+                <div class="form-group">
+                    <?php echo form_label('Deskripsi', 'deskripsi'); ?>
+                    <?php echo form_textarea(array(
+                        'name' => 'deskripsi',
+                        'id' => 'deskripsi',
+                        'class' => 'form-control',
+                        'rows' => 3,
+                        'value' => set_value('deskripsi', isset($barang) ? $barang->deskripsi : '')
                     )); ?>
-                    <?php echo form_label('Aktif', 'status_aktif_1', array('class' => 'form-check-label')); ?>
+                    <?php echo form_error('deskripsi', '<small class="text-danger">', '</small>'); ?>
                 </div>
-                <div class="form-check">
-                    <?php echo form_radio(array(
-                        'name' => 'status_aktif',
-                        'id' => 'status_aktif_0',
-                        'value' => 0,
-                        'checked' => set_value('status_aktif', $barang->status_aktif) == 0 ? TRUE : FALSE
-                    )); ?>
-                    <?php echo form_label('Tidak Aktif', 'status_aktif_0', array('class' => 'form-check-label')); ?>
-                </div>
+
+                <?php if (isset($barang)): ?>
+                    <div class="form-group">
+                        <?php echo form_label('Status', 'status_aktif'); ?>
+                        <div class="form-check">
+                            <?php echo form_radio(array(
+                                'name' => 'status_aktif',
+                                'id' => 'status_aktif_1',
+                                'value' => 1,
+                                'checked' => set_value('status_aktif', $barang->status_aktif) == 1 ? TRUE : FALSE
+                            )); ?>
+                            <?php echo form_label('Aktif', 'status_aktif_1', array('class' => 'form-check-label')); ?>
+                        </div>
+                        <div class="form-check">
+                            <?php echo form_radio(array(
+                                'name' => 'status_aktif',
+                                'id' => 'status_aktif_0',
+                                'value' => 0,
+                                'checked' => set_value('status_aktif', $barang->status_aktif) == 0 ? TRUE : FALSE
+                            )); ?>
+                            <?php echo form_label('Tidak Aktif', 'status_aktif_0', array('class' => 'form-check-label')); ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
             </div>
-        <?php endif; ?>
+        </div>
 
         <div class="form-group">
             <?php echo form_submit('submit', 'Simpan', array('class' => 'btn btn-primary')); ?>

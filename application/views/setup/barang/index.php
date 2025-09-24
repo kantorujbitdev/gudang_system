@@ -19,8 +19,12 @@
                         <th>No</th>
                         <th>Gambar</th>
                         <th>SKU</th>
+                        <th>Kode Barang</th>
                         <th>Nama Barang</th>
                         <th>Kategori</th>
+                        <th>Ukuran</th>
+                        <th>Motor</th>
+                        <th>Warna</th>
                         <th>Perusahaan</th>
                         <th>Total Stok</th>
                         <th>Status</th>
@@ -41,8 +45,12 @@
                                 <?php endif; ?>
                             </td>
                             <td><?php echo $row->sku; ?></td>
+                            <td><?php echo $row->kode_barang ?: '-'; ?></td>
                             <td><?php echo $row->nama_barang; ?></td>
                             <td><?php echo $row->nama_kategori ?: '-'; ?></td>
+                            <td><?php echo $row->ukuran ?: '-'; ?></td>
+                            <td><?php echo $row->motor ?: '-'; ?></td>
+                            <td><?php echo $row->warna ?: '-'; ?></td>
                             <td><?php echo $row->nama_perusahaan; ?></td>
                             <td>
                                 <?php

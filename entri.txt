@@ -113,11 +113,14 @@ Pengaturan
 
 
 database yang digunakan yaitu
--- Database: gudang_system
+
+DROP DATABASE IF EXISTS gudang_system;
+CREATE DATABASE gudang_system CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE gudang_system;
 
 -- Tabel perusahaan (tidak memiliki dependensi)
 CREATE TABLE `perusahaan` (
-  `id_perusahaan` int(11) NOT NULL,
+  `id_perusahaan` int(11) NOT NULL AUTO_INCREMENT,
   `nama_perusahaan` varchar(255) NOT NULL,
   `alamat` varchar(255) DEFAULT NULL,
   `telepon` varchar(20) DEFAULT NULL,
@@ -125,27 +128,31 @@ CREATE TABLE `perusahaan` (
   `status_aktif` tinyint(1) DEFAULT 1,
   `deleted_at` datetime DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT NULL
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id_perusahaan`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel role_user (tidak memiliki dependensi)
 CREATE TABLE `role_user` (
-  `id_role` int(11) NOT NULL,
+  `id_role` int(11) NOT NULL AUTO_INCREMENT,
   `nama_role` varchar(50) NOT NULL,
-  `deskripsi` text DEFAULT NULL
+  `deskripsi` text DEFAULT NULL,
+  PRIMARY KEY (`id_role`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel pengaturan_sistem (tidak memiliki dependensi)
 CREATE TABLE `pengaturan_sistem` (
-  `id_pengaturan` int(11) NOT NULL,
+  `id_pengaturan` int(11) NOT NULL AUTO_INCREMENT,
   `key` varchar(50) NOT NULL,
   `value` text DEFAULT NULL,
-  `keterangan` text DEFAULT NULL
+  `keterangan` text DEFAULT NULL,
+  PRIMARY KEY (`id_pengaturan`),
+  UNIQUE KEY `uniq_key` (`key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel menu (tidak memiliki dependensi)
 CREATE TABLE `menu` (
-  `id_menu` int(11) NOT NULL,
+  `id_menu` int(11) NOT NULL AUTO_INCREMENT,
   `nama_menu` varchar(50) NOT NULL,
   `url` varchar(100) DEFAULT NULL,
   `permission` varchar(50) DEFAULT NULL,
@@ -154,12 +161,41 @@ CREATE TABLE `menu` (
   `urutan` int(11) DEFAULT 0,
   `id_parent` int(11) DEFAULT NULL,
   `status_aktif` tinyint(1) DEFAULT 1,
-  `tipe` enum('menu','submenu') NOT NULL DEFAULT 'menu'
+  `tipe` enum('menu','submenu') NOT NULL DEFAULT 'menu',
+  PRIMARY KEY (`id_menu`),
+  KEY `id_parent` (`id_parent`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Tabel toko_konsumen (tidak memiliki dependensi)
+CREATE TABLE `toko_konsumen` (
+  `id_toko_konsumen` int(11) NOT NULL AUTO_INCREMENT,
+  `nama_toko_konsumen` varchar(50) NOT NULL,
+  `status_aktif` tinyint(1) DEFAULT 1,
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_toko_konsumen`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Tabel motor (tidak memiliki dependensi)
+CREATE TABLE `motor` (
+  `id_motor` int(11) NOT NULL AUTO_INCREMENT,
+  `nama_motor` varchar(100) NOT NULL,
+  `status_aktif` tinyint(1) DEFAULT 1,
+  PRIMARY KEY (`id_motor`),
+  UNIQUE KEY `uniq_nama_motor` (`nama_motor`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Tabel warna (tidak memiliki dependensi)
+CREATE TABLE `warna` (
+  `id_warna` int(11) NOT NULL AUTO_INCREMENT,
+  `nama_warna` varchar(50) NOT NULL,
+  `status_aktif` tinyint(1) DEFAULT 1,
+  PRIMARY KEY (`id_warna`),
+  UNIQUE KEY `uniq_nama_warna` (`nama_warna`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel user (bergantung pada role_user dan perusahaan)
 CREATE TABLE `user` (
-  `id_user` int(11) NOT NULL,
+  `id_user` int(11) NOT NULL AUTO_INCREMENT,
   `nama` varchar(100) NOT NULL,
   `username` varchar(50) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
@@ -174,24 +210,32 @@ CREATE TABLE `user` (
   `last_login` datetime DEFAULT NULL,
   `foto_profil` varchar(255) DEFAULT NULL,
   `remember_token` varchar(100) DEFAULT NULL,
-  `token_expires` datetime DEFAULT NULL
+  `token_expires` datetime DEFAULT NULL,
+  PRIMARY KEY (`id_user`),
+  UNIQUE KEY `username` (`username`),
+  KEY `id_role` (`id_role`),
+  KEY `id_perusahaan` (`id_perusahaan`),
+  KEY `user_ibfk_3` (`created_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel kategori (bergantung pada perusahaan)
 CREATE TABLE `kategori` (
-  `id_kategori` int(11) NOT NULL,
+  `id_kategori` int(11) NOT NULL AUTO_INCREMENT,
   `id_perusahaan` int(11) NOT NULL,
   `nama_kategori` varchar(50) NOT NULL,
   `deskripsi` text DEFAULT NULL,
   `status_aktif` tinyint(1) DEFAULT 1,
   `deleted_at` datetime DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT NULL
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id_kategori`),
+  UNIQUE KEY `uniq_kategori_perusahaan` (`id_perusahaan`,`nama_kategori`),
+  KEY `id_perusahaan` (`id_perusahaan`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel gudang (bergantung pada perusahaan dan user)
 CREATE TABLE `gudang` (
-  `id_gudang` int(11) NOT NULL,
+  `id_gudang` int(11) NOT NULL AUTO_INCREMENT,
   `id_perusahaan` int(11) NOT NULL,
   `nama_gudang` varchar(100) NOT NULL,
   `alamat` text DEFAULT NULL,
@@ -200,28 +244,15 @@ CREATE TABLE `gudang` (
   `status_aktif` tinyint(1) DEFAULT 1,
   `deleted_at` datetime DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- Tabel pelanggan (bergantung pada perusahaan) - DITAMBAHKAN id_sales
-CREATE TABLE `pelanggan` (
-  `id_pelanggan` int(11) NOT NULL,
-  `id_perusahaan` int(11) NOT NULL,
-  `nama_pelanggan` varchar(100) NOT NULL,
-  `alamat` text DEFAULT NULL,
-  `telepon` varchar(20) DEFAULT NULL,
-  `email` varchar(100) DEFAULT NULL,
-  `tipe_pelanggan` enum('distributor','konsumen') DEFAULT 'konsumen',
-  `id_sales` int(11) DEFAULT NULL, -- Untuk melacak sales yang memiliki pelanggan ini
-  `status_aktif` tinyint(1) DEFAULT 1,
-  `deleted_at` datetime DEFAULT NULL,
-  `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT NULL
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id_gudang`),
+  KEY `id_perusahaan` (`id_perusahaan`),
+  KEY `gudang_ibfk_2` (`created_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel supplier (bergantung pada perusahaan)
 CREATE TABLE `supplier` (
-  `id_supplier` int(11) NOT NULL,
+  `id_supplier` int(11) NOT NULL AUTO_INCREMENT,
   `id_perusahaan` int(11) NOT NULL,
   `nama_supplier` varchar(100) NOT NULL,
   `alamat` text DEFAULT NULL,
@@ -231,74 +262,131 @@ CREATE TABLE `supplier` (
   `status_aktif` tinyint(1) DEFAULT 1,
   `deleted_at` datetime DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT NULL
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id_supplier`),
+  KEY `supplier_ibfk_1` (`id_perusahaan`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Tabel konsumen (bergantung pada toko_konsumen dan perusahaan)
+CREATE TABLE `konsumen` (
+  `id_konsumen` int(11) NOT NULL AUTO_INCREMENT,
+  `nama_konsumen` varchar(100) NOT NULL,
+  `id_toko_konsumen` int(11) NOT NULL,
+  `alamat_konsumen` text DEFAULT NULL,
+  `id_perusahaan` int(11) NOT NULL,
+  `status_aktif` tinyint(1) DEFAULT 1,
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_konsumen`),
+  KEY `id_toko_konsumen` (`id_toko_konsumen`),
+  KEY `id_perusahaan` (`id_perusahaan`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Tabel pelanggan (bergantung pada perusahaan dan user) - DITAMBAHKAN id_sales
+CREATE TABLE `pelanggan` (
+  `id_pelanggan` int(11) NOT NULL AUTO_INCREMENT,
+  `id_perusahaan` int(11) NOT NULL,
+  `nama_pelanggan` varchar(100) NOT NULL,
+  `alamat` text DEFAULT NULL,
+  `telepon` varchar(20) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `tipe_pelanggan` enum('distributor','konsumen') DEFAULT 'konsumen',
+  `id_sales` int(11) DEFAULT NULL,
+  `status_aktif` tinyint(1) DEFAULT 1,
+  `deleted_at` datetime DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id_pelanggan`),
+  KEY `pelanggan_ibfk_1` (`id_perusahaan`),
+  KEY `id_sales` (`id_sales`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel barang (bergantung pada kategori dan perusahaan)
 CREATE TABLE `barang` (
-  `id_barang` int(11) NOT NULL,
+  `id_barang` int(11) NOT NULL AUTO_INCREMENT,
   `id_perusahaan` int(11) NOT NULL,
   `id_kategori` int(11) DEFAULT NULL,
   `nama_barang` varchar(100) NOT NULL,
   `gambar` varchar(255) DEFAULT NULL,
   `sku` varchar(50) NOT NULL,
+  `kode_barang` varchar(100) DEFAULT NULL,
+  `ukuran` varchar(100) DEFAULT NULL,
   `deskripsi` text DEFAULT NULL,
   `satuan` varchar(20) DEFAULT NULL,
+  `motor` varchar(100) DEFAULT NULL,
+  `warna` varchar(100) DEFAULT NULL,
   `status_aktif` tinyint(1) DEFAULT 1,
   `deleted_at` datetime DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id_barang`),
+  UNIQUE KEY `uniq_sku_perusahaan` (`id_perusahaan`,`sku`),
+  KEY `id_kategori` (`id_kategori`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel stok_gudang (bergantung pada perusahaan, gudang, dan barang)
 CREATE TABLE `stok_gudang` (
-  `id_stok` int(11) NOT NULL,
+  `id_stok` int(11) NOT NULL AUTO_INCREMENT,
   `id_perusahaan` int(11) NOT NULL,
   `id_gudang` int(11) NOT NULL,
   `id_barang` int(11) NOT NULL,
   `jumlah` int(11) NOT NULL DEFAULT 0,
   `reserved` int(11) NOT NULL DEFAULT 0 COMMENT 'Jumlah stok yang dipesan tapi belum dikirim',
   `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id_stok`),
+  UNIQUE KEY `uniq_barang_gudang` (`id_barang`,`id_gudang`),
+  KEY `stok_gudang_ibfk_1` (`id_perusahaan`),
+  KEY `stok_gudang_ibfk_2` (`id_gudang`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel stok_awal (bergantung pada barang, gudang, perusahaan, dan user)
 CREATE TABLE `stok_awal` (
-  `id_stok_awal` int(11) NOT NULL,
+  `id_stok_awal` int(11) NOT NULL AUTO_INCREMENT,
   `id_barang` int(11) NOT NULL,
   `id_gudang` int(11) NOT NULL,
   `id_perusahaan` int(11) NOT NULL,
   `qty_awal` int(11) NOT NULL,
   `keterangan` text DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
-  `created_by` int(11) NOT NULL
+  `created_by` int(11) NOT NULL,
+  PRIMARY KEY (`id_stok_awal`),
+  KEY `fk_stok_awal_barang` (`id_barang`),
+  KEY `fk_stok_awal_gudang` (`id_gudang`),
+  KEY `fk_stok_awal_perusahaan` (`id_perusahaan`),
+  KEY `stok_awal_ibfk_4` (`created_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel approval_flow (bergantung pada role_user)
 CREATE TABLE `approval_flow` (
-  `id_approval` int(11) NOT NULL,
+  `id_approval` int(11) NOT NULL AUTO_INCREMENT,
   `tipe_transaksi` enum('pemindahan_barang','penerimaan_barang','retur_penjualan','retur_pembelian') NOT NULL,
   `status_dari` varchar(20) NOT NULL,
   `status_ke` varchar(20) NOT NULL,
   `id_role` int(11) NOT NULL,
   `urutan` int(11) NOT NULL,
-  `status_aktif` tinyint(1) DEFAULT 1
+  `status_aktif` tinyint(1) DEFAULT 1,
+  PRIMARY KEY (`id_approval`),
+  KEY `tipe_transaksi` (`tipe_transaksi`),
+  KEY `id_role` (`id_role`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel hak_akses_menu (bergantung pada role_user dan menu)
 CREATE TABLE `hak_akses_menu` (
-  `id_hak_akses` int(11) NOT NULL,
+  `id_hak_akses` int(11) NOT NULL AUTO_INCREMENT,
   `id_role` int(11) NOT NULL,
   `id_menu` int(11) NOT NULL,
   `can_view` tinyint(1) NOT NULL DEFAULT 0,
   `can_create` tinyint(1) NOT NULL DEFAULT 0,
   `can_edit` tinyint(1) NOT NULL DEFAULT 0,
-  `can_delete` tinyint(1) NOT NULL DEFAULT 0
+  `can_delete` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id_hak_akses`),
+  UNIQUE KEY `uniq_role_menu` (`id_role`,`id_menu`),
+  KEY `hak_akses_menu_ibfk_2` (`id_menu`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel pemindahan_barang (menggantikan penjualan dan transfer_stok)
 CREATE TABLE `pemindahan_barang` (
-  `id_pemindahan` int(11) NOT NULL,
+  `id_pemindahan` int(11) NOT NULL AUTO_INCREMENT,
   `id_perusahaan` int(11) NOT NULL,
   `no_transaksi` varchar(50) DEFAULT NULL,
   `id_user` int(11) NOT NULL,
@@ -306,17 +394,25 @@ CREATE TABLE `pemindahan_barang` (
   `tipe_tujuan` enum('gudang','pelanggan') NOT NULL,
   `id_gudang_tujuan` int(11) DEFAULT NULL,
   `id_pelanggan` int(11) DEFAULT NULL,
+  `id_konsumen` int(11) DEFAULT NULL,
   `tanggal_pemindahan` datetime NOT NULL,
   `keterangan` text DEFAULT NULL,
   `status` enum('Draft','Packing','Shipping','Delivered','Cancelled') DEFAULT 'Draft',
   `deleted_at` datetime DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT NULL
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id_pemindahan`),
+  KEY `id_perusahaan` (`id_perusahaan`),
+  KEY `id_user` (`id_user`),
+  KEY `id_gudang_asal` (`id_gudang_asal`),
+  KEY `id_gudang_tujuan` (`id_gudang_tujuan`),
+  KEY `id_pelanggan` (`id_pelanggan`),
+  KEY `id_konsumen` (`id_konsumen`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel penerimaan_barang (bergantung pada user, supplier, dan gudang)
 CREATE TABLE `penerimaan_barang` (
-  `id_penerimaan` int(11) NOT NULL,
+  `id_penerimaan` int(11) NOT NULL AUTO_INCREMENT,
   `no_penerimaan` varchar(50) DEFAULT NULL,
   `id_user` int(11) NOT NULL,
   `id_supplier` int(11) NOT NULL,
@@ -325,12 +421,16 @@ CREATE TABLE `penerimaan_barang` (
   `keterangan` text DEFAULT NULL,
   `status` enum('Draft','Received','Completed','Cancelled') DEFAULT 'Draft',
   `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id_penerimaan`),
+  KEY `id_user` (`id_user`),
+  KEY `id_supplier` (`id_supplier`),
+  KEY `id_gudang` (`id_gudang`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel packing (bergantung pada user)
 CREATE TABLE `packing` (
-  `id_packing` int(11) NOT NULL,
+  `id_packing` int(11) NOT NULL AUTO_INCREMENT,
   `id_referensi` int(11) NOT NULL COMMENT 'ID dari transaksi terkait (pemindahan_barang)',
   `tipe_referensi` enum('pemindahan_barang') NOT NULL,
   `id_user` int(11) NOT NULL,
@@ -338,24 +438,30 @@ CREATE TABLE `packing` (
   `status` enum('Draft','Packing','Completed','Cancelled') DEFAULT 'Draft',
   `catatan` text DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id_packing`),
+  KEY `id_referensi` (`id_referensi`),
+  KEY `id_user` (`id_user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel retur_penjualan (bergantung pada pemindahan_barang dan user)
 CREATE TABLE `retur_penjualan` (
-  `id_retur` int(11) NOT NULL,
+  `id_retur` int(11) NOT NULL AUTO_INCREMENT,
   `no_retur` varchar(50) DEFAULT NULL,
   `id_pemindahan` int(11) NOT NULL,
   `id_user` int(11) NOT NULL,
   `tanggal_retur` datetime NOT NULL,
   `alasan_retur` text NOT NULL,
   `status` enum('Requested','Verification','Approved','Rejected','Completed') DEFAULT 'Requested',
-  `created_at` datetime DEFAULT current_timestamp()
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_retur`),
+  KEY `id_pemindahan` (`id_pemindahan`),
+  KEY `id_user` (`id_user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel retur_pembelian (bergantung pada penerimaan_barang, user, dan supplier)
 CREATE TABLE `retur_pembelian` (
-  `id_retur_beli` int(11) NOT NULL,
+  `id_retur_beli` int(11) NOT NULL AUTO_INCREMENT,
   `no_retur_beli` varchar(50) DEFAULT NULL,
   `id_penerimaan` int(11) NOT NULL,
   `id_user` int(11) NOT NULL,
@@ -364,67 +470,90 @@ CREATE TABLE `retur_pembelian` (
   `alasan_retur` text NOT NULL,
   `status` enum('Requested','Verification','Approved','Rejected','Completed') DEFAULT 'Requested',
   `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id_retur_beli`),
+  KEY `id_penerimaan` (`id_penerimaan`),
+  KEY `id_user` (`id_user`),
+  KEY `id_supplier` (`id_supplier`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel detail_pemindahan_barang (bergantung pada pemindahan_barang, barang, dan gudang)
 CREATE TABLE `detail_pemindahan_barang` (
-  `id_detail` int(11) NOT NULL,
+  `id_detail` int(11) NOT NULL AUTO_INCREMENT,
   `id_pemindahan` int(11) NOT NULL,
   `id_barang` int(11) NOT NULL,
   `id_gudang` int(11) NOT NULL,
   `jumlah` int(11) NOT NULL,
-  `created_at` datetime DEFAULT current_timestamp()
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_detail`),
+  KEY `id_pemindahan` (`id_pemindahan`),
+  KEY `id_barang` (`id_barang`),
+  KEY `id_gudang` (`id_gudang`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel detail_penerimaan (bergantung pada penerimaan_barang, barang, dan gudang)
 CREATE TABLE `detail_penerimaan` (
-  `id_detail` int(11) NOT NULL,
+  `id_detail` int(11) NOT NULL AUTO_INCREMENT,
   `id_penerimaan` int(11) NOT NULL,
   `id_barang` int(11) NOT NULL,
   `jumlah_diterima` int(11) NOT NULL,
   `jumlah_dipesan` int(11) DEFAULT NULL,
   `id_gudang` int(11) NOT NULL,
   `keterangan` text DEFAULT NULL,
-  `created_at` datetime DEFAULT current_timestamp()
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_detail`),
+  KEY `id_penerimaan` (`id_penerimaan`),
+  KEY `id_barang` (`id_barang`),
+  KEY `id_gudang` (`id_gudang`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel detail_packing (bergantung pada packing dan barang)
 CREATE TABLE `detail_packing` (
-  `id_detail` int(11) NOT NULL,
+  `id_detail` int(11) NOT NULL AUTO_INCREMENT,
   `id_packing` int(11) NOT NULL,
   `id_barang` int(11) NOT NULL,
   `jumlah` int(11) NOT NULL,
-  `created_at` datetime DEFAULT current_timestamp()
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_detail`),
+  KEY `id_packing` (`id_packing`),
+  KEY `id_barang` (`id_barang`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel detail_retur_penjualan (bergantung pada retur_penjualan, barang, dan gudang)
 CREATE TABLE `detail_retur_penjualan` (
-  `id_detail_retur` int(11) NOT NULL,
+  `id_detail_retur` int(11) NOT NULL AUTO_INCREMENT,
   `id_retur` int(11) NOT NULL,
   `id_barang` int(11) NOT NULL,
   `id_gudang` int(11) NOT NULL,
   `jumlah_retur` int(11) NOT NULL,
   `jumlah_disetujui` int(11) DEFAULT 0 COMMENT 'Jumlah yang disetujui untuk retur',
   `alasan_barang` text DEFAULT NULL,
-  `created_at` datetime DEFAULT current_timestamp()
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_detail_retur`),
+  KEY `id_retur` (`id_retur`),
+  KEY `id_barang` (`id_barang`),
+  KEY `id_gudang` (`id_gudang`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel detail_retur_pembelian (bergantung pada retur_pembelian, barang, dan gudang)
 CREATE TABLE `detail_retur_pembelian` (
-  `id_detail_retur_beli` int(11) NOT NULL,
+  `id_detail_retur_beli` int(11) NOT NULL AUTO_INCREMENT,
   `id_retur_beli` int(11) NOT NULL,
   `id_barang` int(11) NOT NULL,
   `id_gudang` int(11) NOT NULL,
   `jumlah_retur` int(11) NOT NULL,
   `jumlah_disetujui` int(11) DEFAULT 0 COMMENT 'Jumlah yang disetujui untuk retur',
   `alasan_barang` text DEFAULT NULL,
-  `created_at` datetime DEFAULT current_timestamp()
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_detail_retur_beli`),
+  KEY `id_retur_beli` (`id_retur_beli`),
+  KEY `id_barang` (`id_barang`),
+  KEY `id_gudang` (`id_gudang`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel log_stok (bergantung pada barang, user, perusahaan, dan gudang)
 CREATE TABLE `log_stok` (
-  `id_log` int(11) NOT NULL,
+  `id_log` int(11) NOT NULL AUTO_INCREMENT,
   `id_barang` int(11) NOT NULL,
   `id_user` int(11) DEFAULT NULL,
   `id_perusahaan` int(11) NOT NULL,
@@ -435,18 +564,29 @@ CREATE TABLE `log_stok` (
   `keterangan` text DEFAULT NULL,
   `tanggal` datetime DEFAULT current_timestamp(),
   `id_referensi` int(11) DEFAULT NULL COMMENT 'ID transaksi terkait (pemindahan_barang/penerimaan_barang/retur)',
-  `tipe_referensi` enum('pemindahan_barang','penerimaan_barang','retur_penjualan','retur_pembelian','penyesuaian') DEFAULT NULL
+  `tipe_referensi` enum('pemindahan_barang','penerimaan_barang','retur_penjualan','retur_pembelian','penyesuaian') DEFAULT NULL,
+  PRIMARY KEY (`id_log`),
+  KEY `idx_barang` (`id_barang`),
+  KEY `idx_gudang` (`id_gudang`),
+  KEY `idx_perusahaan` (`id_perusahaan`),
+  KEY `idx_referensi` (`id_referensi`),
+  KEY `idx_tipe_referensi` (`tipe_referensi`),
+  KEY `log_stok_ibfk_2` (`id_user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel log_status_transaksi (bergantung pada user)
 CREATE TABLE `log_status_transaksi` (
-  `id_log` int(11) NOT NULL,
+  `id_log` int(11) NOT NULL AUTO_INCREMENT,
   `id_transaksi` int(11) NOT NULL,
   `tipe_transaksi` enum('pemindahan_barang','penerimaan_barang','retur_penjualan','retur_pembelian','packing') NOT NULL,
   `id_user` int(11) NOT NULL,
   `status` varchar(20) NOT NULL,
   `tanggal` datetime NOT NULL DEFAULT current_timestamp(),
-  `keterangan` text DEFAULT NULL
+  `keterangan` text DEFAULT NULL,
+  PRIMARY KEY (`id_log`),
+  KEY `id_transaksi` (`id_transaksi`),
+  KEY `id_user` (`id_user`),
+  KEY `tipe_transaksi` (`tipe_transaksi`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- View v_stok_realtime (bergantung pada stok_gudang, barang, gudang, dan perusahaan)
@@ -467,12 +607,12 @@ JOIN `gudang` `g` ON(`sg`.`id_gudang` = `g`.`id_gudang`))
 JOIN `perusahaan` `p` ON(`sg`.`id_perusahaan` = `p`.`id_perusahaan`)) 
 WHERE `b`.`status_aktif` = 1 AND `g`.`status_aktif` = 1 AND `p`.`status_aktif` = 1;
 
--- Data untuk tabel perusahaan
+-- Insert data untuk tabel perusahaan
 INSERT INTO `perusahaan` (`id_perusahaan`, `nama_perusahaan`, `alamat`, `telepon`, `email`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 'PT. Maju Bersama', 'Jl. Sudirman No. 10, Jakarta', '021-12345678', '', 1, NULL, '2025-09-15 22:53:59', '2025-09-17 12:09:24'),
+(1, 'PT. MGV MOTORINDO', 'Jl. Sudirman No. 10, Jakarta', '021-12345678', '', 1, NULL, '2025-09-15 22:53:59', '2025-09-17 12:09:24'),
 (2, 'PT. Sukses Sejahtera', 'Jl. Thamrin No. 5, Jakarta', '021-87654321', '', 1, NULL, '2025-09-16 10:15:30', NULL);
 
--- Data untuk tabel role_user
+-- Insert data untuk tabel role_user
 INSERT INTO `role_user` (`id_role`, `nama_role`, `deskripsi`) VALUES
 (1, 'Super Admin', 'Mengelola semua perusahaan'),
 (2, 'Admin Perusahaan', 'Mengelola seluruh data dan transaksi dalam lingkup perusahaannya'),
@@ -480,9 +620,39 @@ INSERT INTO `role_user` (`id_role`, `nama_role`, `deskripsi`) VALUES
 (4, 'Admin Packing', 'Menangani proses packing, pengiriman, dan konfirmasi barang sampai'),
 (5, 'Admin Return', 'Memproses verifikasi dan approval retur barang');
 
--- Data untuk tabel menu (disesuaikan dengan struktur menu yang diinginkan)
+-- Insert data untuk tabel menu
 INSERT INTO `menu` (`id_menu`, `nama_menu`, `url`, `permission`, `icon`, `deskripsi`, `urutan`, `id_parent`, `status_aktif`, `tipe`) VALUES
-(1, 'Dashboard', 'dashboard', NULL, 'fas fa-tachometer-alt', NULL, 1, NULL, 1, 'menu'), (2, 'Setup', '#', NULL, 'fas fa-database', NULL, 2, NULL, 1, 'menu'), (3, 'Perusahaan', 'setup/perusahaan', NULL, 'fas fa-building', NULL, 1, 2, 1, 'submenu'), (4, 'Kategori Barang', 'setup/kategori', NULL, 'fas fa-tags', NULL, 2, 2, 1, 'submenu'), (5, 'Barang', 'setup/barang', NULL, 'fas fa-box', NULL, 3, 2, 1, 'submenu'), (6, 'Gudang', 'setup/gudang', NULL, 'fas fa-warehouse', NULL, 4, 2, 1, 'submenu'), (7, 'Pelanggan', 'setup/pelanggan', NULL, 'fas fa-users', NULL, 5, 2, 1, 'submenu'), (8, 'Supplier', 'setup/supplier', NULL, 'fas fa-truck', NULL, 6, 2, 1, 'submenu'), (9, 'Sales', 'setup/user/sales', NULL, 'fas fa-user-tag', NULL, 7, 2, 1, 'submenu'), (10, 'Admin Packing', 'setup/user/packing', NULL, 'fas fa-user-cog', NULL, 8, 2, 1, 'submenu'), (11, 'Aktifitas', '#', NULL, 'fas fa-exchange-alt', NULL, 3, NULL, 1, 'menu'), (12, 'Pemindahan Barang', 'aktifitas/pemindahan', NULL, 'fas fa-truck-loading', NULL, 1, 11, 1, 'submenu'), (13, 'Penerimaan Barang', 'aktifitas/penerimaan', NULL, 'fas fa-clipboard-check', NULL, 2, 11, 1, 'submenu'), (14, 'Retur Penjualan', 'aktifitas/retur_penjualan', NULL, 'fas fa-undo-alt', NULL, 3, 11, 1, 'submenu'), (15, 'Retur Pembelian', 'aktifitas/retur_pembelian', NULL, 'fas fa-undo', NULL, 4, 11, 1, 'submenu'), (16, 'Daftar', '#', NULL, 'fas fa-list', NULL, 4, NULL, 1, 'menu'), (17, 'Pemindahan Barang', 'daftar/pemindahan', NULL, 'fas fa-truck', NULL, 1, 16, 1, 'submenu'), (18, 'Penerimaan Barang', 'daftar/penerimaan', NULL, 'fas fa-clipboard-list', NULL, 2, 16, 1, 'submenu'), (19, 'Retur Penjualan', 'daftar/retur_penjualan', NULL, 'fas fa-undo-alt', NULL, 3, 16, 1, 'submenu'), (20, 'Retur Pembelian', 'daftar/retur_pembelian', NULL, 'fas fa-undo', NULL, 4, 16, 1, 'submenu'), (21, 'Laporan', '#', NULL, 'fas fa-chart-bar', NULL, 5, NULL, 1, 'menu'), (22, 'Sales', 'laporan/sales', NULL, 'fas fa-chart-line', NULL, 1, 21, 1, 'submenu'), (23, 'Packing', 'laporan/packing', NULL, 'fas fa-boxes', NULL, 2, 21, 1, 'submenu'), (24, 'Mutasi Barang', 'laporan/mutasi', NULL, 'fas fa-exchange-alt', NULL, 3, 21, 1, 'submenu'), (25, 'Ringkasan Stok', 'laporan/summary', NULL, 'fas fa-file-invoice-dollar', NULL, 4, 21, 1, 'submenu'), (26, 'Pengaturan', '#', NULL, 'fas fa-cog', NULL, 6, NULL, 1, 'menu'), (27, 'Stok Awal', 'pengaturan/stok_awal', NULL, 'fas fa-dolly-flatbed', NULL, 1, 26, 1, 'submenu'), (28, 'Hak Akses', 'pengaturan/hak_akses', NULL, 'fas fa-user-shield', NULL, 2, 26, 1, 'submenu'), (29, 'Approval Flow', 'pengaturan/approval', NULL, 'fas fa-tasks', NULL, 3, 26, 1, 'submenu'), (30, 'Pengaturan Sistem', 'pengaturan/sistem', NULL, 'fas fa-sliders-h', NULL, 4, 26, 1, 'submenu');
+(1, 'Dashboard', 'dashboard', NULL, 'fas fa-tachometer-alt', NULL, 1, NULL, 1, 'menu'), 
+(2, 'Setup', '#', NULL, 'fas fa-database', NULL, 2, NULL, 1, 'menu'), 
+(3, 'Perusahaan', 'setup/perusahaan', NULL, 'fas fa-building', NULL, 1, 2, 1, 'submenu'), 
+(4, 'Kategori Barang', 'setup/kategori', NULL, 'fas fa-tags', NULL, 2, 2, 1, 'submenu'), 
+(5, 'Barang', 'setup/barang', NULL, 'fas fa-box', NULL, 3, 2, 1, 'submenu'), 
+(6, 'Gudang', 'setup/gudang', NULL, 'fas fa-warehouse', NULL, 4, 2, 1, 'submenu'), 
+(7, 'Pelanggan', 'setup/pelanggan', NULL, 'fas fa-users', NULL, 5, 2, 1, 'submenu'), 
+(8, 'Supplier', 'setup/supplier', NULL, 'fas fa-truck', NULL, 6, 2, 1, 'submenu'), 
+(9, 'Sales', 'setup/user/sales', NULL, 'fas fa-user-tag', NULL, 7, 2, 1, 'submenu'), 
+(10, 'Admin Packing', 'setup/user/packing', NULL, 'fas fa-user-cog', NULL, 8, 2, 1, 'submenu'), 
+(11, 'Aktifitas', '#', NULL, 'fas fa-exchange-alt', NULL, 3, NULL, 1, 'menu'), 
+(12, 'Pemindahan Barang', 'aktifitas/pemindahan', NULL, 'fas fa-truck-loading', NULL, 1, 11, 1, 'submenu'), 
+(13, 'Penerimaan Barang', 'aktifitas/penerimaan', NULL, 'fas fa-clipboard-check', NULL, 2, 11, 1, 'submenu'), 
+(14, 'Retur Penjualan', 'aktifitas/retur_penjualan', NULL, 'fas fa-undo-alt', NULL, 3, 11, 1, 'submenu'), 
+(15, 'Retur Pembelian', 'aktifitas/retur_pembelian', NULL, 'fas fa-undo', NULL, 4, 11, 1, 'submenu'), 
+(16, 'Daftar', '#', NULL, 'fas fa-list', NULL, 4, NULL, 1, 'menu'), 
+(17, 'Pemindahan Barang', 'daftar/pemindahan', NULL, 'fas fa-truck', NULL, 1, 16, 1, 'submenu'), 
+(18, 'Penerimaan Barang', 'daftar/penerimaan', NULL, 'fas fa-clipboard-list', NULL, 2, 16, 1, 'submenu'), 
+(19, 'Retur Penjualan', 'daftar/retur_penjualan', NULL, 'fas fa-undo-alt', NULL, 3, 16, 1, 'submenu'), 
+(20, 'Retur Pembelian', 'daftar/retur_pembelian', NULL, 'fas fa-undo', NULL, 4, 16, 1, 'submenu'), 
+(21, 'Laporan', '#', NULL, 'fas fa-chart-bar', NULL, 5, NULL, 1, 'menu'), 
+(22, 'Sales', 'laporan/sales', NULL, 'fas fa-chart-line', NULL, 1, 21, 1, 'submenu'), 
+(23, 'Packing', 'laporan/packing', NULL, 'fas fa-boxes', NULL, 2, 21, 1, 'submenu'), 
+(24, 'Mutasi Barang', 'laporan/mutasi', NULL, 'fas fa-exchange-alt', NULL, 3, 21, 1, 'submenu'), 
+(25, 'Ringkasan Stok', 'laporan/summary', NULL, 'fas fa-file-invoice-dollar', NULL, 4, 21, 1, 'submenu'), 
+(26, 'Pengaturan', '#', NULL, 'fas fa-cog', NULL, 6, NULL, 1, 'menu'), 
+(27, 'Stok Awal', 'pengaturan/stok_awal', NULL, 'fas fa-dolly-flatbed', NULL, 1, 26, 1, 'submenu'), 
+(28, 'Hak Akses', 'pengaturan/hak_akses', NULL, 'fas fa-user-shield', NULL, 2, 26, 1, 'submenu'), 
+(29, 'Approval Flow', 'pengaturan/approval', NULL, 'fas fa-tasks', NULL, 3, 26, 1, 'submenu'), 
+(30, 'Pengaturan Sistem', 'pengaturan/sistem', NULL, 'fas fa-sliders-h', NULL, 4, 26, 1, 'submenu');
+
 
 -- Data untuk tabel user
 INSERT INTO `user` (`id_user`, `nama`, `username`, `password_hash`, `id_role`, `id_perusahaan`, `email`, `telepon`, `created_by`, `aktif`, `created_at`, `updated_at`, `last_login`, `foto_profil`, `remember_token`, `token_expires`) VALUES
@@ -494,7 +664,7 @@ INSERT INTO `user` (`id_user`, `nama`, `username`, `password_hash`, `id_role`, `
 
 -- Data untuk tabel kategori
 INSERT INTO `kategori` (`id_kategori`, `id_perusahaan`, `nama_kategori`, `deskripsi`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 1, 'Elektronik', 'Barang elektronik', 1, NULL, '2025-09-18 00:28:37', NULL),
+(1, 1, 'Shock', 'Shockbreaker motor', 1, NULL, '2025-09-18 00:28:37', NULL),
 (2, 1, 'Furniture', 'Barang furniture', 1, NULL, '2025-09-18 09:45:12', NULL),
 (3, 2, 'Tekstil', 'Barang tekstil', 1, NULL, '2025-09-18 11:20:45', NULL);
 
@@ -514,15 +684,6 @@ INSERT INTO `pelanggan` (`id_pelanggan`, `id_perusahaan`, `nama_pelanggan`, `ala
 INSERT INTO `supplier` (`id_supplier`, `id_perusahaan`, `nama_supplier`, `alamat`, `telepon`, `email`, `kontak_person`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES
 (1, 1, 'PT. Elektronik Indah', 'Jl. Gatot Subroto No. 25', '02112345682', 'info@elektronik.com', 'Budi', 1, NULL, '2025-09-19 10:17:53', '2025-09-19 10:18:02'),
 (2, 2, 'PT. Tekstil Makmur', 'Jl. Sudirman No. 30', '02187654324', 'info@tekstil.com', 'Siti', 1, NULL, '2025-09-19 14:20:15', NULL);
-
--- Data untuk tabel barang
-INSERT INTO `barang` (`id_barang`, `id_perusahaan`, `id_kategori`, `nama_barang`, `gambar`, `sku`, `deskripsi`, `satuan`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 1, 1, 'Laptop', '1758329220_laptop.png', 'LP001', 'Laptop core i5', 'unit', 1, NULL, '2025-09-20 02:47:00', '2025-09-20 02:47:00'),
-(2, 1, 1, 'Smartphone', '1758338930_phone.png', 'HP001', 'Smartphone Android', 'unit', 1, NULL, '2025-09-20 05:28:57', '2025-09-20 05:28:57'),
-(3, 1, 2, 'Meja Kantor', '1758339040_meja.png', 'MK001', 'Meja kantor ukuran 120x60cm', 'unit', 1, NULL, '2025-09-20 05:30:43', '2025-09-20 05:30:43'),
-(4, 2, 3, 'Kain Batik', '1758339350_batik.png', 'KB001', 'Kain batik premium', 'meter', 1, NULL, '2025-09-20 05:35:57', '2025-09-20 05:35:57'),
-(5, 2, 3, 'Kain Katun', '1758339770_katun.jpg', 'KK001', 'Kain katun halus', 'meter', 1, NULL, '2025-09-20 05:42:55', '2025-09-20 05:42:55');
-
 -- Data untuk tabel approval_flow
 INSERT INTO `approval_flow` (`id_approval`, `tipe_transaksi`, `status_dari`, `status_ke`, `id_role`, `urutan`, `status_aktif`) VALUES
 (1, 'pemindahan_barang', 'Draft', 'Packing', 4, 1, 1), (2, 'pemindahan_barang', 'Packing', 'Shipping', 4, 2, 1), (3, 'pemindahan_barang', 'Shipping', 'Delivered', 4, 3, 1), (4, 'pemindahan_barang', 'Draft', 'Cancelled', 4, 4, 1), (5, 'pemindahan_barang', 'Packing', 'Cancelled', 4, 5, 1), (6, 'pemindahan_barang', 'Shipping', 'Cancelled', 4, 6, 1), (7, 'penerimaan_barang', 'Draft', 'Received', 2, 1, 1), (8, 'penerimaan_barang', 'Received', 'Completed', 2, 2, 1), (9, 'penerimaan_barang', 'Draft', 'Cancelled', 2, 3, 1), (10, 'penerimaan_barang', 'Received', 'Cancelled', 2, 4, 1), (11, 'retur_penjualan', 'Requested', 'Verification', 5, 1, 1), (12, 'retur_penjualan', 'Verification', 'Approved', 5, 2, 1), (13, 'retur_penjualan', 'Verification', 'Rejected', 5, 3, 1), (14, 'retur_penjualan', 'Approved', 'Completed', 5, 4, 1), (15, 'retur_pembelian', 'Requested', 'Verification', 5, 1, 1), (16, 'retur_pembelian', 'Verification', 'Approved', 5, 2, 1), (17, 'retur_pembelian', 'Verification', 'Rejected', 5, 3, 1), (18, 'retur_pembelian', 'Approved', 'Completed', 5, 4, 1);
@@ -544,365 +705,6 @@ INSERT INTO `hak_akses_menu` (`id_hak_akses`, `id_role`, `id_menu`, `can_view`, 
 -- Admin Return (id_role = 5) - Bisa memproses retur
 (80, 5, 1, 1, 0, 0, 0), (81, 5, 11, 1, 0, 0, 0), (82, 5, 13, 1, 0, 0, 0), (83, 5, 14, 1, 1, 1, 0), (84, 5, 15, 1, 1, 1, 0), (85, 5, 16, 1, 0, 0, 0), (86, 5, 19, 1, 1, 1, 0), (87, 5, 20, 1, 1, 1, 0), (88, 5, 21, 1, 1, 0, 0);
 
--- Indexes dan constraints untuk semua tabel
-ALTER TABLE `approval_flow`
-  ADD PRIMARY KEY (`id_approval`),
-  ADD KEY `tipe_transaksi` (`tipe_transaksi`),
-  ADD KEY `id_role` (`id_role`);
-
-ALTER TABLE `barang`
-  ADD PRIMARY KEY (`id_barang`),
-  ADD UNIQUE KEY `uniq_sku_perusahaan` (`id_perusahaan`,`sku`),
-  ADD KEY `id_kategori` (`id_kategori`);
-
-ALTER TABLE `detail_packing`
-  ADD PRIMARY KEY (`id_detail`),
-  ADD KEY `id_packing` (`id_packing`),
-  ADD KEY `id_barang` (`id_barang`);
-
-ALTER TABLE `detail_penerimaan`
-  ADD PRIMARY KEY (`id_detail`),
-  ADD KEY `id_penerimaan` (`id_penerimaan`),
-  ADD KEY `id_barang` (`id_barang`),
-  ADD KEY `id_gudang` (`id_gudang`);
-
-ALTER TABLE `detail_pemindahan_barang`
-  ADD PRIMARY KEY (`id_detail`),
-  ADD KEY `id_pemindahan` (`id_pemindahan`),
-  ADD KEY `id_barang` (`id_barang`),
-  ADD KEY `id_gudang` (`id_gudang`);
-
-ALTER TABLE `detail_retur_pembelian`
-  ADD PRIMARY KEY (`id_detail_retur_beli`),
-  ADD KEY `id_retur_beli` (`id_retur_beli`),
-  ADD KEY `id_barang` (`id_barang`),
-  ADD KEY `id_gudang` (`id_gudang`);
-
-ALTER TABLE `detail_retur_penjualan`
-  ADD PRIMARY KEY (`id_detail_retur`),
-  ADD KEY `id_retur` (`id_retur`),
-  ADD KEY `id_barang` (`id_barang`),
-  ADD KEY `id_gudang` (`id_gudang`);
-
-ALTER TABLE `gudang`
-  ADD PRIMARY KEY (`id_gudang`),
-  ADD KEY `id_perusahaan` (`id_perusahaan`),
-  ADD KEY `gudang_ibfk_2` (`created_by`);
-
-ALTER TABLE `hak_akses_menu`
-  ADD PRIMARY KEY (`id_hak_akses`),
-  ADD UNIQUE KEY `uniq_role_menu` (`id_role`,`id_menu`),
-  ADD KEY `hak_akses_menu_ibfk_2` (`id_menu`);
-
-ALTER TABLE `kategori`
-  ADD PRIMARY KEY (`id_kategori`),
-  ADD UNIQUE KEY `uniq_kategori_perusahaan` (`id_perusahaan`,`nama_kategori`);
-
-ALTER TABLE `log_status_transaksi`
-  ADD PRIMARY KEY (`id_log`),
-  ADD KEY `id_transaksi` (`id_transaksi`),
-  ADD KEY `id_user` (`id_user`),
-  ADD KEY `tipe_transaksi` (`tipe_transaksi`);
-
-ALTER TABLE `log_stok`
-  ADD PRIMARY KEY (`id_log`),
-  ADD KEY `idx_barang` (`id_barang`),
-  ADD KEY `idx_gudang` (`id_gudang`),
-  ADD KEY `idx_perusahaan` (`id_perusahaan`),
-  ADD KEY `idx_referensi` (`id_referensi`),
-  ADD KEY `idx_tipe_referensi` (`tipe_referensi`),
-  ADD KEY `log_stok_ibfk_2` (`id_user`);
-
-ALTER TABLE `menu`
-  ADD PRIMARY KEY (`id_menu`),
-  ADD KEY `id_parent` (`id_parent`);
-
-ALTER TABLE `packing`
-  ADD PRIMARY KEY (`id_packing`),
-  ADD KEY `id_referensi` (`id_referensi`),
-  ADD KEY `id_user` (`id_user`);
-
-ALTER TABLE `pelanggan`
-  ADD PRIMARY KEY (`id_pelanggan`),
-  ADD KEY `pelanggan_ibfk_1` (`id_perusahaan`),
-  ADD KEY `id_sales` (`id_sales`);
-
-ALTER TABLE `penerimaan_barang`
-  ADD PRIMARY KEY (`id_penerimaan`),
-  ADD KEY `id_user` (`id_user`),
-  ADD KEY `id_supplier` (`id_supplier`),
-  ADD KEY `id_gudang` (`id_gudang`);
-
-ALTER TABLE `pemindahan_barang`
-  ADD PRIMARY KEY (`id_pemindahan`),
-  ADD KEY `id_perusahaan` (`id_perusahaan`),
-  ADD KEY `id_user` (`id_user`),
-  ADD KEY `id_gudang_asal` (`id_gudang_asal`),
-  ADD KEY `id_gudang_tujuan` (`id_gudang_tujuan`),
-  ADD KEY `id_pelanggan` (`id_pelanggan`);
-
-ALTER TABLE `pengaturan_sistem`
-  ADD PRIMARY KEY (`id_pengaturan`),
-  ADD UNIQUE KEY `uniq_key` (`key`);
-
-ALTER TABLE `perusahaan`
-  ADD PRIMARY KEY (`id_perusahaan`);
-
-ALTER TABLE `retur_pembelian`
-  ADD PRIMARY KEY (`id_retur_beli`),
-  ADD KEY `id_penerimaan` (`id_penerimaan`),
-  ADD KEY `id_user` (`id_user`),
-  ADD KEY `id_supplier` (`id_supplier`);
-
-ALTER TABLE `retur_penjualan`
-  ADD PRIMARY KEY (`id_retur`),
-  ADD KEY `id_pemindahan` (`id_pemindahan`),
-  ADD KEY `id_user` (`id_user`);
-
-ALTER TABLE `role_user`
-  ADD PRIMARY KEY (`id_role`);
-
-ALTER TABLE `stok_awal`
-  ADD PRIMARY KEY (`id_stok_awal`),
-  ADD KEY `fk_stok_awal_barang` (`id_barang`),
-  ADD KEY `fk_stok_awal_gudang` (`id_gudang`),
-  ADD KEY `fk_stok_awal_perusahaan` (`id_perusahaan`),
-  ADD KEY `stok_awal_ibfk_4` (`created_by`);
-
-ALTER TABLE `stok_gudang`
-  ADD PRIMARY KEY (`id_stok`),
-  ADD UNIQUE KEY `uniq_barang_gudang` (`id_barang`,`id_gudang`),
-  ADD KEY `stok_gudang_ibfk_1` (`id_perusahaan`),
-  ADD KEY `stok_gudang_ibfk_2` (`id_gudang`);
-
-ALTER TABLE `supplier`
-  ADD PRIMARY KEY (`id_supplier`),
-  ADD KEY `supplier_ibfk_1` (`id_perusahaan`);
-
-ALTER TABLE `user`
-  ADD PRIMARY KEY (`id_user`),
-  ADD UNIQUE KEY `username` (`username`),
-  ADD KEY `id_role` (`id_role`),
-  ADD KEY `id_perusahaan` (`id_perusahaan`),
-  ADD KEY `user_ibfk_3` (`created_by`);
-
--- AUTO_INCREMENT untuk semua tabel
-ALTER TABLE `approval_flow`
-  MODIFY `id_approval` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
-
-ALTER TABLE `barang`
-  MODIFY `id_barang` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
-ALTER TABLE `detail_packing`
-  MODIFY `id_detail` int(11) NOT NULL AUTO_INCREMENT;
-
-ALTER TABLE `detail_penerimaan`
-  MODIFY `id_detail` int(11) NOT NULL AUTO_INCREMENT;
-
-ALTER TABLE `detail_pemindahan_barang`
-  MODIFY `id_detail` int(11) NOT NULL AUTO_INCREMENT;
-
-ALTER TABLE `detail_retur_pembelian`
-  MODIFY `id_detail_retur_beli` int(11) NOT NULL AUTO_INCREMENT;
-
-ALTER TABLE `detail_retur_penjualan`
-  MODIFY `id_detail_retur` int(11) NOT NULL AUTO_INCREMENT;
-
-ALTER TABLE `gudang`
-  MODIFY `id_gudang` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
-ALTER TABLE `hak_akses_menu`
-  MODIFY `id_hak_akses` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=89;
-
-ALTER TABLE `kategori`
-  MODIFY `id_kategori` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
-ALTER TABLE `log_status_transaksi`
-  MODIFY `id_log` int(11) NOT NULL AUTO_INCREMENT;
-
-ALTER TABLE `log_stok`
-  MODIFY `id_log` int(11) NOT NULL AUTO_INCREMENT;
-
-ALTER TABLE `menu`
-  MODIFY `id_menu` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
-
-ALTER TABLE `packing`
-  MODIFY `id_packing` int(11) NOT NULL AUTO_INCREMENT;
-
-ALTER TABLE `pelanggan`
-  MODIFY `id_pelanggan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
-ALTER TABLE `penerimaan_barang`
-  MODIFY `id_penerimaan` int(11) NOT NULL AUTO_INCREMENT;
-
-ALTER TABLE `pemindahan_barang`
-  MODIFY `id_pemindahan` int(11) NOT NULL AUTO_INCREMENT;
-
-ALTER TABLE `pengaturan_sistem`
-  MODIFY `id_pengaturan` int(11) NOT NULL AUTO_INCREMENT;
-
-ALTER TABLE `perusahaan`
-  MODIFY `id_perusahaan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
-ALTER TABLE `retur_pembelian`
-  MODIFY `id_retur_beli` int(11) NOT NULL AUTO_INCREMENT;
-
-ALTER TABLE `retur_penjualan`
-  MODIFY `id_retur` int(11) NOT NULL AUTO_INCREMENT;
-
-ALTER TABLE `role_user`
-  MODIFY `id_role` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
-ALTER TABLE `stok_awal`
-  MODIFY `id_stok_awal` int(11) NOT NULL AUTO_INCREMENT;
-
-ALTER TABLE `stok_gudang`
-  MODIFY `id_stok` int(11) NOT NULL AUTO_INCREMENT;
-
-ALTER TABLE `supplier`
-  MODIFY `id_supplier` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
-ALTER TABLE `user`
-  MODIFY `id_user` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
--- Constraints untuk semua tabel
-ALTER TABLE `approval_flow`
-  ADD CONSTRAINT `approval_flow_ibfk_1` FOREIGN KEY (`id_role`) REFERENCES `role_user` (`id_role`);
-
-ALTER TABLE `barang`
-  ADD CONSTRAINT `barang_ibfk_1` FOREIGN KEY (`id_kategori`) REFERENCES `kategori` (`id_kategori`),
-  ADD CONSTRAINT `barang_ibfk_2` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`);
-
-ALTER TABLE `detail_packing`
-  ADD CONSTRAINT `detail_packing_ibfk_1` FOREIGN KEY (`id_packing`) REFERENCES `packing` (`id_packing`),
-  ADD CONSTRAINT `detail_packing_ibfk_2` FOREIGN KEY (`id_barang`) REFERENCES `barang` (`id_barang`);
-
-ALTER TABLE `detail_penerimaan`
-  ADD CONSTRAINT `detail_penerimaan_ibfk_1` FOREIGN KEY (`id_penerimaan`) REFERENCES `penerimaan_barang` (`id_penerimaan`),
-  ADD CONSTRAINT `detail_penerimaan_ibfk_2` FOREIGN KEY (`id_barang`) REFERENCES `barang` (`id_barang`),
-  ADD CONSTRAINT `detail_penerimaan_ibfk_3` FOREIGN KEY (`id_gudang`) REFERENCES `gudang` (`id_gudang`);
-
-ALTER TABLE `detail_pemindahan_barang`
-  ADD CONSTRAINT `detail_pemindahan_barang_ibfk_1` FOREIGN KEY (`id_pemindahan`) REFERENCES `pemindahan_barang` (`id_pemindahan`),
-  ADD CONSTRAINT `detail_pemindahan_barang_ibfk_2` FOREIGN KEY (`id_barang`) REFERENCES `barang` (`id_barang`),
-  ADD CONSTRAINT `detail_pemindahan_barang_ibfk_3` FOREIGN KEY (`id_gudang`) REFERENCES `gudang` (`id_gudang`);
-
-ALTER TABLE `detail_retur_pembelian`
-  ADD CONSTRAINT `detail_retur_pembelian_ibfk_1` FOREIGN KEY (`id_retur_beli`) REFERENCES `retur_pembelian` (`id_retur_beli`),
-  ADD CONSTRAINT `detail_retur_pembelian_ibfk_2` FOREIGN KEY (`id_barang`) REFERENCES `barang` (`id_barang`),
-  ADD CONSTRAINT `detail_retur_pembelian_ibfk_3` FOREIGN KEY (`id_gudang`) REFERENCES `gudang` (`id_gudang`);
-
-ALTER TABLE `detail_retur_penjualan`
-  ADD CONSTRAINT `detail_retur_penjualan_ibfk_1` FOREIGN KEY (`id_retur`) REFERENCES `retur_penjualan` (`id_retur`),
-  ADD CONSTRAINT `detail_retur_penjualan_ibfk_2` FOREIGN KEY (`id_barang`) REFERENCES `barang` (`id_barang`),
-  ADD CONSTRAINT `detail_retur_penjualan_ibfk_3` FOREIGN KEY (`id_gudang`) REFERENCES `gudang` (`id_gudang`);
-
-ALTER TABLE `gudang`
-  ADD CONSTRAINT `gudang_ibfk_1` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`),
-  ADD CONSTRAINT `gudang_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `user` (`id_user`);
-
-ALTER TABLE `hak_akses_menu`
-  ADD CONSTRAINT `hak_akses_menu_ibfk_1` FOREIGN KEY (`id_role`) REFERENCES `role_user` (`id_role`),
-  ADD CONSTRAINT `hak_akses_menu_ibfk_2` FOREIGN KEY (`id_menu`) REFERENCES `menu` (`id_menu`);
-
-ALTER TABLE `kategori`
-  ADD CONSTRAINT `kategori_ibfk_1` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`);
-
-ALTER TABLE `log_status_transaksi`
-  ADD CONSTRAINT `log_status_transaksi_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`);
-
-ALTER TABLE `log_stok`
-  ADD CONSTRAINT `log_stok_ibfk_1` FOREIGN KEY (`id_barang`) REFERENCES `barang` (`id_barang`),
-  ADD CONSTRAINT `log_stok_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`),
-  ADD CONSTRAINT `log_stok_ibfk_3` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`),
-  ADD CONSTRAINT `log_stok_ibfk_4` FOREIGN KEY (`id_gudang`) REFERENCES `gudang` (`id_gudang`);
-
-ALTER TABLE `menu`
-  ADD CONSTRAINT `menu_ibfk_1` FOREIGN KEY (`id_parent`) REFERENCES `menu` (`id_menu`);
-
-ALTER TABLE `packing`
-  ADD CONSTRAINT `packing_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`);
-
-ALTER TABLE `pelanggan`
-  ADD CONSTRAINT `pelanggan_ibfk_1` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`),
-  ADD CONSTRAINT `pelanggan_ibfk_2` FOREIGN KEY (`id_sales`) REFERENCES `user` (`id_user`);
-
-ALTER TABLE `penerimaan_barang`
-  ADD CONSTRAINT `penerimaan_barang_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`),
-  ADD CONSTRAINT `penerimaan_barang_ibfk_2` FOREIGN KEY (`id_supplier`) REFERENCES `supplier` (`id_supplier`),
-  ADD CONSTRAINT `penerimaan_barang_ibfk_3` FOREIGN KEY (`id_gudang`) REFERENCES `gudang` (`id_gudang`);
-
-ALTER TABLE `pemindahan_barang`
-  ADD CONSTRAINT `pemindahan_barang_ibfk_1` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`),
-  ADD CONSTRAINT `pemindahan_barang_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`),
-  ADD CONSTRAINT `pemindahan_barang_ibfk_3` FOREIGN KEY (`id_gudang_asal`) REFERENCES `gudang` (`id_gudang`),
-  ADD CONSTRAINT `pemindahan_barang_ibfk_4` FOREIGN KEY (`id_gudang_tujuan`) REFERENCES `gudang` (`id_gudang`),
-  ADD CONSTRAINT `pemindahan_barang_ibfk_5` FOREIGN KEY (`id_pelanggan`) REFERENCES `pelanggan` (`id_pelanggan`);
-
-ALTER TABLE `retur_pembelian`
-  ADD CONSTRAINT `retur_pembelian_ibfk_1` FOREIGN KEY (`id_penerimaan`) REFERENCES `penerimaan_barang` (`id_penerimaan`),
-  ADD CONSTRAINT `retur_pembelian_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`),
-  ADD CONSTRAINT `retur_pembelian_ibfk_3` FOREIGN KEY (`id_supplier`) REFERENCES `supplier` (`id_supplier`);
-
-ALTER TABLE `retur_penjualan`
-  ADD CONSTRAINT `retur_penjualan_ibfk_1` FOREIGN KEY (`id_pemindahan`) REFERENCES `pemindahan_barang` (`id_pemindahan`),
-  ADD CONSTRAINT `retur_penjualan_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`);
-
-ALTER TABLE `stok_awal`
-  ADD CONSTRAINT `stok_awal_ibfk_1` FOREIGN KEY (`id_barang`) REFERENCES `barang` (`id_barang`),
-  ADD CONSTRAINT `stok_awal_ibfk_2` FOREIGN KEY (`id_gudang`) REFERENCES `gudang` (`id_gudang`),
-  ADD CONSTRAINT `stok_awal_ibfk_3` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`),
-  ADD CONSTRAINT `stok_awal_ibfk_4` FOREIGN KEY (`created_by`) REFERENCES `user` (`id_user`);
-
-ALTER TABLE `stok_gudang`
-  ADD CONSTRAINT `stok_gudang_ibfk_1` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`),
-  ADD CONSTRAINT `stok_gudang_ibfk_2` FOREIGN KEY (`id_gudang`) REFERENCES `gudang` (`id_gudang`),
-  ADD CONSTRAINT `stok_gudang_ibfk_3` FOREIGN KEY (`id_barang`) REFERENCES `barang` (`id_barang`);
-
-ALTER TABLE `supplier`
-  ADD CONSTRAINT `supplier_ibfk_1` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`);
-
-ALTER TABLE `user`
-  ADD CONSTRAINT `user_ibfk_1` FOREIGN KEY (`id_role`) REFERENCES `role_user` (`id_role`),
-  ADD CONSTRAINT `user_ibfk_2` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`),
-  ADD CONSTRAINT `user_ibfk_3` FOREIGN KEY (`created_by`) REFERENCES `user` (`id_user`);
-
-  
--- Tabel toko_konsumen
-CREATE TABLE `toko_konsumen` (
-  `id_toko_konsumen` int(11) NOT NULL AUTO_INCREMENT,
-  `nama_toko_konsumen` varchar(50) NOT NULL,
-  `status_aktif` tinyint(1) DEFAULT 1,
-  `created_at` datetime DEFAULT current_timestamp(),
-  PRIMARY KEY (`id_toko_konsumen`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- Tabel konsumen
-CREATE TABLE `konsumen` (
-  `id_konsumen` int(11) NOT NULL AUTO_INCREMENT,
-  `nama_konsumen` varchar(100) NOT NULL,
-  `id_toko_konsumen` int(11) NOT NULL,
-  `alamat_konsumen` text DEFAULT NULL,
-  `id_perusahaan` int(11) NOT NULL,
-  `status_aktif` tinyint(1) DEFAULT 1,
-  `created_at` datetime DEFAULT current_timestamp(),
-  PRIMARY KEY (`id_konsumen`),
-  KEY `id_toko_konsumen` (`id_toko_konsumen`),
-  KEY `id_perusahaan` (`id_perusahaan`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- Ubah tabel pemindahan_barang untuk menambahkan id_konsumen
-ALTER TABLE `pemindahan_barang` 
-ADD COLUMN `id_konsumen` int(11) DEFAULT NULL AFTER `id_pelanggan`;
-
--- Tambahkan constraint untuk tabel konsumen
-ALTER TABLE `konsumen`
-ADD CONSTRAINT `konsumen_ibfk_1` FOREIGN KEY (`id_toko_konsumen`) REFERENCES `toko_konsumen` (`id_toko_konsumen`),
-ADD CONSTRAINT `konsumen_ibfk_2` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id_perusahaan`);
-
--- Tambahkan constraint untuk tabel pemindahan_barang
-ALTER TABLE `pemindahan_barang`
-ADD CONSTRAINT `pemindahan_barang_ibfk_6` FOREIGN KEY (`id_konsumen`) REFERENCES `konsumen` (`id_konsumen`);
 
 -- Insert data toko_konsumen
 INSERT INTO `toko_konsumen` (`id_toko_konsumen`, `nama_toko_konsumen`) VALUES
@@ -912,6 +714,58 @@ INSERT INTO `toko_konsumen` (`id_toko_konsumen`, `nama_toko_konsumen`) VALUES
 (4, 'Lazada'),
 (5, 'Blibli'),
 (6, 'Facebook Marketplace');
+
+
+
+-- Insert data dummy untuk motor
+INSERT INTO `motor` (`id_motor`, `nama_motor`, `status_aktif`) VALUES
+(1, 'Nouvo', 1),
+(2, 'Aerox', 1),
+(3, 'Mio', 1),
+(4, 'Vario', 1),
+(5, 'Nmax', 1),
+(6, 'Nmax New', 1),
+(7, 'PCX 150', 1),
+(8, 'Beat', 1),
+(9, 'KLX', 1),
+(10, 'Rx King', 1),
+(11, 'Nmax Old', 1);
+
+-- Insert data dummy untuk warna
+INSERT INTO `warna` (`id_warna`, `nama_warna`, `status_aktif`) VALUES
+(1, 'Black', 1),
+(2, 'Titanium', 1),
+(3, 'Gold', 1),
+(4, 'Red', 1),
+(5, 'Silver', 1),
+(6, 'Chrome', 1),
+(7, 'Blue', 1),
+(8, 'Green', 1),
+(9, 'Blue-Gold (Twotone)', 1),
+(10, 'Black/Titanium', 1),
+(11, 'Gold/Red', 1),
+(12, 'Silver/Chrome', 1),
+(13, 'Silver/Red', 1),
+(14, 'Black/Red', 1),
+(15, 'Black/Titanium Head Gold', 1),
+(16, 'Silver/Chrome Head Sliver', 1);
+
+-- Insert data barang dengan struktur baru
+INSERT INTO barang 
+(id_barang, id_perusahaan, id_kategori, nama_barang, gambar, sku, kode_barang, ukuran, deskripsi, satuan, warna, motor, status_aktif, deleted_at, created_at, updated_at) 
+VALUES
+(1, 1, 1, 'Shock DBS Premium GP Kitaco', 'gambar.jpg', 'DBS-677-280MM', '677-280MM', '280MM', '', 'set', 'Black/Titanium Head Gold', 'Nouvo,Aerox', 1, NULL, '2025-09-20 02:47:00', '2025-09-21 02:47:00'),
+(2, 1, 1, 'Shock DBS Premium King New Series', 'gambar.jpg', 'DBS-612-315MM', '612-315MM', '315MM', '', 'unit', 'Black/Titanium Head Gold', 'Mio/Vario', 1, NULL, '2025-09-21 02:47:00', '2025-09-22 02:47:00'),
+(3, 1, 1, 'Shock DBS Premium King New Series', 'gambar.jpg', 'DBS-612-330MM', '612-330MM', '330MM', '', 'unit', 'Black/Titanium Head Gold', 'Mio/Vario', 1, NULL, '2025-09-21 02:47:00', '2025-09-22 02:47:00'),
+(4, 1, 1, 'Shock DBS Premium Proline Series', 'gambar.jpg', 'DBS-655-310MM', '655-310MM', '310MM', '', 'set', 'Gold/Red', 'Aerox/Nmax', 1, NULL, '2025-09-22 02:47:00', '2025-09-23 02:47:00'),
+(5, 1, 1, 'Shock DBS G-Plus', 'gambar.jpg', 'DBS-8899-310MM', '8899-310MM', '310MM', '', 'unit', 'Silver/Chrome Head Sliver', 'Mio', 1, NULL, '2025-09-23 02:47:00', '2025-09-24 02:47:00'),
+(6, 1, 1, 'Shock DBS Tabung Shock Depan', 'gambar.jpg', 'DBS-8905', '8905', '-', '', 'unit', 'Gold/Blue-Gold (Twotone)', 'Beat', 1, NULL, '2025-09-24 02:47:00', '2025-09-25 02:47:00'),
+(7, 1, 1, 'Shock DBS Premium Avon Series Tabung Atas', 'gambar.jpg', 'DBS-688-405MM', '688-405MM', '405MM', '', 'unit', 'Gold/Green', 'KLX', 1, NULL, '2025-09-25 02:47:00', '2025-09-26 02:47:00'),
+(8, 1, 1, 'Shock DBS X-Series S36PRI', 'gambar.jpg', 'DBS-720-310MM', '720-310MM', '310MM', '', 'set', 'Black/Titanium', 'Aerox/Nmax New', 1, NULL, '2025-09-26 02:47:00', '2025-09-27 02:47:00'),
+(9, 1, 1, 'Shock DBS X-Series S36PRI', 'gambar.jpg', 'DBS-699-315MM', '699-315MM', '315MM', '', 'set', 'Black/Titanium', 'Mio/Vario', 1, NULL, '2025-09-26 02:47:00', '2025-09-27 02:47:00'),
+(10, 1, 1, 'Shock DBS Von Series', 'gambar.jpg', 'DBS-699-330MM', '699-330MM', '330MM', '', 'set', 'Silver/Red', 'Mio/Vario', 1, NULL, '2025-09-27 02:47:00', '2025-09-28 02:47:00'),
+(11, 1, 1, 'Shock DBS Von Series', 'gambar.jpg', 'DBS-719-320MM', '719-320MM', '320MM', '', 'set', 'Silver/Red', 'Rx King', 1, NULL, '2025-09-28 02:47:00', '2025-09-29 02:47:00'),
+(12, 1, 1, 'Shock DBS G-Sport', 'gambar.jpg', 'DBS-711-345MM', '711-345MM', '345MM', '', 'set', 'Black/Red', 'Nmax Old/PCX 150', 1, NULL, '2025-09-29 02:47:00', '2025-09-30 02:47:00');
 
 kita akan melengkapi kode kode yg belum sesuai ya bro,
 setelah pesan ini, saya akan kirim kode untuk fitur pemindahan barang, agar dapat sesuai dengan yg dibutuhkan serta desain database yg sudah dimiliki.
