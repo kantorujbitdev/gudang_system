@@ -10,7 +10,7 @@ class Pembelian_model extends MY_Model
         $this->primary_key = 'id_pembelian';
         $this->fillable = array('id_perusahaan', 'no_pembelian', 'id_user', 'id_supplier', 'tanggal_pembelian', 'tanggal_estimasi', 'keterangan', 'status');
         $this->timestamps = TRUE;
-        $this->soft_delete = TRUE;
+
     }
 
     public function get_with_details($id_pembelian = NULL)

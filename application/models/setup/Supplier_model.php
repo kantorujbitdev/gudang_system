@@ -10,7 +10,7 @@ class Supplier_model extends MY_Model
         $this->primary_key = 'id_supplier';
         $this->fillable = array('id_perusahaan', 'nama_supplier', 'alamat', 'telepon', 'email', 'status_aktif');
         $this->timestamps = TRUE;
-        $this->soft_delete = TRUE;
+
     }
 
     public function get_all()

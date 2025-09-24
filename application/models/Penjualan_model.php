@@ -10,7 +10,7 @@ class Penjualan_model extends MY_Model
         $this->primary_key = 'id_penjualan';
         $this->fillable = array('id_perusahaan', 'no_invoice', 'id_user', 'id_pelanggan', 'tanggal_penjualan', 'keterangan', 'status');
         $this->timestamps = TRUE;
-        $this->soft_delete = TRUE;
+
     }
 
     public function get_with_details($id_penjualan = NULL)

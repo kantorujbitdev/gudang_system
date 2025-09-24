@@ -22,7 +22,7 @@ class Barang_model extends MY_Model
             'satuan',
             'status_aktif'
         );
-        $this->soft_delete = TRUE;
+
     }
 
     public function get_barang_with_stok()

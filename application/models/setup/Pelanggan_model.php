@@ -10,7 +10,7 @@ class Pelanggan_model extends MY_Model
         $this->primary_key = 'id_pelanggan';
         $this->fillable = array('id_perusahaan', 'nama_pelanggan', 'alamat', 'telepon', 'email', 'tipe_pelanggan', 'status_aktif');
         $this->timestamps = TRUE;
-        $this->soft_delete = TRUE;
+
     }
 
     public function get_all()

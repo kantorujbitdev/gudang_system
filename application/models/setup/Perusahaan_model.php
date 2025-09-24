@@ -10,7 +10,7 @@ class Perusahaan_model extends MY_Model
         $this->primary_key = 'id_perusahaan';
         $this->fillable = array('nama_perusahaan', 'alamat', 'telepon', 'email', 'status_aktif');
         $this->timestamps = TRUE;
-        $this->soft_delete = TRUE;
+
     }
 
     public function get_all()

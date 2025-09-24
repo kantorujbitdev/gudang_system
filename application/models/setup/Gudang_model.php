@@ -10,7 +10,7 @@ class Gudang_model extends MY_Model
         $this->primary_key = 'id_gudang';
         $this->fillable = array('id_perusahaan', 'nama_gudang', 'alamat', 'telepon', 'created_by', 'status_aktif');
         $this->timestamps = TRUE;
-        $this->soft_delete = TRUE;
+
     }
 
     public function get_all()

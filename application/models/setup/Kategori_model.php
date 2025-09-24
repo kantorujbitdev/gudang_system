@@ -10,7 +10,7 @@ class Kategori_model extends MY_Model
         $this->primary_key = 'id_kategori';
         $this->fillable = array('id_perusahaan', 'nama_kategori', 'deskripsi', 'status_aktif');
         $this->timestamps = TRUE;
-        $this->soft_delete = TRUE;
+
     }
     public function get_by_perusahaan_id($id_perusahaan)
     {
