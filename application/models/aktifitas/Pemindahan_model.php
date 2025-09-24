@@ -166,15 +166,24 @@ class Pemindahan_model extends CI_Model
         $this->db->where('id_pemindahan', $id_pemindahan);
         return $this->db->update('pemindahan_barang', $data);
     }
-
     public function update_status($id_pemindahan, $status)
     {
+        log_message('debug', '=== START update_status ===');
+        log_message('debug', 'Params: id_pemindahan=' . $id_pemindahan . ', status=' . $status);
+
         $this->db->where('id_pemindahan', $id_pemindahan);
-        $data = [
-            'status' => $status,
-            'updated_at' => date('Y-m-d H:i:s')
-        ];
-        return $this->db->update('pemindahan_barang', $data);
+        $this->db->set('status', $status);
+        $this->db->set('updated_at', date('Y-m-d H:i:s'));
+
+        $result = $this->db->update('pemindahan_barang');
+
+        log_message('debug', 'Update query: ' . $this->db->last_query());
+        log_message('debug', 'Update result: ' . ($result ? 'SUCCESS' : 'FAILED'));
+        log_message('debug', 'Affected rows: ' . $this->db->affected_rows());
+
+        log_message('debug', '=== END update_status ===');
+
+        return $result;
     }
 
     public function delete_detail($id_pemindahan)
@@ -189,26 +198,28 @@ class Pemindahan_model extends CI_Model
         $this->db->where('id_barang', $id_barang);
         return $this->db->get('stok_gudang')->row();
     }
-
     public function update_stok($id_gudang, $id_barang, $jumlah, $reserved = 0)
     {
+        log_message('debug', '=== START update_stok ===');
+        log_message('debug', 'Params: id_gudang=' . $id_gudang . ', id_barang=' . $id_barang . ', jumlah=' . $jumlah . ', reserved=' . $reserved);
+
         $this->db->where('id_gudang', $id_gudang);
         $this->db->where('id_barang', $id_barang);
-        $data = [
-            'jumlah' => $jumlah,
-            'reserved' => $reserved,
-            'updated_at' => date('Y-m-d H:i:s')
-        ];
+        $this->db->set('jumlah', $jumlah);
+        $this->db->set('reserved', $reserved);
+        $this->db->set('updated_at', date('Y-m-d H:i:s'));
 
-        $result = $this->db->update('stok_gudang', $data);
+        $query = $this->db->get_compiled_update('stok_gudang');
+        log_message('debug', 'Update query: ' . $this->db->last_query());
 
-        // Debug log
-        log_message('debug', 'Update stok: ' . $this->db->last_query());
-        log_message('debug', 'Update result: ' . ($result ? 'Success' : 'Failed'));
+        $result = $this->db->update('stok_gudang');
+        log_message('debug', 'Update result: ' . ($result ? 'SUCCESS' : 'FAILED'));
+        log_message('debug', 'Affected rows: ' . $this->db->affected_rows());
+
+        log_message('debug', '=== END update_stok ===');
 
         return $result;
     }
-
     public function insert_log_stok($data)
     {
         $this->db->insert('log_stok', $data);

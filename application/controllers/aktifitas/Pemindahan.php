@@ -432,9 +432,19 @@ class Pemindahan extends MY_Controller
         $this->session->set_flashdata('error', 'Gagal memperbarui pemindahan barang!');
         return redirect('aktifitas/pemindahan/edit/' . $id_pemindahan);
     }
-
     public function konfirmasi($id_pemindahan, $status)
     {
+        // Tambahkan ini untuk debugging
+        echo "<pre>";
+        echo "ID Pemindahan: " . $id_pemindahan . "<br>";
+        echo "Status: " . $status . "<br>";
+        echo "POST Data: ";
+        print_r($_POST);
+        echo "</pre>";
+        die(); // Hentikan eksekusi untuk melihat output
+        log_message('debug', '=== START konfirmasi ===');
+        log_message('debug', 'Params: id_pemindahan=' . $id_pemindahan . ', status=' . $status);
+
         if (!$this->check_permission('aktifitas/pemindahan', 'edit')) {
             $this->session->set_flashdata('error', 'Anda tidak memiliki izin untuk mengkonfirmasi pemindahan barang!');
             return redirect('aktifitas/pemindahan');
@@ -471,15 +481,23 @@ class Pemindahan extends MY_Controller
             return redirect('aktifitas/pemindahan');
         }
 
-        if ($this->pemindahan->update_status($id_pemindahan, $status)) {
+        // Update status first
+        log_message('debug', 'About to call update_status');
+        $update_result = $this->pemindahan->update_status($id_pemindahan, $status);
+        log_message('debug', 'Update status result: ' . ($update_result ? 'SUCCESS' : 'FAILED'));
+
+        if ($update_result) {
             // Handle stock changes based on status transition
             if ($status == 'Shipping' && $current_status != 'Shipping') {
+                log_message('debug', 'About to call kurangi_stok');
                 $this->kurangi_stok($id_pemindahan);
             }
             if ($status == 'Delivered' && $pemindahan->tipe_tujuan == 'gudang' && $pemindahan->id_gudang_tujuan) {
+                log_message('debug', 'About to call tambah_stok');
                 $this->tambah_stok($id_pemindahan);
             }
             if ($status == 'Cancelled' && $current_status == 'Shipping') {
+                log_message('debug', 'About to call kembalikan_stok');
                 $this->kembalikan_stok($id_pemindahan);
             }
 
@@ -489,9 +507,9 @@ class Pemindahan extends MY_Controller
             $this->session->set_flashdata('error', 'Gagal mengubah status pemindahan barang!');
         }
 
+        log_message('debug', '=== END konfirmasi ===');
         return redirect('aktifitas/pemindahan');
     }
-
     public function detail($id_pemindahan)
     {
         $this->data['title'] = 'Detail Pemindahan Barang';
@@ -543,17 +561,29 @@ class Pemindahan extends MY_Controller
 
     private function kurangi_stok($id_pemindahan)
     {
+        log_message('debug', '=== START kurangi_stok for pemindahan ID: ' . $id_pemindahan . ' ===');
+
         $pemindahan = $this->pemindahan->get($id_pemindahan);
         $detail = $this->pemindahan->get_detail($id_pemindahan);
 
+        log_message('debug', 'Pemindahan data: ' . json_encode($pemindahan));
+        log_message('debug', 'Detail count: ' . count($detail));
+
         foreach ($detail as $item) {
+            log_message('debug', 'Processing item: ' . json_encode($item));
+
             // Get current stock
             $stok = $this->pemindahan->get_stok_barang($pemindahan->id_gudang_asal, $item->id_barang);
+
+            log_message('debug', 'Current stock: ' . json_encode($stok));
 
             if ($stok && $stok->jumlah >= $item->jumlah) {
                 // Update stock
                 $new_stok = $stok->jumlah - $item->jumlah;
-                $this->pemindahan->update_stok($pemindahan->id_gudang_asal, $item->id_barang, $new_stok, $stok->reserved);
+                log_message('debug', 'Updating stock from ' . $stok->jumlah . ' to ' . $new_stok);
+
+                $update_result = $this->pemindahan->update_stok($pemindahan->id_gudang_asal, $item->id_barang, $new_stok, $stok->reserved);
+                log_message('debug', 'Update result: ' . ($update_result ? 'SUCCESS' : 'FAILED'));
 
                 // Log stock movement
                 $log_data = [
@@ -568,13 +598,19 @@ class Pemindahan extends MY_Controller
                     'id_referensi' => $id_pemindahan,
                     'tipe_referensi' => 'pemindahan_barang'
                 ];
-                $this->pemindahan->insert_log_stok($log_data);
+
+                $log_result = $this->pemindahan->insert_log_stok($log_data);
+                log_message('debug', 'Log result: ' . ($log_result ? 'SUCCESS' : 'FAILED'));
             } else {
+                log_message('debug', 'Insufficient stock. Available: ' . ($stok ? $stok->jumlah : 0) . ', Required: ' . $item->jumlah);
+
                 // Handle insufficient stock
                 $this->session->set_flashdata('error', 'Stok tidak mencukup untuk barang ' . $item->nama_barang);
                 return redirect('aktifitas/pemindahan');
             }
         }
+
+        log_message('debug', '=== END kurangi_stok ===');
     }
 
     private function tambah_stok($id_pemindahan)
