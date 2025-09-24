@@ -25,7 +25,9 @@
                         <th>Ukuran</th>
                         <th>Motor</th>
                         <th>Warna</th>
-                        <th>Perusahaan</th>
+                        <?php if ($this->session->userdata('id_role') == 1): ?>
+                            <th>Perusahaan</th>
+                        <?php endif; ?>
                         <th>Total Stok</th>
                         <th>Status</th>
                         <th>Aksi</th>
@@ -51,7 +53,10 @@
                             <td><?php echo $row->ukuran ?: '-'; ?></td>
                             <td><?php echo $row->motor ?: '-'; ?></td>
                             <td><?php echo $row->warna ?: '-'; ?></td>
-                            <td><?php echo $row->nama_perusahaan; ?></td>
+                            <?php if ($this->session->userdata('id_role') == 1): ?>
+                                <td><?php echo $row->nama_perusahaan; ?></td>
+                            <?php endif; ?>
+
                             <td>
                                 <?php
                                 $total_stok = isset($row->total_stok) ? $row->total_stok : 0;
@@ -86,28 +91,28 @@
                             <td>
                                 <a href="<?php echo site_url('setup/barang/detail/' . $row->id_barang); ?>"
                                     class="btn btn-sm btn-info" title="Detail">
-                                    <i class="fas fa-info-circle"></i> Detail
+                                    <i class="fas fa-info-circle"></i>
                                 </a>
                                 <a href="<?php echo site_url('setup/barang/stok/' . $row->id_barang); ?>"
                                     class="btn btn-sm btn-primary" title="Kelola Stok">
-                                    <i class="fas fa-boxes"></i> Stok
+                                    <i class="fas fa-boxes"></i>
                                 </a>
                                 <a href="<?php echo site_url('setup/barang/edit/' . $row->id_barang); ?>"
                                     class="btn btn-sm btn-warning" title="Edit">
-                                    <i class="fas fa-edit"></i> Edit
+                                    <i class="fas fa-edit"></i>
                                 </a>
 
                                 <?php if ($row->status_aktif == '1'): ?>
                                     <a href="<?php echo site_url('setup/barang/nonaktif/' . $row->id_barang) ?>"
                                         class="btn btn-sm btn-danger"
                                         onclick="return confirm('Apakah Anda yakin ingin menonaktifkan barang ini?')">
-                                        <i class="fas fa-minus-square"></i> Nonaktif
+                                        <i class="fas fa-minus-square"></i>
                                     </a>
                                 <?php else: ?>
                                     <a href="<?php echo site_url('setup/barang/aktif/' . $row->id_barang) ?>"
                                         class="btn btn-sm btn-success"
                                         onclick="return confirm('Apakah Anda yakin ingin mengaktifkan kembali barang ini?')">
-                                        <i class="fas fa-check-square"></i> Aktif
+                                        <i class="fas fa-check-square"></i>
                                     </a>
                                 <?php endif; ?>
                             </td>

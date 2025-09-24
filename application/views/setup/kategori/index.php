@@ -33,35 +33,35 @@
                             <td><?php echo $row->nama_perusahaan; ?></td>
                             <td><?php echo $row->deskripsi ?: '-'; ?></td>
                             <td>
-                                <?php if ($row->status_aktif == 1): ?>
+                                    <?php if ($row->status_aktif == 1): ?>
                                     <span class="badge badge-success">Aktif</span>
-                                <?php else: ?>
+                                    <?php else: ?>
                                     <span class="badge badge-danger">Tidak Aktif</span>
-                                <?php endif; ?>
+                                    <?php endif; ?>
                             </td>
                             <td>
                                 <a href="<?php echo site_url('setup/kategori/detail/' . $row->id_kategori); ?>"
                                     class="btn btn-sm btn-info" title="Detail">
-                                    <i class="fas fa-info-circle"></i> Detail
+                                    <i class="fas fa-info-circle"></i>
                                 </a>
                                 <a href="<?php echo site_url('setup/kategori/edit/' . $row->id_kategori); ?>"
                                     class="btn btn-sm btn-warning" title="Edit">
-                                    <i class="fas fa-edit"></i> Edit
+                                    <i class="fas fa-edit"></i>
                                 </a>
 
-                                <?php if ($row->status_aktif == '1'): ?>
+                                    <?php if ($row->status_aktif == '1'): ?>
                                     <a href="<?php echo site_url('setup/kategori/nonaktif/' . $row->id_kategori) ?>"
                                         class="btn btn-sm btn-danger"
                                         onclick="return confirm('Apakah Anda yakin ingin menonaktifkan kategori ini?')">
-                                        <i class="fas fa-minus-square"></i> Nonaktif
+                                        <i class="fas fa-minus-square"></i>
                                     </a>
-                                <?php else: ?>
+                                    <?php else: ?>
                                     <a href="<?php echo site_url('setup/kategori/aktif/' . $row->id_kategori) ?>"
                                         class="btn btn-sm btn-success"
                                         onclick="return confirm('Apakah Anda yakin ingin mengaktifkan kembali kategori ini?')">
-                                        <i class="fas fa-check-square"></i> Aktif
+                                        <i class="fas fa-check-square"></i>
                                     </a>
-                                <?php endif; ?>
+                                    <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

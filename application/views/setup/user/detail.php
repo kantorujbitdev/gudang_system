@@ -3,7 +3,7 @@
     <div>
         <a href="<?php echo site_url('setup/user/edit/' . $user->id_user); ?>"
             class="d-none d-sm-inline-block btn btn-sm btn-warning shadow-sm">
-            <i class="fas fa-edit fa-sm text-white-50"></i> Edit
+            <i class="fas fa-edit fa-sm text-white-50"></i>
         </a>
         <a href="<?php echo site_url('setup/user/reset_password/' . $user->id_user); ?>"
             class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm ml-2">

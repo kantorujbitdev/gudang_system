@@ -216,7 +216,7 @@
                     <div class="row mt-3">
                         <div class="col-md-12">
                             <div class="alert alert-danger">
-                                <h5><i class="fas fa-exclamation-triangle"></i> Stok Kritis</h5>
+                                <h5><i class="fas fa-exclamation-triangle"></i> Kritis</h5>
                                 <p>Barang berikut ini memiliki stok rendah dan perlu segera diisi ulang:</p>
                                 <div class="table-responsive">
                                     <table class="table table-sm table-bordered">

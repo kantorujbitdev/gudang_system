@@ -122,7 +122,7 @@
                                         data-id_barang="<?php echo $barang->id_barang; ?>"
                                         data-id_gudang="<?php echo $s->id_gudang; ?>" data-jumlah="<?php echo $s->jumlah; ?>"
                                         data-nama_gudang="<?php echo $s->nama_gudang; ?>">
-                                        <i class="fas fa-edit"></i> Edit
+                                        <i class="fas fa-edit"></i>
                                     </button>
                                 </td>
                             </tr>
