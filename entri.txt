@@ -290,14 +290,12 @@ CREATE TABLE `pelanggan` (
   `telepon` varchar(20) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
   `tipe_pelanggan` enum('distributor','konsumen') DEFAULT 'konsumen',
-  `id_sales` int(11) DEFAULT NULL,
   `status_aktif` tinyint(1) DEFAULT 1,
   `deleted_at` datetime DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id_pelanggan`),
-  KEY `pelanggan_ibfk_1` (`id_perusahaan`),
-  KEY `id_sales` (`id_sales`)
+  KEY `pelanggan_ibfk_1` (`id_perusahaan`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel barang (bergantung pada kategori dan perusahaan)
@@ -664,21 +662,17 @@ INSERT INTO `user` (`id_user`, `nama`, `username`, `password_hash`, `id_role`, `
 
 -- Data untuk tabel kategori
 INSERT INTO `kategori` (`id_kategori`, `id_perusahaan`, `nama_kategori`, `deskripsi`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 1, 'Shock', 'Shockbreaker motor', 1, NULL, '2025-09-18 00:28:37', NULL),
-(2, 1, 'Furniture', 'Barang furniture', 1, NULL, '2025-09-18 09:45:12', NULL),
-(3, 2, 'Tekstil', 'Barang tekstil', 1, NULL, '2025-09-18 11:20:45', NULL);
+(1, 1, 'Shock', 'Shockbreaker motor', 1, NULL, '2025-09-18 00:28:37', NULL);
 
 -- Data untuk tabel gudang
 INSERT INTO `gudang` (`id_gudang`, `id_perusahaan`, `nama_gudang`, `alamat`, `telepon`, `created_by`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES
 (1, 1, 'Gudang Utama', 'Alamat Gudang Utama', '02112345679', NULL, 1, NULL, '2025-09-16 00:12:08', NULL),
-(2, 1, 'Gudang Jakarta Timur', 'Jl. Jatinegara No. 10', '02112345680', 1, 1, NULL, '2025-09-17 19:01:45', '2025-09-20 06:18:46'),
-(3, 2, 'Gudang Pusat', 'Jl. Gatot Subroto No. 5', '02187654322', 2, 1, NULL, '2025-09-18 08:30:15', NULL);
+(2, 1, 'Gudang Jakarta Timur', 'Jl. Jatinegara No. 10', '02112345680', 1, 1, NULL, '2025-09-17 19:01:45', '2025-09-20 06:18:46');
 
 -- Data untuk tabel pelanggan
 INSERT INTO `pelanggan` (`id_pelanggan`, `id_perusahaan`, `nama_pelanggan`, `alamat`, `telepon`, `email`, `tipe_pelanggan`, `id_sales`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES
 (1, 1, 'Toko Maju Jaya', 'Jl. Sudirman No. 15', '02112345681', 'toko@maju.com', 'distributor', NULL, 1, NULL, '2025-09-19 10:18:12', '2025-09-19 10:18:24'),
-(2, 1, 'Budi Santoso', 'Jl. Thamrin No. 20', '081234567893', 'budi@email.com', 'konsumen', 3, 1, NULL, '2025-09-19 11:30:45', NULL),
-(3, 2, 'CV. Sukses Abadi', 'Jl. Gatot Subroto No. 15', '02187654323', 'sukses@abadi.com', 'distributor', NULL, 1, NULL, '2025-09-19 13:45:20', NULL);
+(2, 1, 'Budi Santoso', 'Jl. Thamrin No. 20', '081234567893', 'budi@email.com', 'konsumen', 3, 1, NULL, '2025-09-19 11:30:45', NULL);
 
 -- Data untuk tabel supplier
 INSERT INTO `supplier` (`id_supplier`, `id_perusahaan`, `nama_supplier`, `alamat`, `telepon`, `email`, `kontak_person`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES
@@ -766,6 +760,25 @@ VALUES
 (10, 1, 1, 'Shock DBS Von Series', 'gambar.jpg', 'DBS-699-330MM', '699-330MM', '330MM', '', 'set', 'Silver/Red', 'Mio/Vario', 1, NULL, '2025-09-27 02:47:00', '2025-09-28 02:47:00'),
 (11, 1, 1, 'Shock DBS Von Series', 'gambar.jpg', 'DBS-719-320MM', '719-320MM', '320MM', '', 'set', 'Silver/Red', 'Rx King', 1, NULL, '2025-09-28 02:47:00', '2025-09-29 02:47:00'),
 (12, 1, 1, 'Shock DBS G-Sport', 'gambar.jpg', 'DBS-711-345MM', '711-345MM', '345MM', '', 'set', 'Black/Red', 'Nmax Old/PCX 150', 1, NULL, '2025-09-29 02:47:00', '2025-09-30 02:47:00');
+
+INSERT INTO `stok_gudang` (`id_stok`, `id_perusahaan`, `id_gudang`, `id_barang`, `jumlah`, `reserved`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, 5, 10, 0, '2025-09-24 20:07:03', '2025-09-24 20:07:03'),
+(2, 1, 2, 5, 10, 0, '2025-09-24 20:07:07', '2025-09-24 20:07:07'),
+(3, 1, 1, 12, 10, 0, '2025-09-24 20:07:13', '2025-09-24 20:07:13'),
+(4, 1, 2, 12, 10, 0, '2025-09-24 20:07:17', '2025-09-24 20:07:17'),
+(5, 1, 1, 7, 10, 0, '2025-09-24 20:07:21', '2025-09-24 20:07:21'),
+(6, 1, 2, 7, 10, 0, '2025-09-24 20:07:26', '2025-09-24 20:07:26'),
+(7, 1, 1, 1, 10, 0, '2025-09-24 20:07:37', '2025-09-24 20:07:37');
+
+INSERT INTO `stok_awal` (`id_stok_awal`, `id_barang`, `id_gudang`, `id_perusahaan`, `qty_awal`, `keterangan`, `created_at`, `created_by`) VALUES
+(1, 5, 1, 1, 10, '', '2025-09-24 20:07:03', 2),
+(2, 5, 2, 1, 10, '', '2025-09-24 20:07:07', 2),
+(3, 12, 1, 1, 10, '', '2025-09-24 20:07:13', 2),
+(4, 12, 2, 1, 10, '', '2025-09-24 20:07:17', 2),
+(5, 7, 1, 1, 10, '', '2025-09-24 20:07:21', 2),
+(6, 7, 2, 1, 10, '', '2025-09-24 20:07:26', 2),
+(7, 1, 1, 1, 10, '', '2025-09-24 20:07:37', 2);
+
 
 kita akan melengkapi kode kode yg belum sesuai ya bro,
 setelah pesan ini, saya akan kirim kode untuk fitur pemindahan barang, agar dapat sesuai dengan yg dibutuhkan serta desain database yg sudah dimiliki.

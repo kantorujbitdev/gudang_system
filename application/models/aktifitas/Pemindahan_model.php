@@ -177,18 +177,6 @@ class Pemindahan_model extends CI_Model
         return $this->db->update('pemindahan_barang', $data);
     }
 
-    public function delete($id_pemindahan)
-    {
-        $this->db->where('id_pemindahan', $id_pemindahan);
-        return $this->db->update('pemindahan_barang', ['deleted_at' => date('Y-m-d H:i:s')]);
-    }
-
-    public function delete_detail($id_pemindahan)
-    {
-        $this->db->where('id_pemindahan', $id_pemindahan);
-        return $this->db->delete('detail_pemindahan_barang');
-    }
-
     public function get_stok_barang($id_gudang, $id_barang)
     {
         $this->db->where('id_gudang', $id_gudang);

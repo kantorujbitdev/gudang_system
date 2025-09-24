@@ -90,13 +90,6 @@
                                         <i class="fas fa-edit"></i>
                                     </a>
                                 <?php endif; ?>
-                                <?php if ($row->status == 'Draft' && $can_delete): ?>
-                                    <a href="<?php echo site_url('aktifitas/pemindahan/hapus/' . $row->id_pemindahan); ?>"
-                                        class="btn btn-sm btn-danger" title="Hapus"
-                                        onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
-                                <?php endif; ?>
                                 <?php if ($can_edit): ?>
                                     <?php if ($row->status == 'Draft'): ?>
                                         <a href="<?php echo site_url('aktifitas/pemindahan/konfirmasi/' . $row->id_pemindahan . '/Packing'); ?>"

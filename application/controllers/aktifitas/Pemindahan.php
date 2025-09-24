@@ -400,7 +400,6 @@ class Pemindahan extends MY_Controller
         }
 
         if ($this->pemindahan->update($id_pemindahan, $data_update)) {
-            $this->pemindahan->delete_detail($id_pemindahan);
 
             $barang_ids = $this->input->post('id_barang');
             $jumlahs = $this->input->post('jumlah');
@@ -438,31 +437,6 @@ class Pemindahan extends MY_Controller
 
         $this->session->set_flashdata('error', 'Gagal memperbarui pemindahan barang!');
         return redirect('aktifitas/pemindahan/edit/' . $id_pemindahan);
-    }
-
-    public function hapus($id_pemindahan)
-    {
-        if (!$this->check_permission('aktifitas/pemindahan', 'delete')) {
-            $this->session->set_flashdata('error', 'Anda tidak memiliki izin untuk menghapus pemindahan barang!');
-            return redirect('aktifitas/pemindahan');
-        }
-
-        $pemindahan = $this->pemindahan->get($id_pemindahan);
-        if (!$pemindahan) {
-            show_404();
-        }
-
-        if ($pemindahan->status != 'Draft') {
-            $this->session->set_flashdata('error', 'Pemindahan dengan status ' . $pemindahan->status . ' tidak dapat dihapus!');
-            return redirect('aktifitas/pemindahan');
-        }
-
-        if ($this->pemindahan->delete($id_pemindahan)) {
-            $this->session->set_flashdata('success', 'Pemindahan barang berhasil dihapus');
-        } else {
-            $this->session->set_flashdata('error', 'Gagal menghapus pemindahan barang!');
-        }
-        return redirect('aktifitas/pemindahan');
     }
 
     public function konfirmasi($id_pemindahan, $status)
