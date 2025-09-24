@@ -780,7 +780,7 @@ INSERT INTO `stok_awal` (`id_stok_awal`, `id_barang`, `id_gudang`, `id_perusahaa
 (7, 1, 1, 1, 10, '', '2025-09-24 20:07:37', 2);
 
 
-kita akan melengkapi kode kode yg belum sesuai ya bro,
+kita akan melengkapi kode kode yg belum sesuai,
 setelah pesan ini, saya akan kirim kode untuk fitur pemindahan barang, agar dapat sesuai dengan yg dibutuhkan serta desain database yg sudah dimiliki.
 
 perlu di ingat bahwa role user ini penting sebab yg menentukan tampilan, terutama super admin yg tidak memiliki perusahaan, jadi jika super admin membutuhkan id_perusahaan maka seharusnya ada pilihan untuk pilih perusahaan nya.
@@ -1135,88 +1135,43 @@ Ringkasan stok per barang & per gudang:
 Saldo awal
 Masuk
 Keluar
-Saldo akhi
-
-Pemindahan Barang terbagi menjadi 3
-    1. Gudang → Gudang lain (ke gudang di perusahaan yg sama).
-    2. Gudang → Pelanggan (distributor resmi).
-    3. Gudang → Konsumen (melalui pemindahan barang ke konsumen milik Sales).
-
-jadi,
-jika memilih Tipe Tujuan Gudang
-berarti harus ada form Gudang awal dan Gudang Tujuan gudang awal 
-
-jika memilih Tipe Tujuan Pelanggan
-berarti harus ada form Pemilihan Pelanggan yang di ambil dari tabel pelanggan
-
-dan jika memilih Tipe Tujua
-berarti harus ada form Input data konsume
-yg berisi Nama dan Alamat
-
-
-
-masih belum jalan, kita skip dahulu deh yaaa,
-Masih di halaman tambah pemindahan, namun lanjut kita kasih validasi saja terlebih dahulu.
--jika memilih Tipe Tujuan Gudang
-berarti harus ada form Gudang awal dan Gudang Tujuan gudang awal tidak boleh sama dengan gudang tujuan
-
--jika memilih Tipe Tujuan Pelanggan
-berarti harus ada form Pemilihan Pelanggan yang di ambil dari tabel pelanggan
-
--jika memilih Tipe Tujuan Konsumen
-berarti harus ada form Input data konsume
-yg berisi Nama dan Alamat Konsumen dan TOKO
-
-selanjutanya untuk barang yg belum ada stok awal dan stok nya 0 tidak boleh tampil di input item barang pada halaman ini ya bro
-
-
-mengapa data konsumen ini disimpan di tabel pemindahan_barang?
-bisakah kita buat ke tabel terpisah misalkan kita buat tabel seperti ini,
-isi dari nama_toko_konsumen nya ini berupa pilihan dropdown dari tabel toko_konsumen (menghindari input manual)
-
-tabel toko_konsumen
-id_toko_konsumen
-nama_toko_konsumen varchar(50) DEFAULT NULL
-secara default kita beri value
-1. Shopee
-2. TikTok Shop
-3. Tokopedia
-4. Lazada
-5. Blibli
-6. Facebook Marketplace
-
-
-tabel konsumen
-id_konsumen
-nama_konsumen varchar(100) DEFAULT NULL
-id_toko_konsumen varchar(100) DEFAULT NULL
-alamat_konsumen text DEFAULT NULL
-
-lalu selanjutnya baru kode kode nya yg disesuaikan.
-bagaimana?
+Saldo akhir
 
 
 
 
 
-seteleh menerapkan semua saran dari anda, nampaknya ada beberapa yg perlu di perbaiki kembali, yaitu,
-1. form tambah pemindahan barang -> seharusnya tidak perlu ada pilih aksi, langsung saja untuk menambahkan konsumen baru dan langsung catat ke tabel konsumen baru untuk dan selanjutnya baru masuk ke tabel pemindahan jika proses nya hingga terjadi pemindaha
-2. form tambah pemindahan barang -> Daftar Barang -> jika mau mau melakukan pemindahan 2 buah barang atau lebih (ada 2 barang yg ingin di lakukan pemindahan), stok barang yg tersedia tidak dimuat dengan baik, sehingga proses tidak dapat dilanjutkan
-3. form tambah pemindahan barang -> Daftar Barang -> seharunya untuk barang yg sudah di pilih, tidak dapat dipilih kembali dalam proses pemindahan barang yg sama
-4. untuk super admin, form tambah pemindahan barang -> pilih perusahaan terkadang suka muncul forbide 403 di url http://localhost/gudang_system/aktifitas/pemindahan/get_data_by_perusahaan
 
-sekarang kita perbaiki ini dahulu yah.
+Alur pergerakan stok untuk Konsumen dan pelanggan:
+1.Saat Draft:
+Reserved bertambah (barang di-reserve untuk transaksi)
+Stok tersedia = jumlah - reserved
+2. Saat Packing:
+Stok gudang berkurang (jumlah berkurang)
+Reserved berkurang (reserved berkurang)
+Stok tersedia = jumlah - reserved (tetap sama karena keduanya berkurang)
+3. Saat Shipping:
+Tidak ada perubahan stok (barang dalam pengiriman)
+4. Saat Delivered:
+Tidak ada perubahan stok (pemindahan selesai dilakuakan)
+5. Saat Cancelled:
+Jika dari Draft: kembalikan reserved (reserved berkurang, jumlah tetap)
+Jika dari Packing/Shipping: kembalikan stok ke gudang asal (jumlah bertambah, reserved tetap)
 
 
-
-cara yang terakhir ini sudah saya terapkan bro namun sepertinya bug lama masih terjadi dan belum solved, bahkan saya memikirkan perbaikan dan tambahan poin baru lagi, yaitu:
-1. form tambah pemindahan barang -> Daftar Barang -> jika mau mau melakukan pemindahan 2 buah barang atau lebih (ada 2 barang yg ingin di lakukan pemindahan), stok barang yg tersedia tidak dimuat dengan baik, sehingga proses tidak dapat dilanjutkan
-2. form tambah pemindahan barang -> Daftar Barang -> seharunya untuk barang yg sudah di pilih, tidak dapat dipilih kembali dalam proses pemindahan barang yg sama ini sudah jalan, hanya saja stok masih belum berhasil di dapat dan di tampilkan
-3. khusus untuk super admin, form tambah pemindahan barang -> pilih perusahaan terkadang suka muncul forbide 403 di url http://localhost/gudang_system/aktifitas/pemindahan/get_data_by_perusahaan saya curiga ini membutuhkan token kembali ketika pilih ulang atau ganti ganti perusahaan
-4. label lokasi tujuan sebaiknya kita hilangkan saja, agar tampilan lebih OK
-5. Tipe tujuan bisa tidak kita buat default langsung menuju Konsumen, dan langsung menampilkan form tambahan yg sudah di diskusikan, jadi tidak perlu lagi ada text "Pilih Tipe" namun langsung saja Konsumen, Pelanggan, Gudang.
-6. form tambah pemindahan barang -> Daftar Barang -> Sepertinya bagian form ini (Nama Konsumen / Toko / Alamat Konsumen) perlu di tataulang, baik dari sisi responsive dan urutannya
-
-
-jadi saat ini ada 6 poin yg perlu dibantu untuk perbaikan.
-beri kode untuk solved issue ini dan bantu saya
+Alur pergerakan stok untuk Gudang:
+1.Saat Draft:
+Reserved bertambah (barang di-reserve untuk transaksi)
+Stok gudang berkurang (jumlah berkurang)
+Stok tersedia = jumlah - reserved
+2. Saat Packing:
+Tidak ada perubahan stok
+3. Saat Shipping:
+Tidak ada perubahan stok (barang dalam pengiriman)
+4. Saat Delivered:
+Stok gudang awal berkurang
+stok gudang tujuan bertambah
+reserved berkurang
+5. Saat Cancelled:
+Jika dari Draft: kembalikan reserved (reserved berkurang, jumlah bertambah)
+Jika dari Packing/Shipping: kembalikan stok ke gudang asal (jumlah bertambah, reserved berkurang)

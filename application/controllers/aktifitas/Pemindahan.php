@@ -251,6 +251,9 @@ class Pemindahan extends MY_Controller
                         'id_gudang' => $this->input->post('id_gudang_asal'),
                         'jumlah' => $barang->jumlah
                     ]);
+
+                    // Tambah reserved saat draft
+                    $this->tambah_reserved($this->input->post('id_gudang_asal'), $barang->id_barang, $barang->jumlah);
                 }
             }
 
@@ -432,16 +435,9 @@ class Pemindahan extends MY_Controller
         $this->session->set_flashdata('error', 'Gagal memperbarui pemindahan barang!');
         return redirect('aktifitas/pemindahan/edit/' . $id_pemindahan);
     }
+
     public function konfirmasi($id_pemindahan, $status)
     {
-        // Tambahkan ini untuk debugging
-        echo "<pre>";
-        echo "ID Pemindahan: " . $id_pemindahan . "<br>";
-        echo "Status: " . $status . "<br>";
-        echo "POST Data: ";
-        print_r($_POST);
-        echo "</pre>";
-        die(); // Hentikan eksekusi untuk melihat output
         log_message('debug', '=== START konfirmasi ===');
         log_message('debug', 'Params: id_pemindahan=' . $id_pemindahan . ', status=' . $status);
 
@@ -481,26 +477,41 @@ class Pemindahan extends MY_Controller
             return redirect('aktifitas/pemindahan');
         }
 
-        // Update status first
+        // Handle stock changes based on status transition
+        if ($status == 'Packing' && $current_status == 'Draft') {
+            // Untuk Konsumen dan Pelanggan
+            if ($pemindahan->tipe_tujuan == 'konsumen' || $pemindahan->tipe_tujuan == 'pelanggan') {
+                log_message('debug', 'Draft to Packing (konsumen/pelanggan): kurangi stok dan reserved');
+                $this->kurangi_stok_dan_reserved($id_pemindahan);
+            }
+            // Untuk Gudang, tidak ada perubahan stok saat packing
+        }
+
+        if ($status == 'Delivered') {
+            // Untuk Gudang
+            if ($pemindahan->tipe_tujuan == 'gudang' && $pemindahan->id_gudang_tujuan) {
+                log_message('debug', 'Shipping to Delivered (gudang): kurangi stok gudang asal, tambah stok gudang tujuan, kurangi reserved');
+                $this->proses_stok_gudang_delivered($id_pemindahan);
+            }
+            // Untuk Konsumen dan Pelanggan, tidak ada perubahan stok saat delivered
+        }
+
+        if ($status == 'Cancelled') {
+            if ($current_status == 'Draft') {
+                log_message('debug', 'Draft to Cancelled: kembalikan reserved');
+                $this->kembalikan_reserved($id_pemindahan);
+            } elseif ($current_status == 'Packing' || $current_status == 'Shipping') {
+                log_message('debug', 'Packing/Shipping to Cancelled: kembalikan stok ke gudang asal');
+                $this->kembalikan_stok($id_pemindahan);
+            }
+        }
+
+        // Update status after handling stock
         log_message('debug', 'About to call update_status');
         $update_result = $this->pemindahan->update_status($id_pemindahan, $status);
         log_message('debug', 'Update status result: ' . ($update_result ? 'SUCCESS' : 'FAILED'));
 
         if ($update_result) {
-            // Handle stock changes based on status transition
-            if ($status == 'Shipping' && $current_status != 'Shipping') {
-                log_message('debug', 'About to call kurangi_stok');
-                $this->kurangi_stok($id_pemindahan);
-            }
-            if ($status == 'Delivered' && $pemindahan->tipe_tujuan == 'gudang' && $pemindahan->id_gudang_tujuan) {
-                log_message('debug', 'About to call tambah_stok');
-                $this->tambah_stok($id_pemindahan);
-            }
-            if ($status == 'Cancelled' && $current_status == 'Shipping') {
-                log_message('debug', 'About to call kembalikan_stok');
-                $this->kembalikan_stok($id_pemindahan);
-            }
-
             $this->log_status_transaksi($id_pemindahan, 'pemindahan_barang', $status);
             $this->session->set_flashdata('success', 'Status pemindahan berhasil diubah menjadi ' . $status);
         } else {
@@ -510,6 +521,7 @@ class Pemindahan extends MY_Controller
         log_message('debug', '=== END konfirmasi ===');
         return redirect('aktifitas/pemindahan');
     }
+
     public function detail($id_pemindahan)
     {
         $this->data['title'] = 'Detail Pemindahan Barang';
@@ -559,31 +571,41 @@ class Pemindahan extends MY_Controller
         return $full_prefix . "-" . $new_number;
     }
 
-    private function kurangi_stok($id_pemindahan)
+    // Fungsi untuk menambah reserved saat draft
+    private function tambah_reserved($id_gudang, $id_barang, $jumlah)
     {
-        log_message('debug', '=== START kurangi_stok for pemindahan ID: ' . $id_pemindahan . ' ===');
+        log_message('debug', '=== START tambah_reserved ===');
+        log_message('debug', 'Params: id_gudang=' . $id_gudang . ', id_barang=' . $id_barang . ', jumlah=' . $jumlah);
+
+        $stok = $this->pemindahan->get_stok_barang($id_gudang, $id_barang);
+
+        if ($stok) {
+            $new_reserved = $stok->reserved + $jumlah;
+            $update_result = $this->pemindahan->update_stok($id_gudang, $id_barang, $stok->jumlah, $new_reserved);
+            log_message('debug', 'Update reserved result: ' . ($update_result ? 'SUCCESS' : 'FAILED'));
+        }
+
+        log_message('debug', '=== END tambah_reserved ===');
+    }
+
+    // Fungsi untuk mengurangi stok dan reserved saat packing (untuk konsumen/pelanggan)
+    private function kurangi_stok_dan_reserved($id_pemindahan)
+    {
+        log_message('debug', '=== START kurangi_stok_dan_reserved for pemindahan ID: ' . $id_pemindahan . ' ===');
 
         $pemindahan = $this->pemindahan->get($id_pemindahan);
         $detail = $this->pemindahan->get_detail($id_pemindahan);
 
-        log_message('debug', 'Pemindahan data: ' . json_encode($pemindahan));
-        log_message('debug', 'Detail count: ' . count($detail));
-
         foreach ($detail as $item) {
-            log_message('debug', 'Processing item: ' . json_encode($item));
-
-            // Get current stock
             $stok = $this->pemindahan->get_stok_barang($pemindahan->id_gudang_asal, $item->id_barang);
 
-            log_message('debug', 'Current stock: ' . json_encode($stok));
-
-            if ($stok && $stok->jumlah >= $item->jumlah) {
-                // Update stock
+            if ($stok && $stok->jumlah >= $item->jumlah && $stok->reserved >= $item->jumlah) {
+                // Kurangi stok dan reserved
                 $new_stok = $stok->jumlah - $item->jumlah;
-                log_message('debug', 'Updating stock from ' . $stok->jumlah . ' to ' . $new_stok);
+                $new_reserved = $stok->reserved - $item->jumlah;
 
-                $update_result = $this->pemindahan->update_stok($pemindahan->id_gudang_asal, $item->id_barang, $new_stok, $stok->reserved);
-                log_message('debug', 'Update result: ' . ($update_result ? 'SUCCESS' : 'FAILED'));
+                $update_result = $this->pemindahan->update_stok($pemindahan->id_gudang_asal, $item->id_barang, $new_stok, $new_reserved);
+                log_message('debug', 'Update stok result: ' . ($update_result ? 'SUCCESS' : 'FAILED'));
 
                 // Log stock movement
                 $log_data = [
@@ -594,94 +616,157 @@ class Pemindahan extends MY_Controller
                     'jenis' => 'keluar',
                     'jumlah' => $item->jumlah,
                     'sisa_stok' => $new_stok,
-                    'keterangan' => 'Pemindahan barang ' . $pemindahan->no_transaksi,
+                    'keterangan' => 'Pengambilan barang untuk packing ' . $pemindahan->no_transaksi,
                     'id_referensi' => $id_pemindahan,
                     'tipe_referensi' => 'pemindahan_barang'
                 ];
 
-                $log_result = $this->pemindahan->insert_log_stok($log_data);
-                log_message('debug', 'Log result: ' . ($log_result ? 'SUCCESS' : 'FAILED'));
+                $this->pemindahan->insert_log_stok($log_data);
             } else {
-                log_message('debug', 'Insufficient stock. Available: ' . ($stok ? $stok->jumlah : 0) . ', Required: ' . $item->jumlah);
-
-                // Handle insufficient stock
-                $this->session->set_flashdata('error', 'Stok tidak mencukup untuk barang ' . $item->nama_barang);
+                log_message('debug', 'Insufficient stock or reserved');
+                $this->session->set_flashdata('error', 'Stok tidak mencukupi untuk barang ' . $item->nama_barang);
                 return redirect('aktifitas/pemindahan');
             }
         }
 
-        log_message('debug', '=== END kurangi_stok ===');
+        log_message('debug', '=== END kurangi_stok_dan_reserved ===');
     }
 
-    private function tambah_stok($id_pemindahan)
+    // Fungsi untuk proses stok gudang saat delivered
+    private function proses_stok_gudang_delivered($id_pemindahan)
     {
+        log_message('debug', '=== START proses_stok_gudang_delivered for pemindahan ID: ' . $id_pemindahan . ' ===');
+
         $pemindahan = $this->pemindahan->get($id_pemindahan);
         $detail = $this->pemindahan->get_detail($id_pemindahan);
 
         foreach ($detail as $item) {
-            // Get current stock
-            $stok = $this->pemindahan->get_stok_barang($pemindahan->id_gudang_tujuan, $item->id_barang);
+            // Proses gudang asal
+            $stok_asal = $this->pemindahan->get_stok_barang($pemindahan->id_gudang_asal, $item->id_barang);
 
-            if ($stok) {
-                // Update stock
-                $new_stok = $stok->jumlah + $item->jumlah;
-                $this->pemindahan->update_stok($pemindahan->id_gudang_tujuan, $item->id_barang, $new_stok, $stok->reserved);
+            if ($stok_asal && $stok_asal->jumlah >= $item->jumlah && $stok_asal->reserved >= $item->jumlah) {
+                // Kurangi stok dan reserved di gudang asal
+                $new_stok_asal = $stok_asal->jumlah - $item->jumlah;
+                $new_reserved_asal = $stok_asal->reserved - $item->jumlah;
 
-                // Log stock movement
-                $log_data = [
+                $update_result_asal = $this->pemindahan->update_stok($pemindahan->id_gudang_asal, $item->id_barang, $new_stok_asal, $new_reserved_asal);
+                log_message('debug', 'Update stok asal result: ' . ($update_result_asal ? 'SUCCESS' : 'FAILED'));
+
+                // Log stock movement gudang asal
+                $log_data_asal = [
+                    'id_barang' => $item->id_barang,
+                    'id_user' => $this->session->userdata('id_user'),
+                    'id_perusahaan' => $pemindahan->id_perusahaan,
+                    'id_gudang' => $pemindahan->id_gudang_asal,
+                    'jenis' => 'transfer_keluar',
+                    'jumlah' => $item->jumlah,
+                    'sisa_stok' => $new_stok_asal,
+                    'keterangan' => 'Pengiriman barang ke gudang tujuan ' . $pemindahan->no_transaksi,
+                    'id_referensi' => $id_pemindahan,
+                    'tipe_referensi' => 'pemindahan_barang'
+                ];
+
+                $this->pemindahan->insert_log_stok($log_data_asal);
+            } else {
+                log_message('debug', 'Insufficient stock or reserved in gudang asal');
+                $this->session->set_flashdata('error', 'Stok tidak mencukupi untuk barang ' . $item->nama_barang);
+                return redirect('aktifitas/pemindahan');
+            }
+
+            // Proses gudang tujuan
+            $stok_tujuan = $this->pemindahan->get_stok_barang($pemindahan->id_gudang_tujuan, $item->id_barang);
+
+            if ($stok_tujuan) {
+                // Tambah stok di gudang tujuan
+                $new_stok_tujuan = $stok_tujuan->jumlah + $item->jumlah;
+
+                $update_result_tujuan = $this->pemindahan->update_stok($pemindahan->id_gudang_tujuan, $item->id_barang, $new_stok_tujuan, $stok_tujuan->reserved);
+                log_message('debug', 'Update stok tujuan result: ' . ($update_result_tujuan ? 'SUCCESS' : 'FAILED'));
+
+                // Log stock movement gudang tujuan
+                $log_data_tujuan = [
                     'id_barang' => $item->id_barang,
                     'id_user' => $this->session->userdata('id_user'),
                     'id_perusahaan' => $pemindahan->id_perusahaan,
                     'id_gudang' => $pemindahan->id_gudang_tujuan,
                     'jenis' => 'transfer_masuk',
                     'jumlah' => $item->jumlah,
-                    'sisa_stok' => $new_stok,
-                    'keterangan' => 'Penerimaan transfer barang ' . $pemindahan->no_transaksi,
+                    'sisa_stok' => $new_stok_tujuan,
+                    'keterangan' => 'Penerimaan barang dari gudang asal ' . $pemindahan->no_transaksi,
                     'id_referensi' => $id_pemindahan,
                     'tipe_referensi' => 'pemindahan_barang'
                 ];
-                $this->pemindahan->insert_log_stok($log_data);
+
+                $this->pemindahan->insert_log_stok($log_data_tujuan);
             } else {
                 // Create new stock record if not exists
-                $new_stok_data = [
-                    'id_perusahaan' => $pemindahan->id_perusahaan,
-                    'id_gudang' => $pemindahan->id_gudang_tujuan,
-                    'id_barang' => $item->id_barang,
-                    'jumlah' => $item->jumlah,
-                    'reserved' => 0
-                ];
-                $this->db->insert('stok_gudang', $new_stok_data);
+                $new_stok_tujuan = $item->jumlah;
+                log_message('debug', 'Creating new stock record with quantity: ' . $new_stok_tujuan);
 
-                // Log stock movement
-                $log_data = [
+                $update_result_tujuan = $this->pemindahan->update_stok($pemindahan->id_gudang_tujuan, $item->id_barang, $new_stok_tujuan, 0);
+                log_message('debug', 'Insert result: ' . ($update_result_tujuan ? 'SUCCESS' : 'FAILED'));
+
+                // Log stock movement gudang tujuan
+                $log_data_tujuan = [
                     'id_barang' => $item->id_barang,
                     'id_user' => $this->session->userdata('id_user'),
                     'id_perusahaan' => $pemindahan->id_perusahaan,
                     'id_gudang' => $pemindahan->id_gudang_tujuan,
                     'jenis' => 'transfer_masuk',
                     'jumlah' => $item->jumlah,
-                    'sisa_stok' => $item->jumlah,
-                    'keterangan' => 'Penerimaan transfer barang ' . $pemindahan->no_transaksi,
+                    'sisa_stok' => $new_stok_tujuan,
+                    'keterangan' => 'Penerimaan barang dari gudang asal ' . $pemindahan->no_transaksi,
                     'id_referensi' => $id_pemindahan,
                     'tipe_referensi' => 'pemindahan_barang'
                 ];
-                $this->pemindahan->insert_log_stok($log_data);
+
+                $this->pemindahan->insert_log_stok($log_data_tujuan);
             }
         }
+
+        log_message('debug', '=== END proses_stok_gudang_delivered ===');
     }
-    private function kembalikan_stok($id_pemindahan)
+
+    // Fungsi untuk mengembalikan reserved saat cancel dari draft
+    private function kembalikan_reserved($id_pemindahan)
     {
+        log_message('debug', '=== START kembalikan_reserved for pemindahan ID: ' . $id_pemindahan . ' ===');
+
         $pemindahan = $this->pemindahan->get($id_pemindahan);
         $detail = $this->pemindahan->get_detail($id_pemindahan);
 
         foreach ($detail as $item) {
-            // Get current stock
             $stok = $this->pemindahan->get_stok_barang($pemindahan->id_gudang_asal, $item->id_barang);
 
             if ($stok) {
-                // Update stock
+                // Kembalikan reserved
+                $new_reserved = $stok->reserved - $item->jumlah;
+
+                $update_result = $this->pemindahan->update_stok($pemindahan->id_gudang_asal, $item->id_barang, $stok->jumlah, $new_reserved);
+                log_message('debug', 'Update reserved result: ' . ($update_result ? 'SUCCESS' : 'FAILED'));
+            }
+        }
+
+        log_message('debug', '=== END kembalikan_reserved ===');
+    }
+
+    // Fungsi untuk mengembalikan stok saat cancel dari packing/shipping
+    private function kembalikan_stok($id_pemindahan)
+    {
+        log_message('debug', '=== START kembalikan_stok for pemindahan ID: ' . $id_pemindahan . ' ===');
+
+        $pemindahan = $this->pemindahan->get($id_pemindahan);
+        $detail = $this->pemindahan->get_detail($id_pemindahan);
+
+        foreach ($detail as $item) {
+            $stok = $this->pemindahan->get_stok_barang($pemindahan->id_gudang_asal, $item->id_barang);
+
+            if ($stok) {
+                // Kembalikan stok
                 $new_stok = $stok->jumlah + $item->jumlah;
-                $this->pemindahan->update_stok($pemindahan->id_gudang_asal, $item->id_barang, $new_stok, $stok->reserved);
+
+                $update_result = $this->pemindahan->update_stok($pemindahan->id_gudang_asal, $item->id_barang, $new_stok, $stok->reserved);
+                log_message('debug', 'Update stok result: ' . ($update_result ? 'SUCCESS' : 'FAILED'));
 
                 // Log stock movement
                 $log_data = [
@@ -696,9 +781,12 @@ class Pemindahan extends MY_Controller
                     'id_referensi' => $id_pemindahan,
                     'tipe_referensi' => 'pemindahan_barang'
                 ];
+
                 $this->pemindahan->insert_log_stok($log_data);
             }
         }
+
+        log_message('debug', '=== END kembalikan_stok ===');
     }
 
     private function log_status_transaksi($id_transaksi, $tipe_transaksi, $status)

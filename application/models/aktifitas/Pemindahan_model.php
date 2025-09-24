@@ -7,6 +7,7 @@ class Pemindahan_model extends CI_Model
     {
         parent::__construct();
     }
+
     public function get_data_by_perusahaan($id_perusahaan)
     {
         $data = [];
@@ -40,6 +41,7 @@ class Pemindahan_model extends CI_Model
 
         return $data;
     }
+
     public function get_all_stok()
     {
         $this->db->select('sg.*');
@@ -66,6 +68,7 @@ class Pemindahan_model extends CI_Model
         $this->db->where('g.deleted_at', NULL);
         return $this->db->get()->result();
     }
+
     public function get_barang_by_gudang_with_stock($id_gudang)
     {
         $this->db->select('b.*, sg.jumlah, sg.reserved');
@@ -77,7 +80,6 @@ class Pemindahan_model extends CI_Model
         $this->db->order_by('b.nama_barang', 'ASC');
         return $this->db->get()->result();
     }
-
 
     public function get_barang_by_perusahaan_with_stock($id_perusahaan)
     {
@@ -91,6 +93,7 @@ class Pemindahan_model extends CI_Model
         $this->db->order_by('b.nama_barang', 'ASC');
         return $this->db->get()->result();
     }
+
     public function get_all()
     {
         $user_role = $this->session->userdata('id_role');
@@ -166,6 +169,7 @@ class Pemindahan_model extends CI_Model
         $this->db->where('id_pemindahan', $id_pemindahan);
         return $this->db->update('pemindahan_barang', $data);
     }
+
     public function update_status($id_pemindahan, $status)
     {
         log_message('debug', '=== START update_status ===');
@@ -198,28 +202,58 @@ class Pemindahan_model extends CI_Model
         $this->db->where('id_barang', $id_barang);
         return $this->db->get('stok_gudang')->row();
     }
+
     public function update_stok($id_gudang, $id_barang, $jumlah, $reserved = 0)
     {
         log_message('debug', '=== START update_stok ===');
         log_message('debug', 'Params: id_gudang=' . $id_gudang . ', id_barang=' . $id_barang . ', jumlah=' . $jumlah . ', reserved=' . $reserved);
 
+        // Check if stock record exists
         $this->db->where('id_gudang', $id_gudang);
         $this->db->where('id_barang', $id_barang);
-        $this->db->set('jumlah', $jumlah);
-        $this->db->set('reserved', $reserved);
-        $this->db->set('updated_at', date('Y-m-d H:i:s'));
+        $query = $this->db->get('stok_gudang');
 
-        $query = $this->db->get_compiled_update('stok_gudang');
-        log_message('debug', 'Update query: ' . $this->db->last_query());
+        if ($query->num_rows() > 0) {
+            // Update existing record
+            $this->db->where('id_gudang', $id_gudang);
+            $this->db->where('id_barang', $id_barang);
+            $this->db->set('jumlah', $jumlah);
+            $this->db->set('reserved', $reserved);
+            $this->db->set('updated_at', date('Y-m-d H:i:s'));
 
-        $result = $this->db->update('stok_gudang');
-        log_message('debug', 'Update result: ' . ($result ? 'SUCCESS' : 'FAILED'));
-        log_message('debug', 'Affected rows: ' . $this->db->affected_rows());
+            $result = $this->db->update('stok_gudang');
+            log_message('debug', 'Update query: ' . $this->db->last_query());
+            log_message('debug', 'Update result: ' . ($result ? 'SUCCESS' : 'FAILED'));
+            log_message('debug', 'Affected rows: ' . $this->db->affected_rows());
+        } else {
+            // Create new record if not exists
+            $data = array(
+                'id_gudang' => $id_gudang,
+                'id_barang' => $id_barang,
+                'jumlah' => $jumlah,
+                'reserved' => $reserved,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
+            );
+
+            // Get company information
+            $this->db->select('id_perusahaan');
+            $this->db->where('id_gudang', $id_gudang);
+            $gudang = $this->db->get('gudang')->row();
+
+            if ($gudang) {
+                $data['id_perusahaan'] = $gudang->id_perusahaan;
+            }
+
+            $result = $this->db->insert('stok_gudang', $data);
+            log_message('debug', 'Insert query: ' . $this->db->last_query());
+            log_message('debug', 'Insert result: ' . ($result ? 'SUCCESS' : 'FAILED'));
+        }
 
         log_message('debug', '=== END update_stok ===');
-
         return $result;
     }
+
     public function insert_log_stok($data)
     {
         $this->db->insert('log_stok', $data);
@@ -239,6 +273,7 @@ class Pemindahan_model extends CI_Model
         $this->db->where('deleted_at', NULL);
         return $this->db->get('pelanggan')->result();
     }
+
     public function get_alamat_pelanggan($id_pelanggan)
     {
         $this->db->select('p.alamat, p.telepon, p.email');
