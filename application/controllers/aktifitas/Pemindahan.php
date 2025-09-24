@@ -171,8 +171,9 @@ class Pemindahan extends MY_Controller
             return $this->render_view('aktifitas/pemindahan/form', $data);
         }
 
-        // Generate nomor transaksi
-        $no_transaksi = $this->generate_no_transaksi();
+        // Generate nomor transaksi berdasarkan tipe tujuan
+        $tipe_tujuan = $this->input->post('tipe_tujuan');
+        $no_transaksi = $this->generate_no_transaksi($tipe_tujuan);
 
         // Tentukan perusahaan
         if ($user_role == 1) {
@@ -231,32 +232,24 @@ class Pemindahan extends MY_Controller
 
         if ($id_pemindahan) {
             // Simpan detail barang
-            $barang_ids = $this->input->post('id_barang');
-            $jumlahs = $this->input->post('jumlah');
+            $barang_dipindahkan = json_decode($this->input->post('barang_dipindahkan'));
 
-            // Cek duplikasi barang
-            $unique_barang = array_unique($barang_ids);
-            if (count($barang_ids) != count($unique_barang)) {
-                $this->session->set_flashdata('error', 'Tidak boleh ada barang yang duplikat dalam satu transaksi!');
-                return redirect('aktifitas/pemindahan/tambah');
-            }
-
-            foreach ($barang_ids as $key => $id_barang) {
-                if ($id_barang && $jumlahs[$key] > 0) {
+            if ($barang_dipindahkan) {
+                foreach ($barang_dipindahkan as $barang) {
                     // Validasi stok
-                    $stok = $this->pemindahan->get_stok_barang($this->input->post('id_gudang_asal'), $id_barang);
+                    $stok = $this->pemindahan->get_stok_barang($this->input->post('id_gudang_asal'), $barang->id_barang);
                     $stok_tersedia = $stok ? ($stok->jumlah - $stok->reserved) : 0;
 
-                    if ($jumlahs[$key] > $stok_tersedia) {
+                    if ($barang->jumlah > $stok_tersedia) {
                         $this->session->set_flashdata('error', 'Stok barang tidak mencukupi!');
                         return redirect('aktifitas/pemindahan/tambah');
                     }
 
                     $this->pemindahan->insert_detail([
                         'id_pemindahan' => $id_pemindahan,
-                        'id_barang' => $id_barang,
+                        'id_barang' => $barang->id_barang,
                         'id_gudang' => $this->input->post('id_gudang_asal'),
-                        'jumlah' => $jumlahs[$key]
+                        'jumlah' => $barang->jumlah
                     ]);
                 }
             }
@@ -345,6 +338,12 @@ class Pemindahan extends MY_Controller
         $tipe_tujuan = $this->input->post('tipe_tujuan');
         $data_update['tipe_tujuan'] = $tipe_tujuan;
 
+        // Jika tipe tujuan berubah, generate nomor transaksi baru
+        if ($tipe_tujuan != $this->data['pemindahan']->tipe_tujuan) {
+            $no_transaksi = $this->generate_no_transaksi($tipe_tujuan);
+            $data_update['no_transaksi'] = $no_transaksi;
+        }
+
         // Validasi gudang asal dan tujuan
         if ($tipe_tujuan == 'gudang') {
             $id_gudang_asal = $this->input->post('id_gudang_asal');
@@ -400,33 +399,28 @@ class Pemindahan extends MY_Controller
         }
 
         if ($this->pemindahan->update($id_pemindahan, $data_update)) {
+            // Hapus detail lama
+            $this->pemindahan->delete_detail($id_pemindahan);
 
-            $barang_ids = $this->input->post('id_barang');
-            $jumlahs = $this->input->post('jumlah');
+            // Simpan detail barang baru
+            $barang_dipindahkan = json_decode($this->input->post('barang_dipindahkan'));
 
-            // Cek duplikasi barang
-            $unique_barang = array_unique($barang_ids);
-            if (count($barang_ids) != count($unique_barang)) {
-                $this->session->set_flashdata('error', 'Tidak boleh ada barang yang duplikat dalam satu transaksi!');
-                return redirect('aktifitas/pemindahan/edit/' . $id_pemindahan);
-            }
-
-            foreach ($barang_ids as $key => $id_barang) {
-                if ($id_barang && $jumlahs[$key] > 0) {
+            if ($barang_dipindahkan) {
+                foreach ($barang_dipindahkan as $barang) {
                     // Validasi stok
-                    $stok = $this->pemindahan->get_stok_barang($this->input->post('id_gudang_asal'), $id_barang);
+                    $stok = $this->pemindahan->get_stok_barang($this->input->post('id_gudang_asal'), $barang->id_barang);
                     $stok_tersedia = $stok ? ($stok->jumlah - $stok->reserved) : 0;
 
-                    if ($jumlahs[$key] > $stok_tersedia) {
+                    if ($barang->jumlah > $stok_tersedia) {
                         $this->session->set_flashdata('error', 'Stok barang tidak mencukupi!');
                         return redirect('aktifitas/pemindahan/edit/' . $id_pemindahan);
                     }
 
                     $this->pemindahan->insert_detail([
                         'id_pemindahan' => $id_pemindahan,
-                        'id_barang' => $id_barang,
+                        'id_barang' => $barang->id_barang,
                         'id_gudang' => $this->input->post('id_gudang_asal'),
-                        'jumlah' => $jumlahs[$key]
+                        'jumlah' => $barang->jumlah
                     ]);
                 }
             }
@@ -478,6 +472,7 @@ class Pemindahan extends MY_Controller
         }
 
         if ($this->pemindahan->update_status($id_pemindahan, $status)) {
+            // Handle stock changes based on status transition
             if ($status == 'Shipping' && $current_status != 'Shipping') {
                 $this->kurangi_stok($id_pemindahan);
             }
@@ -510,22 +505,40 @@ class Pemindahan extends MY_Controller
         $this->render_view('aktifitas/pemindahan/detail');
     }
 
-    private function generate_no_transaksi()
+    private function generate_no_transaksi($tipe_tujuan = null)
     {
-        $prefix = 'PMB-' . date('ymd');
-        $this->db->like('no_transaksi', $prefix, 'after');
+        // Tentukan prefix berdasarkan tipe tujuan
+        $prefix = '';
+        switch ($tipe_tujuan) {
+            case 'konsumen':
+                $prefix = 'K-PMB-';
+                break;
+            case 'gudang':
+                $prefix = 'G-PMB-';
+                break;
+            case 'pelanggan':
+                $prefix = 'P-PMB-';
+                break;
+            default:
+                $prefix = 'PMB-';
+        }
+
+        $date_prefix = date('ymd');
+        $full_prefix = $prefix . $date_prefix;
+
+        $this->db->like('no_transaksi', $full_prefix, 'after');
         $this->db->order_by('no_transaksi', 'DESC');
         $this->db->limit(1);
         $last = $this->db->get('pemindahan_barang')->row();
 
         if ($last) {
-            $last_number = substr($last->no_transaksi, -4);
-            $new_number = str_pad($last_number + 1, 4, '0', STR_PAD_LEFT);
+            $last_number = substr($last->no_transaksi, -5);
+            $new_number = str_pad($last_number + 1, 5, '0', STR_PAD_LEFT);
         } else {
-            $new_number = '0001';
+            $new_number = '00001';
         }
 
-        return $prefix . $new_number;
+        return $full_prefix . "-" . $new_number;
     }
 
     private function kurangi_stok($id_pemindahan)
@@ -546,7 +559,7 @@ class Pemindahan extends MY_Controller
                 $log_data = [
                     'id_barang' => $item->id_barang,
                     'id_user' => $this->session->userdata('id_user'),
-                    'id_perusahaan' => $this->session->userdata('id_perusahaan'),
+                    'id_perusahaan' => $pemindahan->id_perusahaan,
                     'id_gudang' => $pemindahan->id_gudang_asal,
                     'jenis' => 'keluar',
                     'jumlah' => $item->jumlah,
@@ -556,6 +569,10 @@ class Pemindahan extends MY_Controller
                     'tipe_referensi' => 'pemindahan_barang'
                 ];
                 $this->pemindahan->insert_log_stok($log_data);
+            } else {
+                // Handle insufficient stock
+                $this->session->set_flashdata('error', 'Stok tidak mencukup untuk barang ' . $item->nama_barang);
+                return redirect('aktifitas/pemindahan');
             }
         }
     }
@@ -578,7 +595,7 @@ class Pemindahan extends MY_Controller
                 $log_data = [
                     'id_barang' => $item->id_barang,
                     'id_user' => $this->session->userdata('id_user'),
-                    'id_perusahaan' => $this->session->userdata('id_perusahaan'),
+                    'id_perusahaan' => $pemindahan->id_perusahaan,
                     'id_gudang' => $pemindahan->id_gudang_tujuan,
                     'jenis' => 'transfer_masuk',
                     'jumlah' => $item->jumlah,
@@ -603,7 +620,7 @@ class Pemindahan extends MY_Controller
                 $log_data = [
                     'id_barang' => $item->id_barang,
                     'id_user' => $this->session->userdata('id_user'),
-                    'id_perusahaan' => $this->session->userdata('id_perusahaan'),
+                    'id_perusahaan' => $pemindahan->id_perusahaan,
                     'id_gudang' => $pemindahan->id_gudang_tujuan,
                     'jenis' => 'transfer_masuk',
                     'jumlah' => $item->jumlah,
@@ -616,7 +633,6 @@ class Pemindahan extends MY_Controller
             }
         }
     }
-
     private function kembalikan_stok($id_pemindahan)
     {
         $pemindahan = $this->pemindahan->get($id_pemindahan);
@@ -635,7 +651,7 @@ class Pemindahan extends MY_Controller
                 $log_data = [
                     'id_barang' => $item->id_barang,
                     'id_user' => $this->session->userdata('id_user'),
-                    'id_perusahaan' => $this->session->userdata('id_perusahaan'),
+                    'id_perusahaan' => $pemindahan->id_perusahaan,
                     'id_gudang' => $pemindahan->id_gudang_asal,
                     'jenis' => 'penyesuaian',
                     'jumlah' => $item->jumlah,

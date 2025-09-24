@@ -389,7 +389,7 @@ CREATE TABLE `pemindahan_barang` (
   `no_transaksi` varchar(50) DEFAULT NULL,
   `id_user` int(11) NOT NULL,
   `id_gudang_asal` int(11) NOT NULL,
-  `tipe_tujuan` enum('gudang','pelanggan') NOT NULL,
+  `tipe_tujuan` enum('konsumen','gudang','pelanggan') NOT NULL,
   `id_gudang_tujuan` int(11) DEFAULT NULL,
   `id_pelanggan` int(11) DEFAULT NULL,
   `id_konsumen` int(11) DEFAULT NULL,

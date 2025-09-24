@@ -10,8 +10,14 @@ echo isset($data_master_js) ? $data_master_js : '';
     </div>
     <div class="card-body">
         <?php echo form_open(current_url(), array('id' => 'form-pemindahan')); ?>
-        <div class="row">
-            <?php if ($this->session->userdata('id_role') == 1): // Super Admin ?>
+
+        <!-- Hidden field for tanggal pemindahan -->
+        <input type="hidden" id="tanggal_pemindahan" name="tanggal_pemindahan"
+            value="<?php echo date('Y-m-d H:i:s'); ?>">
+
+        <!-- Informasi Transaksi -->
+        <?php if ($this->session->userdata('id_role') == 1): // Super Admin ?>
+            <div class="row mb-4">
                 <div class="col-md-6">
                     <div class="form-group">
                         <label for="id_perusahaan">Perusahaan <span class="text-danger">*</span></label>
@@ -26,33 +32,161 @@ echo isset($data_master_js) ? $data_master_js : '';
                         <?php echo form_error('id_perusahaan', '<small class="text-danger">', '</small>'); ?>
                     </div>
                 </div>
-            <?php endif; ?>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="id_gudang_asal">Gudang Asal <span class="text-danger">*</span></label>
+                        <select class="form-control" id="id_gudang_asal" name="id_gudang_asal" required>
+                            <option value="">-- Pilih Gudang --</option>
+                            <?php foreach ($gudang as $row): ?>
+                                <option value="<?php echo $row->id_gudang; ?>" <?php echo (isset($pemindahan) && $pemindahan->id_gudang_asal == $row->id_gudang) ? 'selected' : ''; ?>>
+                                    <?php echo $row->nama_gudang; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <?php echo form_error('id_gudang_asal', '<small class="text-danger">', '</small>'); ?>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group"></div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="cari_barang">Cari Barang</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="cari_barang"
+                                placeholder="Ketik nama barang, SKU, atau motor">
+                            <div class="input-group-append">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php else: ?>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="id_gudang_asal">Gudang Asal <span class="text-danger">*</span></label>
+                        <select class="form-control" id="id_gudang_asal" name="id_gudang_asal" required>
+                            <option value="">-- Pilih Gudang --</option>
+                            <?php foreach ($gudang as $row): ?>
+                                <option value="<?php echo $row->id_gudang; ?>" <?php echo (isset($pemindahan) && $pemindahan->id_gudang_asal == $row->id_gudang) ? 'selected' : ''; ?>>
+                                    <?php echo $row->nama_gudang; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <?php echo form_error('id_gudang_asal', '<small class="text-danger">', '</small>'); ?>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="cari_barang">Cari Barang</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="cari_barang"
+                                placeholder="Ketik nama barang, SKU, atau motor">
+                            <div class="input-group-append">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
 
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="tanggal_pemindahan">Tanggal Pemindahan</label>
-                    <input type="text" class="form-control" id="tanggal_pemindahan" name="tanggal_pemindahan"
-                        value="<?php echo date('d-m-Y H:i:s'); ?>" readonly>
-                    <small class="text-muted">Waktu real, tidak dapat diubah</small>
+        <!-- Daftar Barang Tersedia -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Daftar Barang Tersedia</h6>
+                <span class="badge badge-info" id="jumlah-barang-tersedia">0 barang</span>
+            </div>
+            <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover compact small"
+                        id="table_barang_tersedia">
+                        <thead>
+                            <tr>
+                                <th width="4%">No</th>
+                                <th width="20%">Nama Barang</th>
+                                <th width="10%">Kode Barang</th>
+                                <th width="10%">SKU</th>
+                                <th width="8%">Ukuran</th>
+                                <th width="15%">Motor</th>
+                                <th width="10%">Warna</th>
+                                <th width="8%">Stok</th>
+                                <th width="6%">Satuan</th>
+                                <th width="9%">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data akan diisi via JavaScript -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="id_gudang_asal">Gudang Asal <span class="text-danger">*</span></label>
-                    <select class="form-control" id="id_gudang_asal" name="id_gudang_asal" required>
-                        <option value="">-- Pilih Gudang --</option>
-                        <?php foreach ($gudang as $row): ?>
-                            <option value="<?php echo $row->id_gudang; ?>" <?php echo (isset($pemindahan) && $pemindahan->id_gudang_asal == $row->id_gudang) ? 'selected' : ''; ?>>
-                                <?php echo $row->nama_gudang; ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                    <?php echo form_error('id_gudang_asal', '<small class="text-danger">', '</small>'); ?>
+        <!-- Barang Dipindahkan -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Barang Dipindahkan</h6>
+                <span class="badge badge-success" id="jumlah-barang-dipindahkan">0 barang</span>
+            </div>
+            <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover compact small"
+                        id="table_barang_dipindahkan">
+                        <thead>
+                            <tr>
+                                <th width="4%">No</th>
+                                <th width="20%">Nama Barang</th>
+                                <th width="10%">Kode Barang</th>
+                                <th width="10%">SKU</th>
+                                <th width="8%">Ukuran</th>
+                                <th width="15%">Motor</th>
+                                <th width="10%">Warna</th>
+                                <th width="8%">Jumlah</th>
+                                <th width="6%">Satuan</th>
+                                <th width="9%">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (isset($detail)): ?>
+                                <?php foreach ($detail as $key => $item): ?>
+                                    <tr>
+                                        <td><?php echo $key + 1; ?></td>
+                                        <td><?php echo $item->nama_barang; ?></td>
+                                        <td><?php echo $item->kode_barang ?: '-'; ?></td>
+                                        <td><?php echo $item->sku; ?></td>
+                                        <td><?php echo $item->ukuran ?: '-'; ?></td>
+                                        <td><?php echo $item->motor ?: '-'; ?></td>
+                                        <td><?php echo $item->warna ?: '-'; ?></td>
+                                        <td>
+                                            <input type="number" class="form-control form-control-sm jumlah-barang"
+                                                name="jumlah[]" value="<?php echo $item->jumlah; ?>" min="1" required
+                                                data-id_barang="<?php echo $item->id_barang; ?>">
+                                        </td>
+                                        <td><?php echo $item->satuan; ?></td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-danger btn-hapus-barang"
+                                                data-id_barang="<?php echo $item->id_barang; ?>">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
                 </div>
+            </div>
+        </div>
 
+        <hr>
+
+
+        <!-- Informasi Transaksi -->
+        <div class="row mb-4">
+            <div class="col-md-6">
                 <div class="form-group">
                     <label for="tipe_tujuan">Tipe Tujuan <span class="text-danger">*</span></label>
                     <select class="form-control" id="tipe_tujuan" name="tipe_tujuan" required>
@@ -63,6 +197,13 @@ echo isset($data_master_js) ? $data_master_js : '';
                     <?php echo form_error('tipe_tujuan', '<small class="text-danger">', '</small>'); ?>
                 </div>
 
+                <div class="form-group">
+                    <label for="keterangan">Keterangan</label>
+                    <textarea class="form-control" id="keterangan" name="keterangan"
+                        rows="2"><?php echo set_value('keterangan', isset($pemindahan) ? $pemindahan->keterangan : ''); ?></textarea>
+                </div>
+            </div>
+            <div class="col-md-6">
                 <!-- Gudang Tujuan -->
                 <div id="gudang_tujuan_field" style="display: none;">
                     <div class="form-group">
@@ -103,19 +244,19 @@ echo isset($data_master_js) ? $data_master_js : '';
                 </div>
 
                 <!-- Konsumen -->
-                <div class="form-group">
-                    <label for="id_toko_konsumen">Toko</label>
-                    <select class="form-control" id="id_toko_konsumen" name="id_toko_konsumen">
-                        <option value="">-- Pilih Toko --</option>
-                        <?php foreach ($toko_konsumen as $row): ?>
-                            <option value="<?php echo $row->id_toko_konsumen; ?>" <?php echo (isset($pemindahan) && $pemindahan->id_konsumen && $pemindahan->id_toko_konsumen == $row->id_toko_konsumen) ? 'selected' : ''; ?>>
-                                <?php echo $row->nama_toko_konsumen; ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+                <div id="konsumen_field" style="display: none;">
+                    <div class="form-group">
+                        <label for="id_toko_konsumen">Toko</label>
+                        <select class="form-control" id="id_toko_konsumen" name="id_toko_konsumen">
+                            <option value="">-- Pilih Toko --</option>
+                            <?php foreach ($toko_konsumen as $row): ?>
+                                <option value="<?php echo $row->id_toko_konsumen; ?>" <?php echo (isset($pemindahan) && $pemindahan->id_konsumen && $pemindahan->id_toko_konsumen == $row->id_toko_konsumen) ? 'selected' : ''; ?>>
+                                    <?php echo $row->nama_toko_konsumen; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
 
-                <div id="konsumen_field">
                     <div class="form-group">
                         <label for="nama_konsumen">Nama Konsumen</label>
                         <input type="text" class="form-control" id="nama_konsumen" name="nama_konsumen"
@@ -129,94 +270,17 @@ echo isset($data_master_js) ? $data_master_js : '';
                     </div>
                 </div>
             </div>
-
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="keterangan">Keterangan</label>
-                    <textarea class="form-control" id="keterangan" name="keterangan"
-                        rows="3"><?php echo set_value('keterangan', isset($pemindahan) ? $pemindahan->keterangan : ''); ?></textarea>
-                </div>
-            </div>
         </div>
 
-        <hr>
+        <input type="hidden" id="barang_dipindahkan" name="barang_dipindahkan" value="">
 
-        <h6>Daftar Barang</h6>
-        <div class="table-responsive mb-3">
-            <table class="table table-bordered" id="table_barang">
-                <thead>
-                    <tr>
-                        <th width="5%">No</th>
-                        <th width="40%">Barang</th>
-                        <th width="15%">Stok Tersedia</th>
-                        <th width="15%">Jumlah</th>
-                        <th width="10%">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (isset($detail)): ?>
-                        <?php foreach ($detail as $key => $item): ?>
-                            <tr>
-                                <td><?php echo $key + 1; ?></td>
-                                <td>
-                                    <select class="form-control select-barang" name="id_barang[]" required>
-                                        <option value="">-- Pilih Barang --</option>
-                                        <?php foreach ($barang as $row): ?>
-                                            <option value="<?php echo $row->id_barang; ?>" <?php echo ($item->id_barang == $row->id_barang) ? 'selected' : ''; ?>>
-                                                <?php echo $row->nama_barang; ?> (<?php echo $row->sku; ?>)
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </td>
-                                <td>
-                                    <input type="text" class="form-control stok-tersedia" readonly>
-                                </td>
-                                <td>
-                                    <input type="number" class="form-control" name="jumlah[]"
-                                        value="<?php echo $item->jumlah; ?>" min="1" required>
-                                </td>
-                                <td>
-                                    <button type="button" class="btn btn-sm btn-danger btn-hapus-barang"><i
-                                            class="fas fa-trash"></i></button>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <tr>
-                            <td>1</td>
-                            <td>
-                                <select class="form-control select-barang" name="id_barang[]" required>
-                                    <option value="">-- Pilih Barang --</option>
-                                    <?php foreach ($barang as $row): ?>
-                                        <option value="<?php echo $row->id_barang; ?>"><?php echo $row->nama_barang; ?>
-                                            (<?php echo $row->sku; ?>)</option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="text" class="form-control stok-tersedia" readonly>
-                            </td>
-                            <td>
-                                <input type="number" class="form-control" name="jumlah[]" min="1" required>
-                            </td>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-danger btn-hapus-barang"><i
-                                        class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="form-group">
-            <button type="button" class="btn btn-secondary" id="btn-tambah-barang"><i class="fas fa-plus"></i> Tambah
-                Barang</button>
-        </div>
-
-        <div class="form-group">
-            <button type="submit" class="btn btn-primary">Simpan</button>
-            <a href="<?php echo site_url('aktifitas/pemindahan'); ?>" class="btn btn-secondary">Batal</a>
+        <div class="form-group mt-4">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Simpan
+            </button>
+            <a href="<?php echo site_url('aktifitas/pemindahan'); ?>" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Batal
+            </a>
         </div>
         <?php echo form_close(); ?>
     </div>

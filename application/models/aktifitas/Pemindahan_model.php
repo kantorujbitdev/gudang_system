@@ -177,6 +177,12 @@ class Pemindahan_model extends CI_Model
         return $this->db->update('pemindahan_barang', $data);
     }
 
+    public function delete_detail($id_pemindahan)
+    {
+        $this->db->where('id_pemindahan', $id_pemindahan);
+        return $this->db->delete('detail_pemindahan_barang');
+    }
+
     public function get_stok_barang($id_gudang, $id_barang)
     {
         $this->db->where('id_gudang', $id_gudang);
@@ -193,7 +199,14 @@ class Pemindahan_model extends CI_Model
             'reserved' => $reserved,
             'updated_at' => date('Y-m-d H:i:s')
         ];
-        return $this->db->update('stok_gudang', $data);
+
+        $result = $this->db->update('stok_gudang', $data);
+
+        // Debug log
+        log_message('debug', 'Update stok: ' . $this->db->last_query());
+        log_message('debug', 'Update result: ' . ($result ? 'Success' : 'Failed'));
+
+        return $result;
     }
 
     public function insert_log_stok($data)
