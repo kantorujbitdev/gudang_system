@@ -89,9 +89,9 @@
                     <div class="col-md-4">
                         <div class="card bg-success text-white">
                             <div class="card-body">
-                                <h5 class="card-title">Total Penjualan</h5>
-                                <h3 class="card-text">Rp
-                                    <?php echo number_format($this->sales->get_summary($filter)->total_penjualan ?: 0, 0, ',', '.'); ?>
+                                <h5 class="card-title">Total Barang</h5>
+                                <h3 class="card-text">
+                                    <?php echo $this->sales->get_summary($filter)->total_barang ?: 0; ?>
                                 </h3>
                             </div>
                         </div>
@@ -100,8 +100,8 @@
                         <div class="card bg-info text-white">
                             <div class="card-body">
                                 <h5 class="card-title">Rata-rata</h5>
-                                <h3 class="card-text">Rp
-                                    <?php echo number_format(($this->sales->get_summary($filter)->total_penjualan ?: 0) / ($this->sales->get_summary($filter)->total_transaksi ?: 1), 0, ',', '.'); ?>
+                                <h3 class="card-text">
+                                    <?php echo number_format(($this->sales->get_summary($filter)->total_barang ?: 0) / ($this->sales->get_summary($filter)->total_transaksi ?: 1), 0, ',', '.'); ?>
                                 </h3>
                             </div>
                         </div>
@@ -110,15 +110,15 @@
 
                 <div class="row mt-3">
                     <div class="col-md-6">
-                        <h6>Top 5 Pelanggan</h6>
+                        <h6>Top 5 Tujuan</h6>
                         <div class="table-responsive">
                             <table class="table table-sm">
                                 <thead>
                                     <tr>
                                         <th>No</th>
-                                        <th>Pelanggan</th>
+                                        <th>Tujuan</th>
                                         <th>Transaksi</th>
-                                        <th>Total</th>
+                                        <th>Total Barang</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -127,9 +127,9 @@
                                     <?php foreach ($top_pelanggan as $row): ?>
                                         <tr>
                                             <td><?php echo $no++; ?></td>
-                                            <td><?php echo $row->nama_pelanggan; ?></td>
+                                            <td><?php echo $row->nama_tujuan; ?></td>
                                             <td><?php echo $row->total_transaksi; ?></td>
-                                            <td>Rp <?php echo number_format($row->total_penjualan, 0, ',', '.'); ?></td>
+                                            <td><?php echo $row->total_barang; ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -145,7 +145,7 @@
                                         <th>No</th>
                                         <th>Barang</th>
                                         <th>Jumlah</th>
-                                        <th>Total</th>
+                                        <th>Satuan</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -155,8 +155,8 @@
                                         <tr>
                                             <td><?php echo $no++; ?></td>
                                             <td><?php echo $row->nama_barang; ?></td>
-                                            <td><?php echo $row->total_jumlah; ?>     <?php echo $row->satuan; ?></td>
-                                            <td>Rp <?php echo number_format($row->total_penjualan, 0, ',', '.'); ?></td>
+                                            <td><?php echo $row->total_jumlah; ?></td>
+                                            <td><?php echo $row->satuan; ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -206,12 +206,12 @@
                 <thead>
                     <tr>
                         <th>No</th>
-                        <th>No Invoice</th>
+                        <th>No Transaksi</th>
                         <th>Tanggal</th>
-                        <th>Pelanggan</th>
+                        <th>Tujuan</th>
                         <th>Barang</th>
                         <th>Jumlah</th>
-                        <th>Total</th>
+                        <th>Satuan</th>
                         <th>Status</th>
                         <th>Aksi</th>
                     </tr>
@@ -221,12 +221,12 @@
                     foreach ($sales as $row): ?>
                         <tr>
                             <td><?php echo $no++; ?></td>
-                            <td><?php echo $row->no_invoice; ?></td>
-                            <td><?php echo date('d-m-Y H:i', strtotime($row->tanggal_penjualan)); ?></td>
-                            <td><?php echo $row->nama_pelanggan; ?></td>
+                            <td><?php echo $row->no_transaksi; ?></td>
+                            <td><?php echo date('d-m-Y H:i:s', strtotime($row->tanggal_pemindahan)); ?></td>
+                            <td><?php echo $row->nama_tujuan; ?></td>
                             <td><?php echo $row->nama_barang; ?></td>
                             <td><?php echo $row->jumlah; ?></td>
-                            <td>Rp <?php echo number_format($row->total, 0, ',', '.'); ?></td>
+                            <td><?php echo $row->satuan; ?></td>
                             <td>
                                 <?php
                                 $status_class = '';
@@ -251,7 +251,7 @@
                                 <span class="badge <?php echo $status_class; ?>"><?php echo $row->status; ?></span>
                             </td>
                             <td>
-                                <a href="<?php echo site_url('laporan/sales/detail/' . $row->id_penjualan); ?>"
+                                <a href="<?php echo site_url('laporan/sales/detail/' . $row->id_pemindahan); ?>"
                                     class="btn btn-sm btn-info" title="Detail">
                                     <i class="fas fa-info-circle"></i>
                                 </a>

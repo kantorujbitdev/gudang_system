@@ -56,18 +56,18 @@ class Sales extends MY_Controller
         $this->render_view('laporan/sales/index');
     }
 
-    public function detail($id_penjualan)
+    public function detail($id_pemindahan)
     {
-        $penjualan = $this->sales->get_penjualan($id_penjualan);
+        $pemindahan = $this->sales->get_pemindahan($id_pemindahan);
 
-        if (!$penjualan) {
-            $this->session->set_flashdata('error', 'Data penjualan tidak ditemukan!');
+        if (!$pemindahan) {
+            $this->session->set_flashdata('error', 'Data pemindahan barang tidak ditemukan!');
             return redirect('laporan/sales');
         }
 
-        $this->data['title'] = 'Detail Penjualan';
-        $this->data['penjualan'] = $penjualan;
-        $this->data['detail'] = $this->sales->get_detail_penjualan($id_penjualan);
+        $this->data['title'] = 'Detail Pemindahan Barang';
+        $this->data['pemindahan'] = $pemindahan;
+        $this->data['detail'] = $this->sales->get_detail_pemindahan($id_pemindahan);
 
         $this->render_view('laporan/sales/detail');
     }
@@ -83,59 +83,100 @@ class Sales extends MY_Controller
         ];
 
         $sales = $this->sales->get_filtered($filter);
+        $format = $this->input->post('format');
 
-        // Create new PHPExcel object
-        $this->load->library('PHPExcel');
-        $objPHPExcel = new PHPExcel();
+        if ($format == 'excel') {
+            // Create new PHPExcel object
+            $this->load->library('PHPExcel');
+            $objPHPExcel = new PHPExcel();
 
-        // Set properties
-        $objPHPExcel->getProperties()
-            ->setTitle("Laporan Sales")
-            ->setSubject("Laporan Sales")
-            ->setDescription("Laporan Sales");
+            // Set properties
+            $objPHPExcel->getProperties()
+                ->setTitle("Laporan Sales")
+                ->setSubject("Laporan Sales")
+                ->setDescription("Laporan Sales");
 
-        // Add header
-        $objPHPExcel->setActiveSheetIndex(0)
-            ->setCellValue('A1', 'No')
-            ->setCellValue('B1', 'No Invoice')
-            ->setCellValue('C1', 'Tanggal')
-            ->setCellValue('D1', 'Pelanggan')
-            ->setCellValue('E1', 'Barang')
-            ->setCellValue('F1', 'Jumlah')
-            ->setCellValue('G1', 'Total')
-            ->setCellValue('H1', 'Status');
-
-        // Add data
-        $row = 2;
-        $no = 1;
-        foreach ($sales as $item) {
+            // Add header
             $objPHPExcel->setActiveSheetIndex(0)
-                ->setCellValue('A' . $row, $no++)
-                ->setCellValue('B' . $row, $item->no_invoice)
-                ->setCellValue('C' . $row, date('d-m-Y', strtotime($item->tanggal_penjualan)))
-                ->setCellValue('D' . $row, $item->nama_pelanggan)
-                ->setCellValue('E' . $row, $item->nama_barang)
-                ->setCellValue('F' . $row, $item->jumlah)
-                ->setCellValue('G' . $row, $item->total)
-                ->setCellValue('H' . $row, $item->status);
-            $row++;
+                ->setCellValue('A1', 'No')
+                ->setCellValue('B1', 'No Transaksi')
+                ->setCellValue('C1', 'Tanggal')
+                ->setCellValue('D1', 'Tujuan')
+                ->setCellValue('E1', 'Barang')
+                ->setCellValue('F1', 'Jumlah')
+                ->setCellValue('G1', 'Satuan')
+                ->setCellValue('H1', 'Status');
+
+            // Add data
+            $row = 2;
+            $no = 1;
+            foreach ($sales as $item) {
+                $objPHPExcel->setActiveSheetIndex(0)
+                    ->setCellValue('A' . $row, $no++)
+                    ->setCellValue('B' . $row, $item->no_transaksi)
+                    ->setCellValue('C' . $row, date('d-m-Y', strtotime($item->tanggal_pemindahan)))
+                    ->setCellValue('D' . $row, $item->nama_tujuan)
+                    ->setCellValue('E' . $row, $item->nama_barang)
+                    ->setCellValue('F' . $row, $item->jumlah)
+                    ->setCellValue('G' . $row, $item->satuan)
+                    ->setCellValue('H' . $row, $item->status);
+                $row++;
+            }
+
+            // Auto size columns
+            foreach (range('A', 'H') as $column) {
+                $objPHPExcel->getActiveSheet()->getColumnDimension($column)->setAutoSize(true);
+            }
+
+            // Set active sheet index to the first sheet
+            $objPHPExcel->setActiveSheetIndex(0);
+
+            // Redirect output to client browser
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment;filename="Laporan_Sales_' . date('YmdHis') . '.xlsx"');
+            header('Cache-Control: max-age=0');
+
+            $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+            $objWriter->save('php://output');
+            exit;
+        } elseif ($format == 'csv') {
+            // Export to CSV
+            header('Content-Type: text/csv');
+            header('Content-Disposition: attachment;filename="Laporan_Sales_' . date('YmdHis') . '.csv"');
+
+            $output = fopen('php://output', 'w');
+
+            // Add header
+            fputcsv($output, array('No', 'No Transaksi', 'Tanggal', 'Tujuan', 'Barang', 'Jumlah', 'Satuan', 'Status'));
+
+            // Add data
+            $no = 1;
+            foreach ($sales as $item) {
+                fputcsv($output, array(
+                    $no++,
+                    $item->no_transaksi,
+                    date('d-m-Y', strtotime($item->tanggal_pemindahan)),
+                    $item->nama_tujuan,
+                    $item->nama_barang,
+                    $item->jumlah,
+                    $item->satuan,
+                    $item->status
+                ));
+            }
+
+            fclose($output);
+            exit;
+        } elseif ($format == 'pdf') {
+            // Export to PDF
+            $this->load->library('pdf');
+
+            $data['sales'] = $sales;
+            $data['title'] = 'Laporan Sales';
+            $data['filter'] = $filter;
+
+            $html = $this->load->view('laporan/sales/pdf', $data, true);
+
+            $this->pdf->create($html, 'Laporan_Sales_' . date('YmdHis') . '.pdf');
         }
-
-        // Auto size columns
-        foreach (range('A', 'I') as $column) {
-            $objPHPExcel->getActiveSheet()->getColumnDimension($column)->setAutoSize(true);
-        }
-
-        // Set active sheet index to the first sheet
-        $objPHPExcel->setActiveSheetIndex(0);
-
-        // Redirect output to client browser
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="Laporan_Sales_' . date('YmdHis') . '.xlsx"');
-        header('Cache-Control: max-age=0');
-
-        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-        $objWriter->save('php://output');
-        exit;
     }
 }

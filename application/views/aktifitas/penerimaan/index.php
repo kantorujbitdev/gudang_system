@@ -34,7 +34,7 @@
                         <tr>
                             <td><?php echo $no++; ?></td>
                             <td><?php echo $row->no_penerimaan; ?></td>
-                            <td><?php echo date('d-m-Y H:i', strtotime($row->tanggal_penerimaan)); ?></td>
+                            <td><?php echo date('d-m-Y H:i:s', strtotime($row->tanggal_penerimaan)); ?></td>
                             <td><?php echo $row->nama_supplier; ?></td>
                             <td><?php echo $row->nama_gudang; ?></td>
                             <td><?php echo $row->user_nama; ?></td>

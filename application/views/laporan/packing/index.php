@@ -188,7 +188,7 @@
                         <tr>
                             <td><?php echo $no++; ?></td>
                             <td><?php echo $row->id_packing; ?></td>
-                            <td><?php echo date('d-m-Y H:i', strtotime($row->tanggal_packing)); ?></td>
+                            <td><?php echo date('d-m-Y H:i:s', strtotime($row->tanggal_packing)); ?></td>
                             <td><?php echo $row->user_nama; ?></td>
                             <td><?php echo $row->tipe_referensi . ' #' . $row->id_referensi; ?></td>
                             <td><?php echo $row->nama_barang; ?></td>

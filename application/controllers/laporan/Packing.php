@@ -109,7 +109,7 @@ class Packing extends MY_Controller
             $objPHPExcel->setActiveSheetIndex(0)
                 ->setCellValue('A' . $row, $no++)
                 ->setCellValue('B' . $row, $item->id_packing)
-                ->setCellValue('C' . $row, date('d-m-Y H:i', strtotime($item->tanggal_packing)))
+                ->setCellValue('C' . $row, date('d-m-Y H:i:s', strtotime($item->tanggal_packing)))
                 ->setCellValue('D' . $row, $item->user_nama)
                 ->setCellValue('E' . $row, $item->tipe_referensi . ' #' . $item->id_referensi)
                 ->setCellValue('F' . $row, $item->nama_barang)

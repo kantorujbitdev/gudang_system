@@ -35,7 +35,7 @@
                         <tr>
                             <td><?php echo $no++; ?></td>
                             <td><?php echo $row->no_transaksi; ?></td>
-                            <td><?php echo date('d-m-Y H:i', strtotime($row->tanggal_pemindahan)); ?></td>
+                            <td><?php echo date('d-m-Y H:i:s', strtotime($row->tanggal_pemindahan)); ?></td>
                             <td><?php echo $row->gudang_asal; ?></td>
                             <td><?php echo ucfirst($row->tipe_tujuan); ?></td>
                             <td>

@@ -83,12 +83,12 @@
                     </tr>
                     <tr>
                         <td><strong>Dibuat Pada</strong></td>
-                        <td><?php echo date('d/m/Y H:i', strtotime($user->created_at)); ?></td>
+                        <td><?php echo date('d/m/Y H:i:s', strtotime($user->created_at)); ?></td>
                     </tr>
                     <?php if ($user->last_login): ?>
                         <tr>
                             <td><strong>Login Terakhir</strong></td>
-                            <td><?php echo date('d/m/Y H:i', strtotime($user->last_login)); ?></td>
+                            <td><?php echo date('d/m/Y H:i:s', strtotime($user->last_login)); ?></td>
                         </tr>
                     <?php endif; ?>
                 </table>

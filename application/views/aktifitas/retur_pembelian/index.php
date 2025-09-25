@@ -33,7 +33,7 @@
                         <tr>
                             <td><?php echo $no++; ?></td>
                             <td><?php echo $row->no_retur_beli; ?></td>
-                            <td><?php echo date('d-m-Y H:i', strtotime($row->tanggal_retur)); ?></td>
+                            <td><?php echo date('d-m-Y H:i:s', strtotime($row->tanggal_retur)); ?></td>
                             <td><?php echo $row->nama_supplier; ?></td>
                             <td><?php echo $row->user_nama; ?></td>
                             <td>

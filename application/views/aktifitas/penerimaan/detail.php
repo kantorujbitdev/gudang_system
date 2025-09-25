@@ -23,7 +23,7 @@
                     </tr>
                     <tr>
                         <th>Tanggal</th>
-                        <td><?php echo date('d-m-Y H:i', strtotime($penerimaan->tanggal_penerimaan)); ?></td>
+                        <td><?php echo date('d-m-Y H:i:s', strtotime($penerimaan->tanggal_penerimaan)); ?></td>
                     </tr>
                     <tr>
                         <th>Supplier</th>

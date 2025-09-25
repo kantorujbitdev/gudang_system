@@ -21,7 +21,7 @@
                     </tr>
                     <tr>
                         <th>Tanggal</th>
-                        <td><?php echo date('d-m-Y H:i', strtotime($packing->tanggal_packing)); ?></td>
+                        <td><?php echo date('d-m-Y H:i:s', strtotime($packing->tanggal_packing)); ?></td>
                     </tr>
                     <tr>
                         <th>User</th>

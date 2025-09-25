@@ -282,7 +282,7 @@
                     foreach ($mutasi as $row): ?>
                         <tr>
                             <td><?php echo $no++; ?></td>
-                            <td><?php echo date('d-m-Y H:i', strtotime($row->tanggal)); ?></td>
+                            <td><?php echo date('d-m-Y H:i:s', strtotime($row->tanggal)); ?></td>
                             <td><?php echo $row->nama_barang; ?></td>
                             <td><?php echo $row->nama_gudang; ?></td>
                             <td>

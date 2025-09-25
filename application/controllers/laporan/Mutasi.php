@@ -103,7 +103,7 @@ class Mutasi extends MY_Controller
         foreach ($mutasi as $item) {
             $objPHPExcel->setActiveSheetIndex(0)
                 ->setCellValue('A' . $row, $no++)
-                ->setCellValue('B' . $row, date('d-m-Y H:i', strtotime($item->tanggal)))
+                ->setCellValue('B' . $row, date('d-m-Y H:i:s', strtotime($item->tanggal)))
                 ->setCellValue('C' . $row, $item->nama_barang)
                 ->setCellValue('D' . $row, $item->nama_gudang)
                 ->setCellValue('E' . $row, ucfirst($item->jenis))

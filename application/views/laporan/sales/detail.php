@@ -2,7 +2,8 @@
     <div class="card-header py-3">
         <div class="row">
             <div class="col">
-                <h6 class="m-0 font-weight-bold text-primary">Detail Penjualan: <?php echo $penjualan->no_invoice; ?>
+                <h6 class="m-0 font-weight-bold text-primary">Detail Pemindahan Barang:
+                    <?php echo $pemindahan->no_transaksi; ?>
                 </h6>
             </div>
             <div class="col text-right">
@@ -17,24 +18,24 @@
             <div class="col-md-6">
                 <table class="table table-sm">
                     <tr>
-                        <th width="30%">No Invoice</th>
-                        <td><?php echo $penjualan->no_invoice; ?></td>
+                        <th width="30%">No Transaksi</th>
+                        <td><?php echo $pemindahan->no_transaksi; ?></td>
                     </tr>
                     <tr>
                         <th>Tanggal</th>
-                        <td><?php echo date('d-m-Y H:i', strtotime($penjualan->tanggal_penjualan)); ?></td>
+                        <td><?php echo date('d-m-Y H:i:s', strtotime($pemindahan->tanggal_pemindahan)); ?></td>
                     </tr>
                     <tr>
-                        <th>Pelanggan</th>
-                        <td><?php echo $penjualan->nama_pelanggan; ?></td>
+                        <th>Tujuan</th>
+                        <td><?php echo $pemindahan->nama_tujuan; ?></td>
                     </tr>
                     <tr>
                         <th>Alamat</th>
-                        <td><?php echo $penjualan->alamat ?: '-'; ?></td>
+                        <td><?php echo $pemindahan->alamat_tujuan ?: '-'; ?></td>
                     </tr>
                     <tr>
                         <th>Telepon</th>
-                        <td><?php echo $penjualan->telepon ?: '-'; ?></td>
+                        <td><?php echo $pemindahan->telepon_tujuan ?: '-'; ?></td>
                     </tr>
                 </table>
             </div>
@@ -42,14 +43,18 @@
                 <table class="table table-sm">
                     <tr>
                         <th width="30%">User</th>
-                        <td><?php echo $penjualan->user_nama; ?></td>
+                        <td><?php echo $pemindahan->user_nama; ?></td>
+                    </tr>
+                    <tr>
+                        <th>Gudang Asal</th>
+                        <td><?php echo $pemindahan->gudang_asal; ?></td>
                     </tr>
                     <tr>
                         <th>Status</th>
                         <td>
                             <?php
                             $status_class = '';
-                            switch ($penjualan->status) {
+                            switch ($pemindahan->status) {
                                 case 'Draft':
                                     $status_class = 'badge-secondary';
                                     break;
@@ -67,12 +72,12 @@
                                     break;
                             }
                             ?>
-                            <span class="badge <?php echo $status_class; ?>"><?php echo $penjualan->status; ?></span>
+                            <span class="badge <?php echo $status_class; ?>"><?php echo $pemindahan->status; ?></span>
                         </td>
                     </tr>
                     <tr>
                         <th>Keterangan</th>
-                        <td><?php echo $penjualan->keterangan ?: '-'; ?></td>
+                        <td><?php echo $pemindahan->keterangan ?: '-'; ?></td>
                     </tr>
                 </table>
             </div>
@@ -90,7 +95,6 @@
                         <th>Satuan</th>
                         <th>Gudang</th>
                         <th>Jumlah</th>
-                        <th>Total</th>
                     </tr>
                 </thead>
                 <tbody>

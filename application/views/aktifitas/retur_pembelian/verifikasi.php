@@ -24,7 +24,7 @@
                     </tr>
                     <tr>
                         <th>Tanggal</th>
-                        <td><?php echo date('d-m-Y H:i', strtotime($retur->tanggal_retur)); ?></td>
+                        <td><?php echo date('d-m-Y H:i:s', strtotime($retur->tanggal_retur)); ?></td>
                     </tr>
                     <tr>
                         <th>No Pembelian</th>
