@@ -138,6 +138,7 @@ class Stok_awal extends MY_Controller
             echo json_encode(['status' => 'error', 'message' => 'Error: ' . $e->getMessage()]);
         }
     }
+
     public function tambah()
     {
         if (!$this->check_permission('pengaturan/stok_awal', 'create')) {
@@ -168,22 +169,37 @@ class Stok_awal extends MY_Controller
             return redirect('pengaturan/stok_awal/tambah');
         }
 
-        $data_insert = [
-            'id_barang' => $id_barang,
-            'id_gudang' => $id_gudang,
-            'id_perusahaan' => $id_perusahaan,
-            'qty_awal' => $qty_awal,
-            'keterangan' => $this->input->post('keterangan'),
-            'created_by' => $this->session->userdata('id_user'),
-            'created_at' => date('Y-m-d H:i:s')
-        ];
+        // Mulai transaksi
+        $this->db->trans_start();
 
-        if ($this->stok_awal->insert($data_insert)) {
+        try {
+            $data_insert = [
+                'id_barang' => $id_barang,
+                'id_gudang' => $id_gudang,
+                'id_perusahaan' => $id_perusahaan,
+                'qty_awal' => $qty_awal,
+                'keterangan' => $this->input->post('keterangan'),
+                'created_by' => $this->session->userdata('id_user'),
+                'created_at' => date('Y-m-d H:i:s')
+            ];
+
+            $this->stok_awal->insert($data_insert);
             $this->update_stok_gudang($id_barang, $id_gudang, $qty_awal);
-            $this->session->set_flashdata('success', 'Stok awal berhasil ditambahkan!');
-            return redirect('pengaturan/stok_awal');
-        } else {
-            $this->session->set_flashdata('error', 'Gagal menambahkan stok awal!');
+
+            // Selesaikan transaksi
+            $this->db->trans_complete();
+
+            if ($this->db->trans_status() === FALSE) {
+                $this->session->set_flashdata('error', 'Transaksi gagal!');
+                return redirect('pengaturan/stok_awal/tambah');
+            } else {
+                $this->session->set_flashdata('success', 'Stok awal berhasil ditambahkan!');
+                return redirect('pengaturan/stok_awal');
+            }
+        } catch (Exception $e) {
+            // Rollback transaksi jika ada error
+            $this->db->trans_rollback();
+            $this->session->set_flashdata('error', 'Error: ' . $e->getMessage());
             return redirect('pengaturan/stok_awal/tambah');
         }
     }

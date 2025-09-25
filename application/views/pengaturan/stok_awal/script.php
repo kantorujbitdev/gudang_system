@@ -1,7 +1,7 @@
 <script>
     $(document).ready(function () {
-        // Handle tombol tambah stok
-        $('.btn-tambah-stok').click(function () {
+        // Handle tombol tambah stok dengan event delegation
+        $(document).on('click', '.btn-tambah-stok', function () {
             var id_barang = $(this).data('id_barang');
             var nama_barang = $(this).data('nama_barang');
             var id_gudang = $(this).data('id_gudang');
