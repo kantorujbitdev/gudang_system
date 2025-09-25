@@ -274,7 +274,6 @@ CREATE TABLE `konsumen` (
   `id_toko_konsumen` int(11) NOT NULL,
   `alamat_konsumen` text DEFAULT NULL,
   `id_perusahaan` int(11) NOT NULL,
-  `status_aktif` tinyint(1) DEFAULT 1,
   `created_at` datetime DEFAULT current_timestamp(),
   PRIMARY KEY (`id_konsumen`),
   KEY `id_toko_konsumen` (`id_toko_konsumen`),
@@ -607,8 +606,7 @@ WHERE `b`.`status_aktif` = 1 AND `g`.`status_aktif` = 1 AND `p`.`status_aktif` =
 
 -- Insert data untuk tabel perusahaan
 INSERT INTO `perusahaan` (`id_perusahaan`, `nama_perusahaan`, `alamat`, `telepon`, `email`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 'PT. MGV MOTORINDO', 'Jl. Sudirman No. 10, Jakarta', '021-12345678', '', 1, NULL, '2025-09-15 22:53:59', '2025-09-17 12:09:24'),
-(2, 'PT. Sukses Sejahtera', 'Jl. Thamrin No. 5, Jakarta', '021-87654321', '', 1, NULL, '2025-09-16 10:15:30', NULL);
+(1, 'PT. MGV MOTORINDO', 'Jl. Sudirman No. 10, Jakarta', '021-12345678', '', 1, NULL, '2025-09-15 22:53:59', '2025-09-17 12:09:24');
 
 -- Insert data untuk tabel role_user
 INSERT INTO `role_user` (`id_role`, `nama_role`, `deskripsi`) VALUES
@@ -666,13 +664,13 @@ INSERT INTO `kategori` (`id_kategori`, `id_perusahaan`, `nama_kategori`, `deskri
 
 -- Data untuk tabel gudang
 INSERT INTO `gudang` (`id_gudang`, `id_perusahaan`, `nama_gudang`, `alamat`, `telepon`, `created_by`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 1, 'Gudang Utama', 'Alamat Gudang Utama', '02112345679', NULL, 1, NULL, '2025-09-16 00:12:08', NULL),
+(1, 1, 'Gudang Utama', 'Alamat Gudang Utama', '02112345679', 1, 1, NULL, '2025-09-16 00:12:08', NULL),
 (2, 1, 'Gudang Jakarta Timur', 'Jl. Jatinegara No. 10', '02112345680', 1, 1, NULL, '2025-09-17 19:01:45', '2025-09-20 06:18:46');
 
 -- Data untuk tabel pelanggan
-INSERT INTO `pelanggan` (`id_pelanggan`, `id_perusahaan`, `nama_pelanggan`, `alamat`, `telepon`, `email`, `tipe_pelanggan`, `id_sales`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 1, 'Toko Maju Jaya', 'Jl. Sudirman No. 15', '02112345681', 'toko@maju.com', 'distributor', NULL, 1, NULL, '2025-09-19 10:18:12', '2025-09-19 10:18:24'),
-(2, 1, 'Budi Santoso', 'Jl. Thamrin No. 20', '081234567893', 'budi@email.com', 'konsumen', 3, 1, NULL, '2025-09-19 11:30:45', NULL);
+INSERT INTO `pelanggan` (`id_pelanggan`, `id_perusahaan`, `nama_pelanggan`, `alamat`, `telepon`, `email`, `tipe_pelanggan`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES
+(1, 1, 'Toko Maju Jaya', 'Jl. Sudirman No. 15', '02112345681', 'toko@maju.com', 'distributor', 1, NULL, '2025-09-19 10:18:12', '2025-09-19 10:18:24'),
+(2, 1, 'Budi Santoso', 'Jl. Thamrin No. 20', '081234567893', 'budi@email.com', 'konsumen', 1, NULL, '2025-09-19 11:30:45', NULL);
 
 -- Data untuk tabel supplier
 INSERT INTO `supplier` (`id_supplier`, `id_perusahaan`, `nama_supplier`, `alamat`, `telepon`, `email`, `kontak_person`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES

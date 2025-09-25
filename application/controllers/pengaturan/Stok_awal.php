@@ -40,12 +40,12 @@ class Stok_awal extends MY_Controller
 
         $this->render_view('pengaturan/stok_awal/index', $this->data);
     }
+
     public function ajax_tambah_stok()
     {
         header('Content-Type: application/json');
 
         if (!$this->check_permission('pengaturan/stok_awal', 'create')) {
-            $this->session->set_flashdata('error', 'Anda tidak memiliki izin!');
             echo json_encode(['status' => 'error', 'message' => 'Anda tidak memiliki izin!']);
             return;
         }
@@ -57,7 +57,6 @@ class Stok_awal extends MY_Controller
 
         // Cek stok sudah ada
         if ($this->stok_awal->get_stok_awal_by_barang_gudang($id_barang, $id_gudang, $id_perusahaan)) {
-            $this->session->set_flashdata('error', 'Stok awal sudah ada!');
             echo json_encode(['status' => 'error', 'message' => 'Stok awal sudah ada!']);
             return;
         }
@@ -77,64 +76,22 @@ class Stok_awal extends MY_Controller
                 'created_at' => date('Y-m-d H:i:s')
             ];
 
-            $this->stok_awal->insert($data_insert);
+            $id_stok_awal = $this->stok_awal->insert($data_insert);
 
-            // Update stok_gudang
-            $stok = $this->stok_awal->get_stok_gudang($id_barang, $id_gudang, $id_perusahaan);
-
-            if ($stok) {
-                // Update stok yang ada
-                $data_stok = [
-                    'jumlah' => $qty_awal,
-                    'updated_at' => date('Y-m-d H:i:s')
-                ];
-                $this->stok_awal->update_stok_gudang($id_barang, $id_gudang, $data_stok);
-            } else {
-                // Insert stok baru
-                $data_stok = [
-                    'id_perusahaan' => $id_perusahaan,
-                    'id_barang' => $id_barang,
-                    'id_gudang' => $id_gudang,
-                    'jumlah' => $qty_awal,
-                    'reserved' => 0,
-                    'created_at' => date('Y-m-d H:i:s'),
-                    'updated_at' => date('Y-m-d H:i:s')
-                ];
-                $this->stok_awal->insert_stok_gudang($data_stok);
-            }
-
-            // Insert log stok
-            $stok_terbaru = $this->stok_awal->get_stok_gudang($id_barang, $id_gudang, $id_perusahaan);
-
-            $log_data = [
-                'id_barang' => $id_barang,
-                'id_user' => $this->session->userdata('id_user'),
-                'id_perusahaan' => $id_perusahaan,
-                'id_gudang' => $id_gudang,
-                'jenis' => 'penyesuaian',
-                'jumlah' => $qty_awal,
-                'sisa_stok' => $stok_terbaru ? $stok_terbaru->jumlah : 0,
-                'keterangan' => 'Penyesuaian stok awal',
-                'tanggal' => date('Y-m-d H:i:s'),
-                'id_referensi' => null,
-                'tipe_referensi' => 'penyesuaian'
-            ];
-            $this->stok_awal->insert_log_stok($log_data);
+            // Update stok_gudang dengan menggunakan fungsi update_stok_gudang yang sudah diperbaiki
+            $this->update_stok_gudang($id_barang, $id_gudang, $qty_awal, 'tambah', $id_stok_awal, 'stok_awal');
 
             // Selesaikan transaksi
             $this->db->trans_complete();
 
             if ($this->db->trans_status() === FALSE) {
-                $this->session->set_flashdata('error', 'Transaksi gagal!');
                 echo json_encode(['status' => 'error', 'message' => 'Transaksi gagal!']);
             } else {
-                $this->session->set_flashdata('success', 'Stok awal berhasil ditambahkan!');
                 echo json_encode(['status' => 'success', 'message' => 'Stok awal berhasil ditambahkan!']);
             }
         } catch (Exception $e) {
             // Rollback transaksi jika ada error
             $this->db->trans_rollback();
-            $this->session->set_flashdata('error', 'Error: ' . $e->getMessage());
             echo json_encode(['status' => 'error', 'message' => 'Error: ' . $e->getMessage()]);
         }
     }
@@ -183,8 +140,8 @@ class Stok_awal extends MY_Controller
                 'created_at' => date('Y-m-d H:i:s')
             ];
 
-            $this->stok_awal->insert($data_insert);
-            $this->update_stok_gudang($id_barang, $id_gudang, $qty_awal);
+            $id_stok_awal = $this->stok_awal->insert($data_insert);
+            $this->update_stok_gudang($id_barang, $id_gudang, $qty_awal, 'tambah', $id_stok_awal, 'stok_awal');
 
             // Selesaikan transaksi
             $this->db->trans_complete();
@@ -240,7 +197,10 @@ class Stok_awal extends MY_Controller
             $this->update_stok_gudang(
                 $this->input->post('id_barang'),
                 $this->input->post('id_gudang'),
-                $this->input->post('qty_awal')
+                $this->input->post('qty_awal'),
+                'edit',
+                $id_stok_awal,
+                'stok_awal'
             );
             $this->session->set_flashdata('success', 'Stok awal berhasil diperbarui!');
             return redirect('pengaturan/stok_awal');
@@ -263,7 +223,7 @@ class Stok_awal extends MY_Controller
         }
 
         if ($this->stok_awal->delete($id_stok_awal)) {
-            $this->update_stok_gudang($stok_awal->id_barang, $stok_awal->id_gudang, 0);
+            $this->update_stok_gudang($stok_awal->id_barang, $stok_awal->id_gudang, 0, 'hapus', $id_stok_awal, 'stok_awal');
             $this->session->set_flashdata('success', 'Stok awal berhasil dihapus!');
         } else {
             $this->session->set_flashdata('error', 'Gagal menghapus stok awal!');
@@ -369,7 +329,8 @@ class Stok_awal extends MY_Controller
                     ];
 
                     if ($this->stok_awal->insert($data_insert)) {
-                        $this->update_stok_gudang($barang->id_barang, $gudang->id_gudang, $qty_awal);
+                        $id_stok_awal = $this->db->insert_id();
+                        $this->update_stok_gudang($barang->id_barang, $gudang->id_gudang, $qty_awal, 'tambah', $id_stok_awal, 'stok_awal');
                         $success_count++;
                     } else {
                         $error_messages[] = "Baris " . ($i + 1) . ": Gagal menyimpan data";
@@ -399,10 +360,38 @@ class Stok_awal extends MY_Controller
         $this->render_view('pengaturan/stok_awal/import');
     }
 
-    private function update_stok_gudang($id_barang, $id_gudang, $jumlah)
+    private function update_stok_gudang($id_barang, $id_gudang, $jumlah, $operasi = 'penyesuaian', $id_referensi = null, $tipe_referensi = 'penyesuaian')
     {
         $id_perusahaan = $this->session->userdata('id_perusahaan');
         $stok = $this->stok_awal->get_stok_gudang($id_barang, $id_gudang);
+
+        // Simpan stok sebelumnya untuk log
+        $stok_sebelumnya = $stok ? $stok->jumlah : 0;
+
+        // Tentukan jenis operasi
+        $jenis = $operasi;
+        $keterangan = '';
+
+        switch ($operasi) {
+            case 'tambah':
+                $jenis = 'masuk';
+                $keterangan = 'Penambahan stok awal';
+                break;
+            case 'edit':
+                $jenis = 'penyesuaian';
+                $keterangan = 'Perubahan stok awal dari ' . $stok_sebelumnya . ' menjadi ' . $jumlah;
+                break;
+            case 'hapus':
+                $jenis = 'keluar';
+                $keterangan = 'Penghapusan stok awal';
+                break;
+            default:
+                $jenis = 'penyesuaian';
+                $keterangan = 'Penyesuaian stok awal';
+        }
+
+        // Hitung perubahan jumlah
+        $perubahan = $jumlah - $stok_sebelumnya;
 
         if ($stok) {
             // Update stok yang ada
@@ -433,13 +422,13 @@ class Stok_awal extends MY_Controller
             'id_user' => $this->session->userdata('id_user'),
             'id_perusahaan' => $id_perusahaan,
             'id_gudang' => $id_gudang,
-            'jenis' => 'penyesuaian',
-            'jumlah' => $jumlah,
+            'jenis' => $jenis,
+            'jumlah' => abs($perubahan), // Gunakan nilai absolut untuk perubahan
             'sisa_stok' => $stok_terbaru ? $stok_terbaru->jumlah : 0,
-            'keterangan' => 'Penyesuaian stok awal',
+            'keterangan' => $keterangan,
             'tanggal' => date('Y-m-d H:i:s'),
-            'id_referensi' => null,
-            'tipe_referensi' => 'penyesuaian'
+            'id_referensi' => $id_referensi,
+            'tipe_referensi' => $tipe_referensi
         ];
         $this->stok_awal->insert_log_stok($log_data);
     }
