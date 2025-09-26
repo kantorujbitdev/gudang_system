@@ -115,8 +115,7 @@ class Pemindahan_model extends CI_Model
 
             // Jika role Sales, hanya bisa lihat pemindahan ke pelanggan miliknya
             if ($user_role == 3) {
-                $this->db->where('pb.tipe_tujuan', 'pelanggan');
-                $this->db->where('p.id_sales', $id_user);
+                $this->db->where('pb.id_user', $id_user);
             }
         }
 
@@ -268,7 +267,6 @@ class Pemindahan_model extends CI_Model
 
     public function get_pelanggan_by_sales($id_sales)
     {
-        $this->db->where('id_sales', $id_sales);
         $this->db->where('status_aktif', 1);
         $this->db->where('deleted_at', NULL);
         return $this->db->get('pelanggan')->result();

@@ -66,6 +66,7 @@
                 <th>Jumlah</th>
                 <th>Satuan</th>
                 <th>Status</th>
+                <th>User</th>
             </tr>
         </thead>
         <tbody>
@@ -80,6 +81,7 @@
                     <td class="text-right"><?php echo $row->jumlah; ?></td>
                     <td><?php echo $row->satuan; ?></td>
                     <td><?php echo $row->status; ?></td>
+                    <td><?php echo $row->nama_user; ?></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>

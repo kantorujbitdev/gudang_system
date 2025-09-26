@@ -21,7 +21,7 @@ class Sales_model extends CI_Model
                             WHEN pb.tipe_tujuan = "konsumen" THEN k.nama_konsumen
                             ELSE "-"
                          END as nama_tujuan,
-                         dpb.id_barang, b.nama_barang, dpb.jumlah, b.satuan, pb.status', FALSE);
+                         dpb.id_barang, b.nama_barang, dpb.jumlah, b.satuan, pb.status, u.nama as nama_user', FALSE);
         $this->db->from('pemindahan_barang pb');
         $this->db->join('detail_pemindahan_barang dpb', 'pb.id_pemindahan = dpb.id_pemindahan');
         $this->db->join('barang b', 'dpb.id_barang = b.id_barang');
@@ -31,6 +31,16 @@ class Sales_model extends CI_Model
         $this->db->join('pelanggan pl', 'pb.id_pelanggan = pl.id_pelanggan', 'left');
         $this->db->join('konsumen k', 'pb.id_konsumen = k.id_konsumen', 'left');
         $this->db->where('pb.id_perusahaan', $id_perusahaan);
+        // Hanya menampilkan data pemindahan barang ke konsumen
+        $this->db->where('pb.tipe_tujuan', 'konsumen');
+
+        // Filter status - hanya menampilkan Shipping dan Delivered
+        if (isset($filter['status']) && !empty($filter['status'])) {
+            $this->db->where('pb.status', $filter['status']);
+        } else {
+            // Default: hanya menampilkan Shipping dan Delivered
+            $this->db->where_in('pb.status', ['Shipping', 'Delivered']);
+        }
 
         // Jika role adalah Sales, hanya tampilkan data miliknya sendiri
         if ($user_role == 3) { // 3 adalah id_role untuk Sales Online
@@ -45,12 +55,12 @@ class Sales_model extends CI_Model
             $this->db->where('DATE(pb.tanggal_pemindahan) <=', $filter['tanggal_akhir']);
         }
 
-        if ($filter['id_pelanggan']) {
-            $this->db->where('pb.id_pelanggan', $filter['id_pelanggan']);
-        }
-
         if ($filter['id_barang']) {
             $this->db->where('dpb.id_barang', $filter['id_barang']);
+        }
+
+        if ($filter['id_user']) {
+            $this->db->where('pb.id_user', $filter['id_user']);
         }
 
         $this->db->order_by('pb.tanggal_pemindahan', 'DESC');
@@ -107,6 +117,16 @@ class Sales_model extends CI_Model
         $this->db->from('pemindahan_barang pb');
         $this->db->join('detail_pemindahan_barang dpb', 'pb.id_pemindahan = dpb.id_pemindahan');
         $this->db->where('pb.id_perusahaan', $id_perusahaan);
+        // Hanya menampilkan data pemindahan barang ke konsumen
+        $this->db->where('pb.tipe_tujuan', 'konsumen');
+
+        // Filter status - hanya menampilkan Shipping dan Delivered
+        if (isset($filter['status']) && !empty($filter['status'])) {
+            $this->db->where('pb.status', $filter['status']);
+        } else {
+            // Default: hanya menampilkan Shipping dan Delivered
+            $this->db->where_in('pb.status', ['Shipping', 'Delivered']);
+        }
 
         // Jika role adalah Sales, hanya tampilkan data miliknya sendiri
         if ($user_role == 3) { // 3 adalah id_role untuk Sales Online
@@ -121,12 +141,12 @@ class Sales_model extends CI_Model
             $this->db->where('DATE(pb.tanggal_pemindahan) <=', $filter['tanggal_akhir']);
         }
 
-        if ($filter['id_pelanggan']) {
-            $this->db->where('pb.id_pelanggan', $filter['id_pelanggan']);
-        }
-
         if ($filter['id_barang']) {
             $this->db->where('dpb.id_barang', $filter['id_barang']);
+        }
+
+        if ($filter['id_user']) {
+            $this->db->where('pb.id_user', $filter['id_user']);
         }
 
         return $this->db->get()->row();
@@ -156,6 +176,16 @@ class Sales_model extends CI_Model
         $this->db->join('pelanggan pl', 'pb.id_pelanggan = pl.id_pelanggan', 'left');
         $this->db->join('konsumen k', 'pb.id_konsumen = k.id_konsumen', 'left');
         $this->db->where('pb.id_perusahaan', $id_perusahaan);
+        // Hanya menampilkan data pemindahan barang ke konsumen
+        $this->db->where('pb.tipe_tujuan', 'konsumen');
+
+        // Filter status - hanya menampilkan Shipping dan Delivered
+        if (isset($filter['status']) && !empty($filter['status'])) {
+            $this->db->where('pb.status', $filter['status']);
+        } else {
+            // Default: hanya menampilkan Shipping dan Delivered
+            $this->db->where_in('pb.status', ['Shipping', 'Delivered']);
+        }
 
         // Jika role adalah Sales, hanya tampilkan data miliknya sendiri
         if ($user_role == 3) { // 3 adalah id_role untuk Sales Online
@@ -172,6 +202,10 @@ class Sales_model extends CI_Model
 
         if ($filter['id_barang']) {
             $this->db->where('dpb.id_barang', $filter['id_barang']);
+        }
+
+        if ($filter['id_user']) {
+            $this->db->where('pb.id_user', $filter['id_user']);
         }
 
         $this->db->group_by('id_tujuan, nama_tujuan');
@@ -191,6 +225,16 @@ class Sales_model extends CI_Model
         $this->db->join('detail_pemindahan_barang dpb', 'pb.id_pemindahan = dpb.id_pemindahan');
         $this->db->join('barang b', 'dpb.id_barang = b.id_barang');
         $this->db->where('pb.id_perusahaan', $id_perusahaan);
+        // Hanya menampilkan data pemindahan barang ke konsumen
+        $this->db->where('pb.tipe_tujuan', 'konsumen');
+
+        // Filter status - hanya menampilkan Shipping dan Delivered
+        if (isset($filter['status']) && !empty($filter['status'])) {
+            $this->db->where('pb.status', $filter['status']);
+        } else {
+            // Default: hanya menampilkan Shipping dan Delivered
+            $this->db->where_in('pb.status', ['Shipping', 'Delivered']);
+        }
 
         // Jika role adalah Sales, hanya tampilkan data miliknya sendiri
         if ($user_role == 3) { // 3 adalah id_role untuk Sales Online
@@ -205,12 +249,24 @@ class Sales_model extends CI_Model
             $this->db->where('DATE(pb.tanggal_pemindahan) <=', $filter['tanggal_akhir']);
         }
 
-        if ($filter['id_pelanggan']) {
-            $this->db->where('pb.id_pelanggan', $filter['id_pelanggan']);
+        if ($filter['id_user']) {
+            $this->db->where('pb.id_user', $filter['id_user']);
         }
 
         $this->db->group_by('b.id_barang, b.nama_barang, b.satuan');
         $this->db->order_by('total_jumlah', 'DESC');
+        return $this->db->get()->result();
+    }
+
+    public function get_users_by_company($id_perusahaan)
+    {
+        $this->db->select('u.id_user, u.nama, r.nama_role');
+        $this->db->from('user u');
+        $this->db->join('role_user r', 'u.id_role = r.id_role');
+        $this->db->where('u.id_perusahaan', $id_perusahaan);
+        $this->db->where('u.aktif', 1);
+        $this->db->where_in('u.id_role', array(2, 3)); // Admin Perusahaan dan Sales Online
+        $this->db->order_by('r.nama_role, u.nama');
         return $this->db->get()->result();
     }
 }

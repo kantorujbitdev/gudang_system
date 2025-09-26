@@ -39,19 +39,6 @@
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label for="id_pelanggan">Pelanggan</label>
-                            <select class="form-control" id="id_pelanggan" name="id_pelanggan">
-                                <option value="">Semua Pelanggan</option>
-                                <?php foreach ($pelanggan as $row): ?>
-                                    <option value="<?php echo $row->id_pelanggan; ?>" <?php echo ($filter['id_pelanggan'] == $row->id_pelanggan) ? 'selected' : ''; ?>>
-                                        <?php echo $row->nama_pelanggan; ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
                             <label for="id_barang">Barang</label>
                             <select class="form-control" id="id_barang" name="id_barang">
                                 <option value="">Semua Barang</option>
@@ -63,10 +50,52 @@
                             </select>
                         </div>
                     </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="status">Status</label>
+                            <select class="form-control" id="status" name="status">
+                                <option value="">Semua Status</option>
+                                <option value="Shipping" <?php echo (isset($filter['status']) && $filter['status'] == 'Shipping') ? 'selected' : ''; ?>>Shipping</option>
+                                <option value="Delivered" <?php echo (isset($filter['status']) && $filter['status'] == 'Delivered') ? 'selected' : ''; ?>>Delivered</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <button type="submit" class="btn btn-primary">Terapkan Filter</button>
-                    <a href="<?php echo site_url('laporan/sales'); ?>" class="btn btn-secondary">Reset</a>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="id_user">User</label>
+                            <select class="form-control" id="id_user" name="id_user">
+                                <option value="">Semua User</option>
+                                <?php
+                                $current_role = '';
+                                foreach ($users as $row):
+                                    if ($current_role != $row->nama_role) {
+                                        if ($current_role != '')
+                                            echo '</optgroup>';
+                                        echo '<optgroup label="' . $row->nama_role . '">';
+                                        $current_role = $row->nama_role;
+                                    }
+                                    ?>
+                                    <option value="<?php echo $row->id_user; ?>" <?php echo ($filter['id_user'] == $row->id_user) ? 'selected' : ''; ?>>
+                                        <?php echo $row->nama; ?>
+                                    </option>
+                                <?php endforeach;
+                                if ($current_role != '')
+                                    echo '</optgroup>';
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-primary">Terapkan Filter</button>
+                                <a href="<?php echo site_url('laporan/sales'); ?>" class="btn btn-secondary">Reset</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <?php echo form_close(); ?>
             </div>
@@ -173,8 +202,9 @@
                 <?php echo form_open('laporan/sales/export'); ?>
                 <input type="hidden" name="tanggal_awal" value="<?php echo $filter['tanggal_awal']; ?>">
                 <input type="hidden" name="tanggal_akhir" value="<?php echo $filter['tanggal_akhir']; ?>">
-                <input type="hidden" name="id_pelanggan" value="<?php echo $filter['id_pelanggan']; ?>">
                 <input type="hidden" name="id_barang" value="<?php echo $filter['id_barang']; ?>">
+                <input type="hidden" name="id_user" value="<?php echo $filter['id_user']; ?>">
+                <input type="hidden" name="status" value="<?php echo $filter['status']; ?>">
 
                 <div class="row">
                     <div class="col-md-4">
@@ -213,6 +243,7 @@
                         <th>Jumlah</th>
                         <th>Satuan</th>
                         <th>Status</th>
+                        <th>User</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -250,6 +281,7 @@
                                 ?>
                                 <span class="badge <?php echo $status_class; ?>"><?php echo $row->status; ?></span>
                             </td>
+                            <td><?php echo $row->nama_user; ?></td>
                             <td>
                                 <a href="<?php echo site_url('laporan/sales/detail/' . $row->id_pemindahan); ?>"
                                     class="btn btn-sm btn-info" title="Detail">
@@ -260,6 +292,7 @@
                     <?php endforeach; ?>
                 </tbody>
             </table>
+
         </div>
     </div>
 </div>

@@ -7,7 +7,6 @@ class Sales extends MY_Controller
     {
         parent::__construct();
         $this->load->model('laporan/Sales_model', 'sales');
-        $this->load->model('setup/Pelanggan_model', 'pelanggan');
         $this->load->model('setup/Barang_model', 'barang');
         $this->load->helper('form');
         $this->load->library('form_validation');
@@ -19,15 +18,19 @@ class Sales extends MY_Controller
     public function index()
     {
         $this->data['title'] = 'Laporan Sales';
-        $this->data['pelanggan'] = $this->pelanggan->get_all();
         $this->data['barang'] = $this->barang->get_all();
 
-        // Set filter default
+        // Get users by company
+        $id_perusahaan = $this->session->userdata('id_perusahaan');
+        $this->data['users'] = $this->sales->get_users_by_company($id_perusahaan);
+
+        /// Set filter default
         $filter = [
             'tanggal_awal' => date('Y-m-01'),
             'tanggal_akhir' => date('Y-m-d'),
-            'id_pelanggan' => '',
-            'id_barang' => ''
+            'id_barang' => '',
+            'id_user' => '',
+            'status' => '' // Kosong berarti menampilkan semua status (Shipping & Delivered)
         ];
 
         $this->data['filter'] = $filter;
@@ -39,15 +42,19 @@ class Sales extends MY_Controller
     public function filter()
     {
         $this->data['title'] = 'Laporan Sales';
-        $this->data['pelanggan'] = $this->pelanggan->get_all();
         $this->data['barang'] = $this->barang->get_all();
+
+        // Get users by company
+        $id_perusahaan = $this->session->userdata('id_perusahaan');
+        $this->data['users'] = $this->sales->get_users_by_company($id_perusahaan);
 
         // Get filter dari POST
         $filter = [
             'tanggal_awal' => $this->input->post('tanggal_awal') ?: date('Y-m-01'),
             'tanggal_akhir' => $this->input->post('tanggal_akhir') ?: date('Y-m-d'),
-            'id_pelanggan' => $this->input->post('id_pelanggan'),
-            'id_barang' => $this->input->post('id_barang')
+            'id_barang' => $this->input->post('id_barang'),
+            'id_user' => $this->input->post('id_user'),
+            'status' => $this->input->post('status')
         ];
 
         $this->data['filter'] = $filter;
@@ -78,8 +85,8 @@ class Sales extends MY_Controller
         $filter = [
             'tanggal_awal' => $this->input->post('tanggal_awal') ?: date('Y-m-01'),
             'tanggal_akhir' => $this->input->post('tanggal_akhir') ?: date('Y-m-d'),
-            'id_pelanggan' => $this->input->post('id_pelanggan'),
-            'id_barang' => $this->input->post('id_barang')
+            'id_barang' => $this->input->post('id_barang'),
+            'id_user' => $this->input->post('id_user')
         ];
 
         $sales = $this->sales->get_filtered($filter);
@@ -105,7 +112,8 @@ class Sales extends MY_Controller
                 ->setCellValue('E1', 'Barang')
                 ->setCellValue('F1', 'Jumlah')
                 ->setCellValue('G1', 'Satuan')
-                ->setCellValue('H1', 'Status');
+                ->setCellValue('H1', 'Status')
+                ->setCellValue('I1', 'User');
 
             // Add data
             $row = 2;
@@ -119,12 +127,13 @@ class Sales extends MY_Controller
                     ->setCellValue('E' . $row, $item->nama_barang)
                     ->setCellValue('F' . $row, $item->jumlah)
                     ->setCellValue('G' . $row, $item->satuan)
-                    ->setCellValue('H' . $row, $item->status);
+                    ->setCellValue('H' . $row, $item->status)
+                    ->setCellValue('I' . $row, $item->nama_user);
                 $row++;
             }
 
             // Auto size columns
-            foreach (range('A', 'H') as $column) {
+            foreach (range('A', 'I') as $column) {
                 $objPHPExcel->getActiveSheet()->getColumnDimension($column)->setAutoSize(true);
             }
 
@@ -147,7 +156,7 @@ class Sales extends MY_Controller
             $output = fopen('php://output', 'w');
 
             // Add header
-            fputcsv($output, array('No', 'No Transaksi', 'Tanggal', 'Tujuan', 'Barang', 'Jumlah', 'Satuan', 'Status'));
+            fputcsv($output, array('No', 'No Transaksi', 'Tanggal', 'Tujuan', 'Barang', 'Jumlah', 'Satuan', 'Status', 'User'));
 
             // Add data
             $no = 1;
@@ -160,7 +169,8 @@ class Sales extends MY_Controller
                     $item->nama_barang,
                     $item->jumlah,
                     $item->satuan,
-                    $item->status
+                    $item->status,
+                    $item->nama_user
                 ));
             }
 
