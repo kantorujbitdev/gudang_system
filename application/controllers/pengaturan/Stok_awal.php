@@ -6,7 +6,7 @@ class Stok_awal extends MY_Controller
     public function __construct()
     {
         parent::__construct();
-        $this->load->model('Pengaturan/Stok_awal_model', 'stok_awal');
+        $this->load->model('pengaturan/Stok_awal_model', 'stok_awal');
         $this->load->model('setup/Barang_model', 'barang');
         $this->load->model('setup/Gudang_model', 'gudang');
         $this->load->helper('form');

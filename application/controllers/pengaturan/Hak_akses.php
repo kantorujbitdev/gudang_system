@@ -6,7 +6,7 @@ class Hak_akses extends MY_Controller
     public function __construct()
     {
         parent::__construct();
-        $this->load->model('Pengaturan/Hak_akses_model', 'hak_akses');
+        $this->load->model('pengaturan/Hak_akses_model', 'hak_akses');
         $this->load->model('Menu_model');
         $this->load->helper('form');
         $this->load->library('form_validation');

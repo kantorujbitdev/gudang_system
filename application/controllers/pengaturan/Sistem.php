@@ -6,7 +6,7 @@ class Sistem extends MY_Controller
     public function __construct()
     {
         parent::__construct();
-        $this->load->model('Pengaturan/Sistem_model', 'sistem');
+        $this->load->model('pengaturan/Sistem_model', 'sistem');
         $this->load->helper(['form', 'file']);
         $this->load->library('form_validation');
 

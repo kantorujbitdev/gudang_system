@@ -6,7 +6,7 @@ class Approval extends MY_Controller
     public function __construct()
     {
         parent::__construct();
-        $this->load->model('Pengaturan/Approval_model', 'approval');
+        $this->load->model('pengaturan/Approval_model', 'approval');
         $this->load->model('Menu_model');
         $this->load->helper('form');
         $this->load->library('form_validation');

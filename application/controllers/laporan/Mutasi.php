@@ -6,7 +6,7 @@ class Mutasi extends MY_Controller
     public function __construct()
     {
         parent::__construct();
-        $this->load->model('Laporan/Mutasi_model', 'mutasi');
+        $this->load->model('laporan/Mutasi_model', 'mutasi');
         $this->load->model('setup/Barang_model', 'barang');
         $this->load->model('setup/Gudang_model', 'gudang');
         $this->load->helper('form');
