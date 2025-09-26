@@ -586,8 +586,9 @@ CREATE TABLE `log_status_transaksi` (
   KEY `tipe_transaksi` (`tipe_transaksi`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- View v_stok_realtime (bergantung pada stok_gudang, barang, gudang, dan perusahaan)
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_stok_realtime`  AS 
+CREATE ALGORITHM=UNDEFINED
+SQL SECURITY DEFINER
+VIEW `v_stok_realtime` AS
 SELECT 
   `sg`.`id_barang` AS `id_barang`,
   `sg`.`id_gudang` AS `id_gudang`,
@@ -598,12 +599,14 @@ SELECT
   `sg`.`jumlah` - `sg`.`reserved` AS `stok_tersedia`,
   `b`.`satuan` AS `satuan`,
   `p`.`nama_perusahaan` AS `nama_perusahaan`
-FROM (((`stok_gudang` `sg` 
-JOIN `barang` `b` ON(`sg`.`id_barang` = `b`.`id_barang`)) 
-JOIN `gudang` `g` ON(`sg`.`id_gudang` = `g`.`id_gudang`)) 
-JOIN `perusahaan` `p` ON(`sg`.`id_perusahaan` = `p`.`id_perusahaan`)) 
-WHERE `b`.`status_aktif` = 1 AND `g`.`status_aktif` = 1 AND `p`.`status_aktif` = 1;
-
+FROM `stok_gudang` `sg`
+JOIN `barang` `b` ON (`sg`.`id_barang` = `b`.`id_barang`)
+JOIN `gudang` `g` ON (`sg`.`id_gudang` = `g`.`id_gudang`)
+JOIN `perusahaan` `p` ON (`sg`.`id_perusahaan` = `p`.`id_perusahaan`)
+WHERE `b`.`status_aktif` = 1
+  AND `g`.`status_aktif` = 1
+  AND `p`.`status_aktif` = 1;
+  
 -- Insert data untuk tabel perusahaan
 INSERT INTO `perusahaan` (`id_perusahaan`, `nama_perusahaan`, `alamat`, `telepon`, `email`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES
 (1, 'PT. MGV MOTORINDO', 'Jl. Sudirman No. 10, Jakarta', '021-12345678', '', 1, NULL, '2025-09-15 22:53:59', '2025-09-17 12:09:24');
@@ -675,8 +678,7 @@ INSERT INTO `pelanggan` (`id_pelanggan`, `id_perusahaan`, `nama_pelanggan`, `ala
 
 -- Data untuk tabel supplier
 INSERT INTO `supplier` (`id_supplier`, `id_perusahaan`, `nama_supplier`, `alamat`, `telepon`, `email`, `kontak_person`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 1, 'PT. Elektronik Indah', 'Jl. Gatot Subroto No. 25', '02112345682', 'info@elektronik.com', 'Budi', 1, NULL, '2025-09-19 10:17:53', '2025-09-19 10:18:02'),
-(2, 2, 'PT. Tekstil Makmur', 'Jl. Sudirman No. 30', '02187654324', 'info@tekstil.com', 'Siti', 1, NULL, '2025-09-19 14:20:15', NULL);
+(1, 1, 'PT. Otomotif Raya', 'Jl. Gatot Subroto No. 25', '02112345682', 'info@elektronik.com', 'Budi', 1, NULL, '2025-09-19 10:17:53', '2025-09-19 10:18:02');
 
 -- Data untuk tabel approval_flow
 INSERT INTO `approval_flow` (`id_approval`, `tipe_transaksi`, `status_dari`, `status_ke`, `id_role`, `urutan`, `status_aktif`) VALUES
@@ -770,7 +772,6 @@ INSERT INTO hak_akses_menu (id_role, id_menu, can_view, can_create, can_edit, ca
 -- Insert hak akses untuk Admin Packing (id_role = 4)
 INSERT INTO hak_akses_menu (id_role, id_menu, can_view, can_create, can_edit, can_delete) VALUES
 (4, 1, 1, 0, 0, 0),  -- Dashboard (View only)
-(4, 11, 1, 0, 0, 0), -- Admin Retur (View only)
 (4, 12, 1, 1, 1, 0), -- Aktifitas
 (4, 13, 1, 1, 1, 0), -- Pemindahan Barang
 (4, 15, 1, 1, 1, 0), -- Retur Penjualan
@@ -783,7 +784,6 @@ INSERT INTO hak_akses_menu (id_role, id_menu, can_view, can_create, can_edit, ca
 -- Insert hak akses untuk Admin Return (id_role = 5)
 INSERT INTO hak_akses_menu (id_role, id_menu, can_view, can_create, can_edit, can_delete) VALUES
 (5, 1, 1, 0, 0, 0),  -- Dashboard (View only)
-(5, 11, 1, 0, 0, 0), -- Admin Retur (View only)
 (5, 12, 1, 1, 1, 0), -- Aktifitas
 (5, 14, 1, 1, 1, 0), -- Penerimaan Barang
 (5, 15, 1, 1, 1, 0), -- Retur Penjualan

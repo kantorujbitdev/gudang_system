@@ -26,6 +26,95 @@ class User extends MY_Controller
 
         $this->render_view('setup/user/index');
     }
+    public function profile()
+    {
+        $id_user = $this->session->userdata('id_user');
+        $user = $this->user->get($id_user);
+
+        if (!$user) {
+            show_404();
+        }
+
+        $this->data['title'] = 'Profil Saya';
+        $this->data['user'] = $user;
+
+        // Validasi form
+        $this->form_validation->set_rules('nama', 'Nama Lengkap', 'required');
+        $this->form_validation->set_rules('email', 'Email', 'required|valid_email');
+
+        // Kalau password diisi → validasi tambahan
+        if ($this->input->post('password')) {
+            $this->form_validation->set_rules('password', 'Password', 'min_length[6]');
+            $this->form_validation->set_rules('confirm_password', 'Konfirmasi Password', 'matches[password]');
+        }
+
+        if ($this->form_validation->run() === FALSE) {
+            return $this->render_view('setup/user/profile');
+        }
+
+        // Data update
+        $data_update = [
+            'nama' => $this->input->post('nama'),
+            'email' => $this->input->post('email'),
+            'telepon' => $this->input->post('telepon'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ];
+
+        if ($this->input->post('password')) {
+            $data_update['password_hash'] = password_hash($this->input->post('password'), PASSWORD_DEFAULT);
+        }
+
+        if ($this->user->update($id_user, $data_update)) {
+            $this->session->set_flashdata('success', 'Profil berhasil diperbarui');
+        } else {
+            $this->session->set_flashdata('error', 'Gagal memperbarui profil');
+        }
+
+        return redirect('setup/user/profile');
+    }
+    public function change_password()
+    {
+        $this->data['title'] = 'Ubah Password';
+
+        // Aturan validasi
+        $this->form_validation->set_rules('current_password', 'Password Saat Ini', 'required|callback_check_current_password');
+        $this->form_validation->set_rules('new_password', 'Password Baru', 'required|min_length[6]');
+        $this->form_validation->set_rules('confirm_password', 'Konfirmasi Password Baru', 'required|matches[new_password]');
+
+        if ($this->form_validation->run() == FALSE) {
+            return $this->render_view('setup/user/change_password');
+        }
+
+        // Jika validasi sukses
+        $id_user = $this->session->userdata('id_user');
+        $data_update = [
+            'password_hash' => password_hash($this->input->post('new_password'), PASSWORD_DEFAULT),
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+
+        if ($this->user->update($id_user, $data_update)) {
+            $this->session->set_flashdata('success', 'Password berhasil diubah');
+        } else {
+            $this->session->set_flashdata('error', 'Gagal mengubah password');
+        }
+
+        return redirect('dashboard');
+    }
+
+    // Callback untuk validasi password saat ini
+    public function check_current_password($current_password)
+    {
+        $id_user = $this->session->userdata('id_user');
+        $user = $this->user->get($id_user);
+
+        if ($user && password_verify($current_password, $user->password_hash)) {
+            return TRUE;
+        }
+
+        $this->form_validation->set_message('check_current_password', 'Password saat ini salah');
+        return FALSE;
+    }
+
 
     public function tambah($role = null)
     {

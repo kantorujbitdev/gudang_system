@@ -34,7 +34,7 @@
 
         <div class="form-group">
             <button type="submit" class="btn btn-primary">Ubah Password</button>
-            <a href="<?php echo site_url('setup/user/profile'); ?>" class="btn btn-secondary">Batal</a>
+            <a href="<?php echo site_url('dashboard'); ?>" class="btn btn-secondary">Batal</a>
         </div>
         <?php echo form_close(); ?>
     </div>
