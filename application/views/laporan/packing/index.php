@@ -54,12 +54,10 @@
                             <label for="status">Status</label>
                             <select class="form-control" id="status" name="status">
                                 <option value="">Semua Status</option>
-                                <option value="Draft" <?php echo ($filter['status'] == 'Draft') ? 'selected' : ''; ?>>
-                                    Draft</option>
-                                <option value="Packing" <?php echo ($filter['status'] == 'Packing') ? 'selected' : ''; ?>>
-                                    Packing</option>
-                                <option value="Completed" <?php echo ($filter['status'] == 'Completed') ? 'selected' : ''; ?>>Completed</option>
-                                <option value="Cancelled" <?php echo ($filter['status'] == 'Cancelled') ? 'selected' : ''; ?>>Cancelled</option>
+                                <option value="Draft" <?php echo (isset($filter['status']) && $filter['status'] == 'Draft') ? 'selected' : ''; ?>>Draft</option>
+                                <option value="Packing" <?php echo (isset($filter['status']) && $filter['status'] == 'Packing') ? 'selected' : ''; ?>>Packing</option>
+                                <option value="Completed" <?php echo (isset($filter['status']) && $filter['status'] == 'Completed') ? 'selected' : ''; ?>>Completed</option>
+                                <option value="Cancelled" <?php echo (isset($filter['status']) && $filter['status'] == 'Cancelled') ? 'selected' : ''; ?>>Cancelled</option>
                             </select>
                         </div>
                     </div>
@@ -187,7 +185,7 @@
                     foreach ($packing as $row): ?>
                         <tr>
                             <td><?php echo $no++; ?></td>
-                            <td><?php echo $row->id_packing; ?></td>
+                            <td>#<?php echo $row->id_packing; ?></td>
                             <td><?php echo date('d-m-Y H:i:s', strtotime($row->tanggal_packing)); ?></td>
                             <td><?php echo $row->user_nama; ?></td>
                             <td><?php echo $row->tipe_referensi . ' #' . $row->id_referensi; ?></td>

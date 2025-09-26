@@ -2,7 +2,7 @@
     <div class="card-header py-3">
         <div class="row">
             <div class="col">
-                <h6 class="m-0 font-weight-bold text-primary">Detail Packing: <?php echo $packing->id_packing; ?></h6>
+                <h6 class="m-0 font-weight-bold text-primary">Detail Packing: #<?php echo $packing->id_packing; ?></h6>
             </div>
             <div class="col text-right">
                 <a href="<?php echo site_url('laporan/packing'); ?>" class="btn btn-secondary btn-sm">
@@ -17,7 +17,7 @@
                 <table class="table table-sm">
                     <tr>
                         <th width="30%">No Packing</th>
-                        <td><?php echo $packing->id_packing; ?></td>
+                        <td>#<?php echo $packing->id_packing; ?></td>
                     </tr>
                     <tr>
                         <th>Tanggal</th>

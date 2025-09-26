@@ -6,7 +6,7 @@ class Packing extends MY_Controller
     public function __construct()
     {
         parent::__construct();
-        $this->load->model('Laporan/Packing_model', 'packing');
+        $this->load->model('laporan/Packing_model', 'packing');
         $this->load->model('setup/User_model', 'user');
         $this->load->helper('form');
         $this->load->library('form_validation');
@@ -80,59 +80,100 @@ class Packing extends MY_Controller
         ];
 
         $packing = $this->packing->get_filtered($filter);
+        $format = $this->input->post('format');
 
-        // Create new PHPExcel object
-        $this->load->library('PHPExcel');
-        $objPHPExcel = new PHPExcel();
+        if ($format == 'excel') {
+            // Create new PHPExcel object
+            $this->load->library('PHPExcel');
+            $objPHPExcel = new PHPExcel();
 
-        // Set properties
-        $objPHPExcel->getProperties()
-            ->setTitle("Laporan Packing")
-            ->setSubject("Laporan Packing")
-            ->setDescription("Laporan Packing");
+            // Set properties
+            $objPHPExcel->getProperties()
+                ->setTitle("Laporan Packing")
+                ->setSubject("Laporan Packing")
+                ->setDescription("Laporan Packing");
 
-        // Add header
-        $objPHPExcel->setActiveSheetIndex(0)
-            ->setCellValue('A1', 'No')
-            ->setCellValue('B1', 'No Packing')
-            ->setCellValue('C1', 'Tanggal')
-            ->setCellValue('D1', 'User')
-            ->setCellValue('E1', 'Referensi')
-            ->setCellValue('F1', 'Barang')
-            ->setCellValue('G1', 'Jumlah')
-            ->setCellValue('H1', 'Status');
-
-        // Add data
-        $row = 2;
-        $no = 1;
-        foreach ($packing as $item) {
+            // Add header
             $objPHPExcel->setActiveSheetIndex(0)
-                ->setCellValue('A' . $row, $no++)
-                ->setCellValue('B' . $row, $item->id_packing)
-                ->setCellValue('C' . $row, date('d-m-Y H:i:s', strtotime($item->tanggal_packing)))
-                ->setCellValue('D' . $row, $item->user_nama)
-                ->setCellValue('E' . $row, $item->tipe_referensi . ' #' . $item->id_referensi)
-                ->setCellValue('F' . $row, $item->nama_barang)
-                ->setCellValue('G' . $row, $item->jumlah)
-                ->setCellValue('H' . $row, $item->status);
-            $row++;
+                ->setCellValue('A1', 'No')
+                ->setCellValue('B1', 'No Packing')
+                ->setCellValue('C1', 'Tanggal')
+                ->setCellValue('D1', 'User')
+                ->setCellValue('E1', 'Referensi')
+                ->setCellValue('F1', 'Barang')
+                ->setCellValue('G1', 'Jumlah')
+                ->setCellValue('H1', 'Status');
+
+            // Add data
+            $row = 2;
+            $no = 1;
+            foreach ($packing as $item) {
+                $objPHPExcel->setActiveSheetIndex(0)
+                    ->setCellValue('A' . $row, $no++)
+                    ->setCellValue('B' . $row, $item->id_packing)
+                    ->setCellValue('C' . $row, date('d-m-Y', strtotime($item->tanggal_packing)))
+                    ->setCellValue('D' . $row, $item->user_nama)
+                    ->setCellValue('E' . $row, $item->tipe_referensi . ' #' . $item->id_referensi)
+                    ->setCellValue('F' . $row, $item->nama_barang)
+                    ->setCellValue('G' . $row, $item->jumlah)
+                    ->setCellValue('H' . $row, $item->status);
+                $row++;
+            }
+
+            // Auto size columns
+            foreach (range('A', 'H') as $column) {
+                $objPHPExcel->getActiveSheet()->getColumnDimension($column)->setAutoSize(true);
+            }
+
+            // Set active sheet index to the first sheet
+            $objPHPExcel->setActiveSheetIndex(0);
+
+            // Redirect output to client browser
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment;filename="Laporan_Packing_' . date('YmdHis') . '.xlsx"');
+            header('Cache-Control: max-age=0');
+
+            $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+            $objWriter->save('php://output');
+            exit;
+        } elseif ($format == 'csv') {
+            // Export to CSV
+            header('Content-Type: text/csv');
+            header('Content-Disposition: attachment;filename="Laporan_Packing_' . date('YmdHis') . '.csv"');
+
+            $output = fopen('php://output', 'w');
+
+            // Add header
+            fputcsv($output, array('No', 'No Packing', 'Tanggal', 'User', 'Referensi', 'Barang', 'Jumlah', 'Status'));
+
+            // Add data
+            $no = 1;
+            foreach ($packing as $item) {
+                fputcsv($output, array(
+                    $no++,
+                    $item->id_packing,
+                    date('d-m-Y', strtotime($item->tanggal_packing)),
+                    $item->user_nama,
+                    $item->tipe_referensi . ' #' . $item->id_referensi,
+                    $item->nama_barang,
+                    $item->jumlah,
+                    $item->status
+                ));
+            }
+
+            fclose($output);
+            exit;
+        } elseif ($format == 'pdf') {
+            // Export to PDF
+            $this->load->library('pdf');
+
+            $data['packing'] = $packing;
+            $data['title'] = 'Laporan Packing';
+            $data['filter'] = $filter;
+
+            $html = $this->load->view('laporan/packing/pdf', $data, true);
+
+            $this->pdf->create($html, 'Laporan_Packing_' . date('YmdHis') . '.pdf');
         }
-
-        // Auto size columns
-        foreach (range('A', 'H') as $column) {
-            $objPHPExcel->getActiveSheet()->getColumnDimension($column)->setAutoSize(true);
-        }
-
-        // Set active sheet index to the first sheet
-        $objPHPExcel->setActiveSheetIndex(0);
-
-        // Redirect output to client browser
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="Laporan_Packing_' . date('YmdHis') . '.xlsx"');
-        header('Cache-Control: max-age=0');
-
-        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-        $objWriter->save('php://output');
-        exit;
     }
 }
