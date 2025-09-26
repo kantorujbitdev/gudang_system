@@ -56,42 +56,6 @@
                                     class="btn btn-sm btn-info" title="Detail">
                                     <i class="fas fa-info-circle"></i>
                                 </a>
-                                <?php if ($row->status == 'Draft' && $this->auth->has_permission('daftar/penerimaan', 'edit')): ?>
-                                    <a href="<?php echo site_url('daftar/penerimaan/edit/' . $row->id_penerimaan); ?>"
-                                        class="btn btn-sm btn-warning" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                <?php endif; ?>
-                                <?php if ($row->status == 'Draft' && $this->auth->has_permission('daftar/penerimaan', 'delete')): ?>
-                                    <a href="<?php echo site_url('daftar/penerimaan/hapus/' . $row->id_penerimaan); ?>"
-                                        class="btn btn-sm btn-danger" title="Hapus"
-                                        onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
-                                <?php endif; ?>
-                                <?php if ($this->auth->has_permission('daftar/penerimaan', 'edit')): ?>
-                                    <?php if ($row->status == 'Draft'): ?>
-                                        <a href="<?php echo site_url('daftar/penerimaan/konfirmasi/' . $row->id_penerimaan . '/Received'); ?>"
-                                            class="btn btn-sm btn-primary" title="Proses Penerimaan"
-                                            onclick="return confirm('Apakah Anda yakin ingin memproses penerimaan?')">
-                                            <i class="fas fa-clipboard-check"></i> Received
-                                        </a>
-                                    <?php elseif ($row->status == 'Received'): ?>
-                                        <a href="<?php echo site_url('daftar/penerimaan/konfirmasi/' . $row->id_penerimaan . '/Completed'); ?>"
-                                            class="btn btn-sm btn-success" title="Selesaikan Penerimaan"
-                                            onclick="return confirm('Apakah Anda yakin ingin menyelesaikan penerimaan?')">
-                                            <i class="fas fa-check"></i> Completed
-                                        </a>
-                                    <?php endif; ?>
-
-                                    <?php if ($row->status != 'Completed' && $row->status != 'Cancelled'): ?>
-                                        <a href="<?php echo site_url('daftar/penerimaan/konfirmasi/' . $row->id_penerimaan . '/Cancelled'); ?>"
-                                            class="btn btn-sm btn-danger" title="Batalkan"
-                                            onclick="return confirm('Apakah Anda yakin ingin membatalkan penerimaan ini?')">
-                                            <i class="fas fa-times"></i> Batal
-                                        </a>
-                                    <?php endif; ?>
-                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>
