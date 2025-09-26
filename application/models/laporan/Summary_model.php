@@ -27,8 +27,8 @@ class Summary_model extends CI_Model
             $this->db->where('sg.id_gudang', $filter['id_gudang']);
         }
 
-        $this->db->order_by('b.nama_barang', 'ASC');
         $this->db->order_by('g.nama_gudang', 'ASC');
+        $this->db->order_by('b.nama_barang', 'ASC');
         return $this->db->get()->result();
     }
 

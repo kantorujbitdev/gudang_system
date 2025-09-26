@@ -25,12 +25,12 @@
                         <td><?php echo date('d-m-Y H:i:s', strtotime($retur->tanggal_retur)); ?></td>
                     </tr>
                     <tr>
-                        <th>No Invoice</th>
-                        <td><?php echo $retur->no_invoice; ?></td>
+                        <th>No. Transaksi</th>
+                        <td><?php echo $retur->no_transaksi; ?></td>
                     </tr>
                     <tr>
-                        <th>Pelanggan</th>
-                        <td><?php echo $retur->nama_pelanggan; ?></td>
+                        <th>Penerima</th>
+                        <td><?php echo $retur->nama_penerima; ?></td>
                     </tr>
                 </table>
             </div>

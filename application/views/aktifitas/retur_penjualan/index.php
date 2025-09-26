@@ -4,7 +4,7 @@
             <div class="col">
                 <?php echo responsive_title_blue('Retur Penjualan') ?>
             </div>
-            <?php if ($can_create): ?>
+            <?php if ($this->auth->has_permission('aktifitas/retur_penjualan', 'create')): ?>
                 <div class="col text-right">
                     <a href="<?php echo site_url('aktifitas/retur_penjualan/tambah'); ?>" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus"></i> Tambah Retur
@@ -21,8 +21,8 @@
                         <th>No</th>
                         <th>No Retur</th>
                         <th>Tanggal</th>
-                        <th>No Invoice</th>
-                        <th>Pelanggan</th>
+                        <th>No. Transaksi</th>
+                        <th>Penerima</th>
                         <th>User</th>
                         <th>Status</th>
                         <th>Aksi</th>
@@ -35,8 +35,8 @@
                             <td><?php echo $no++; ?></td>
                             <td><?php echo $row->no_retur; ?></td>
                             <td><?php echo date('d-m-Y H:i:s', strtotime($row->tanggal_retur)); ?></td>
-                            <td><?php echo $row->no_invoice; ?></td>
-                            <td><?php echo $row->nama_pelanggan; ?></td>
+                            <td><?php echo $row->no_transaksi; ?></td>
+                            <td><?php echo $row->nama_penerima; ?></td>
                             <td><?php echo $row->user_nama; ?></td>
                             <td>
                                 <?php
@@ -66,13 +66,13 @@
                                     class="btn btn-sm btn-info" title="Detail">
                                     <i class="fas fa-info-circle"></i>
                                 </a>
-                                <?php if ($row->status == 'Requested' && $can_edit): ?>
+                                <?php if ($row->status == 'Requested' && $this->auth->has_permission('aktifitas/retur_penjualan', 'edit')): ?>
                                     <a href="<?php echo site_url('aktifitas/retur_penjualan/verifikasi/' . $row->id_retur); ?>"
                                         class="btn btn-sm btn-warning" title="Verifikasi">
                                         <i class="fas fa-check-circle"></i> Verifikasi
                                     </a>
                                 <?php endif; ?>
-                                <?php if ($row->status == 'Requested' && $can_delete): ?>
+                                <?php if ($row->status == 'Requested' && $this->auth->has_permission('aktifitas/retur_penjualan', 'delete')): ?>
                                     <a href="<?php echo site_url('aktifitas/retur_penjualan/hapus/' . $row->id_retur); ?>"
                                         class="btn btn-sm btn-danger" title="Hapus"
                                         onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">

@@ -36,22 +36,23 @@ class Retur_penjualan extends MY_Controller
         }
 
         $this->data['title'] = 'Tambah Retur Penjualan';
-        $this->data['penjualan'] = $this->retur->get_penjualan();
-        $this->data['gudang'] = $this->gudang->get_all();
-        $this->data['barang'] = $this->barang->get_all();
+        $this->data['pemindahan'] = $this->retur->get_pemindahan();
+        $this->data['gudang'] = $this->gudang->get_by_perusahaan($this->session->userdata('id_perusahaan'));
+        $this->data['barang'] = $this->barang->get_by_perusahaan($this->session->userdata('id_perusahaan'));
+        $this->data['extra_js'] = 'aktifitas/retur_penjualan/script';
 
-        $this->form_validation->set_rules('id_penjualan', 'Penjualan', 'required');
+        $this->form_validation->set_rules('id_pemindahan', 'Pemindahan Barang', 'required');
         $this->form_validation->set_rules('tanggal_retur', 'Tanggal Retur', 'required');
         $this->form_validation->set_rules('alasan_retur', 'Alasan Retur', 'required');
 
         if ($this->form_validation->run() === FALSE) {
-            return $this->render_view('aktifitas/retur_penjualan/form');
+            return $this->render_view('aktifitas/retur_penjualan/form', $this->data);
         }
 
         $no_retur = $this->generate_no_retur();
         $data_insert = [
             'no_retur' => $no_retur,
-            'id_penjualan' => $this->input->post('id_penjualan'),
+            'id_pemindahan' => $this->input->post('id_pemindahan'),
             'id_user' => $this->session->userdata('id_user'),
             'tanggal_retur' => $this->input->post('tanggal_retur') . ' ' . date('H:i:s'),
             'alasan_retur' => $this->input->post('alasan_retur'),
@@ -97,7 +98,7 @@ class Retur_penjualan extends MY_Controller
         $this->data['title'] = 'Verifikasi Retur Penjualan';
         $this->data['retur'] = $this->retur->get($id_retur);
         $this->data['detail'] = $this->retur->get_detail($id_retur);
-        $this->data['gudang'] = $this->gudang->get_all();
+        $this->data['gudang'] = $this->gudang->get_by_perusahaan($this->session->userdata('id_perusahaan'));
 
         if (!$this->data['retur']) {
             show_404();
@@ -111,7 +112,7 @@ class Retur_penjualan extends MY_Controller
         $this->form_validation->set_rules('status', 'Status', 'required');
 
         if ($this->form_validation->run() === FALSE) {
-            return $this->render_view('aktifitas/retur_penjualan/verifikasi');
+            return $this->render_view('aktifitas/retur_penjualan/verifikasi', $this->data);
         }
 
         $status = $this->input->post('status');
@@ -175,10 +176,10 @@ class Retur_penjualan extends MY_Controller
         $this->render_view('aktifitas/retur_penjualan/detail');
     }
 
-    public function get_detail_penjualan()
+    public function get_detail_pemindahan()
     {
-        $id_penjualan = $this->input->post('id_penjualan');
-        $detail = $this->retur->get_detail_penjualan($id_penjualan);
+        $id_pemindahan = $this->input->post('id_pemindahan');
+        $detail = $this->retur->get_detail_pemindahan($id_pemindahan);
         echo json_encode($detail);
     }
 
@@ -223,7 +224,8 @@ class Retur_penjualan extends MY_Controller
                         'sisa_stok' => $new_stok,
                         'keterangan' => 'Retur penjualan ' . $retur->no_retur,
                         'id_referensi' => $id_retur,
-                        'tipe_referensi' => 'retur_penjualan'
+                        'tipe_referensi' => 'retur_penjualan',
+                        'tanggal' => date('Y-m-d H:i:s')
                     ];
                     $this->retur->insert_log_stok($log_data);
                 }
@@ -237,7 +239,8 @@ class Retur_penjualan extends MY_Controller
             'id_transaksi' => $id_transaksi,
             'tipe_transaksi' => $tipe_transaksi,
             'id_user' => $this->session->userdata('id_user'),
-            'status' => $status
+            'status' => $status,
+            'tanggal' => date('Y-m-d H:i:s')
         ];
         $this->retur->insert_log_status($log_data);
     }

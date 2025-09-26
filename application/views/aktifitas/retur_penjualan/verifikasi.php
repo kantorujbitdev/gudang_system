@@ -27,12 +27,12 @@
                         <td><?php echo date('d-m-Y H:i:s', strtotime($retur->tanggal_retur)); ?></td>
                     </tr>
                     <tr>
-                        <th>No Invoice</th>
-                        <td><?php echo $retur->no_invoice; ?></td>
+                        <th>No. Transaksi</th>
+                        <td><?php echo $retur->no_transaksi; ?></td>
                     </tr>
                     <tr>
-                        <th>Pelanggan</th>
-                        <td><?php echo $retur->nama_pelanggan; ?></td>
+                        <th>Penerima</th>
+                        <td><?php echo $retur->nama_penerima; ?></td>
                     </tr>
                 </table>
             </div>
@@ -114,7 +114,7 @@
 
         <div class="form-group">
             <label for="status">Status Verifikasi <span class="text-danger">*</span></label>
-            <select class="form-control" id="status" name="status" required>
+            <select class="form-control select2" id="status" name="status" required>
                 <option value="">-- Pilih Status --</option>
                 <option value="Approved">Approved</option>
                 <option value="Rejected">Rejected</option>
@@ -122,10 +122,26 @@
             <?php echo form_error('status', '<small class="text-danger">', '</small>'); ?>
         </div>
 
-        <div class="form-group">
-            <button type="submit" class="btn btn-primary">Simpan</button>
-            <a href="<?php echo site_url('aktifitas/retur_penjualan'); ?>" class="btn btn-secondary">Batal</a>
+        <div class="form-group text-right">
+            <a href="<?php echo site_url('aktifitas/retur_penjualan'); ?>" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Batal
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Simpan
+            </button>
         </div>
         <?php echo form_close(); ?>
     </div>
 </div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('.select2').select2({
+            theme: 'bootstrap4',
+            placeholder: 'Pilih opsi'
+        });
+    });
+</script>

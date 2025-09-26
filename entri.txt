@@ -451,6 +451,7 @@ CREATE TABLE `retur_penjualan` (
   `alasan_retur` text NOT NULL,
   `status` enum('Requested','Verification','Approved','Rejected','Completed') DEFAULT 'Requested',
   `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id_retur`),
   KEY `id_pemindahan` (`id_pemindahan`),
   KEY `id_user` (`id_user`)
