@@ -6,7 +6,7 @@ class Penerimaan extends MY_Controller
     public function __construct()
     {
         parent::__construct();
-        $this->load->model('Aktifitas/Penerimaan_model', 'penerimaan');
+        $this->load->model('aktifitas/Penerimaan_model', 'penerimaan');
         $this->load->model('setup/Barang_model', 'barang');
         $this->load->model('setup/Gudang_model', 'gudang');
         $this->load->model('setup/Supplier_model', 'supplier');
