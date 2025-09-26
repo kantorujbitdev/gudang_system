@@ -92,7 +92,7 @@
         <h1 class="h5 mb-0 text-gray-800">Riwayat Transaksi (10 Terbaru)</h1>
     </div>
     <div class="card-body">
-        <?php if (!empty($penjualan)): ?>
+        <?php if (!empty($transaksi)): ?>
             <div class="table-responsive">
                 <table class="table table-bordered table-striped" width="100%" cellspacing="0">
                     <thead>
@@ -100,35 +100,51 @@
                             <th>No</th>
                             <th>No. Transaksi</th>
                             <th>Tanggal</th>
-                            <th>Total</th>
+                            <th>Gudang Asal</th>
                             <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php $no = 1;
-                        foreach ($penjualan as $p): ?>
+                        foreach ($transaksi as $t): ?>
                             <tr>
                                 <td><?php echo $no++; ?></td>
-                                <td><?php echo $p->no_transaksi; ?></td>
-                                <td><?php echo date('d/m/Y', strtotime($p->tanggal)); ?></td>
-                                <td><?php echo number_format($p->total, 0, ',', '.'); ?></td>
+                                <td><?php echo $t->no_transaksi ?: '-'; ?></td>
+                                <td><?php echo date('d/m/Y H:i:s', strtotime($t->tanggal_pemindahan)); ?></td>
+                                <td><?php echo $t->gudang_asal ?: '-'; ?></td>
                                 <td>
-                                    <?php if ($p->status == 'lunas'): ?>
-                                        <span class="badge badge-success">Lunas</span>
-                                    <?php elseif ($p->status == 'pending'): ?>
-                                        <span class="badge badge-warning">Pending</span>
-                                    <?php else: ?>
-                                        <span class="badge badge-danger">Batal</span>
-                                    <?php endif; ?>
+                                    <?php
+                                    $status_class = '';
+                                    switch ($t->status) {
+                                        case 'Draft':
+                                            $status_class = 'badge-secondary';
+                                            break;
+                                        case 'Packing':
+                                            $status_class = 'badge-info';
+                                            break;
+                                        case 'Shipping':
+                                            $status_class = 'badge-primary';
+                                            break;
+                                        case 'Delivered':
+                                            $status_class = 'badge-success';
+                                            break;
+                                        case 'Cancelled':
+                                            $status_class = 'badge-danger';
+                                            break;
+                                        default:
+                                            $status_class = 'badge-secondary';
+                                    }
+                                    ?>
+                                    <span class="badge <?php echo $status_class; ?>"><?php echo $t->status; ?></span>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
             </div>
-            <?php if (count($penjualan) >= 10): ?>
+            <?php if (count($transaksi) >= 10): ?>
                 <div class="text-center mt-2">
-                    <a href="<?php echo site_url('transaksi/penjualan?pelanggan=' . $pelanggan->id_pelanggan); ?>"
+                    <a href="<?php echo site_url('daftar/pemindahan?pelanggan=' . $pelanggan->id_pelanggan); ?>"
                         class="btn btn-sm btn-outline-primary">
                         Lihat Semua Transaksi
                     </a>

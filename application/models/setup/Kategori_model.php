@@ -101,22 +101,20 @@ class Kategori_model extends MY_Model
         return $this->db->get($this->table)->num_rows() == 0;
     }
 
+
     public function get_barang_by_kategori($id_kategori)
     {
-        $user_role = $this->session->userdata('id_role');
-        $user_perusahaan = $this->session->userdata('id_perusahaan');
+        $id_perusahaan = $this->session->userdata('id_perusahaan');
 
-        $this->db->select('b.*, sg.jumlah as stok');
+        $this->db->select('b.id_barang, b.sku, b.nama_barang, b.status_aktif, 
+                     COALESCE(sg.jumlah, 0) as stok, g.nama_gudang');
         $this->db->from('barang b');
-        $this->db->join('stok_gudang sg', 'b.id_barang = sg.id_barang', 'left');
+        $this->db->join('stok_gudang sg', 'b.id_barang = sg.id_barang AND sg.id_perusahaan = ' . $id_perusahaan, 'left');
+        $this->db->join('gudang g', 'sg.id_gudang = g.id_gudang', 'left');
         $this->db->where('b.id_kategori', $id_kategori);
+        $this->db->where('b.id_perusahaan', $id_perusahaan);
         $this->db->where('b.deleted_at IS NULL');
-        $this->db->where('b.status_aktif', 1);
-
-        // Filter berdasarkan role user
-        if ($user_role != 1) { // Bukan Super Admin
-            $this->db->where('b.id_perusahaan', $user_perusahaan);
-        }
+        $this->db->order_by('b.nama_barang', 'ASC');
 
         return $this->db->get()->result();
     }

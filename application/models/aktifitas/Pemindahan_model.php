@@ -281,4 +281,23 @@ class Pemindahan_model extends CI_Model
         $this->db->where('p.deleted_at', NULL);
         return $this->db->get()->row();
     }
+    public function get_by_pelanggan($id_pelanggan, $limit = 10)
+    {
+        $this->db->select('pemindahan_barang.*, user.nama as nama_user, gudang_asal.nama_gudang as gudang_asal');
+        $this->db->from('pemindahan_barang');
+        $this->db->join('user', 'user.id_user = pemindahan_barang.id_user', 'left');
+        $this->db->join('gudang as gudang_asal', 'gudang_asal.id_gudang = pemindahan_barang.id_gudang_asal', 'left');
+        $this->db->where('pemindahan_barang.id_pelanggan', $id_pelanggan);
+        $this->db->where('pemindahan_barang.deleted_at IS NULL');
+        $this->db->order_by('pemindahan_barang.tanggal_pemindahan', 'DESC');
+        $this->db->limit($limit);
+
+        return $this->db->get()->result();
+    }
+    public function count_by_pelanggan($id_pelanggan)
+    {
+        $this->db->where('id_pelanggan', $id_pelanggan);
+        $this->db->where('deleted_at IS NULL');
+        return $this->db->count_all_results('pemindahan_barang');
+    }
 }

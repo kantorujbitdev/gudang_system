@@ -4,13 +4,13 @@
             <div class="col">
                 <?php echo responsive_title_blue('Pemindahan Barang') ?>
             </div>
-            <?php if ($can_create): ?>
-                <div class="col text-right">
+            <div class="col text-right">
+                <?php if ($this->auth->has_permission('aktifitas/pemindahan', 'create')): ?>
                     <a href="<?php echo site_url('aktifitas/pemindahan/tambah'); ?>" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus"></i> Tambah Pemindahan
                     </a>
-                </div>
-            <?php endif; ?>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
     <div class="card-body">
@@ -84,40 +84,73 @@
                                     class="btn btn-sm btn-info" title="Detail">
                                     <i class="fas fa-info-circle"></i>
                                 </a>
-                                <?php if ($row->status == 'Draft' && $can_edit): ?>
+
+                                <?php // Tombol Edit - hanya untuk status Draft dan user yang memiliki hak edit ?>
+                                <?php if ($row->status == 'Draft' && $this->auth->has_permission('aktifitas/pemindahan', 'edit')): ?>
                                     <a href="<?php echo site_url('aktifitas/pemindahan/edit/' . $row->id_pemindahan); ?>"
                                         class="btn btn-sm btn-warning" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                 <?php endif; ?>
-                                <?php if ($can_edit): ?>
-                                    <?php if ($row->status == 'Draft'): ?>
-                                        <a href="<?php echo site_url('aktifitas/pemindahan/konfirmasi/' . $row->id_pemindahan . '/Packing'); ?>"
-                                            class="btn btn-sm btn-primary" title="Proses Packing"
-                                            onclick="return confirm('Apakah Anda yakin ingin memproses packing?')">
-                                            <i class="fas fa-box"></i> Packing
-                                        </a>
-                                    <?php elseif ($row->status == 'Packing'): ?>
-                                        <a href="<?php echo site_url('aktifitas/pemindahan/konfirmasi/' . $row->id_pemindahan . '/Shipping'); ?>"
-                                            class="btn btn-sm btn-warning" title="Proses Shipping"
-                                            onclick="return confirm('Apakah Anda yakin ingin memproses shipping?')">
-                                            <i class="fas fa-truck"></i> Shipping
-                                        </a>
-                                    <?php elseif ($row->status == 'Shipping'): ?>
-                                        <a href="<?php echo site_url('aktifitas/pemindahan/konfirmasi/' . $row->id_pemindahan . '/Delivered'); ?>"
-                                            class="btn btn-sm btn-success" title="Konfirmasi Diterima"
-                                            onclick="return confirm('Apakah Anda yakin ingin mengkonfirmasi barang diterima?')">
-                                            <i class="fas fa-check"></i> Delivered
-                                        </a>
-                                    <?php endif; ?>
 
-                                    <?php if ($row->status != 'Delivered' && $row->status != 'Cancelled'): ?>
-                                        <a href="<?php echo site_url('aktifitas/pemindahan/konfirmasi/' . $row->id_pemindahan . '/Cancelled'); ?>"
-                                            class="btn btn-sm btn-danger" title="Batalkan"
-                                            onclick="return confirm('Apakah Anda yakin ingin membatalkan pemindahan ini?')">
-                                            <i class="fas fa-times"></i> Batal
-                                        </a>
-                                    <?php endif; ?>
+                                <?php // Tombol Packing - Admin Packing, Super Admin, Admin Perusahaan ?>
+                                <?php if (
+                                    $row->status == 'Draft' &&
+                                    ($this->session->userdata('id_role') == 4 || // Admin Packing
+                                        $this->session->userdata('id_role') == 1 || // Super Admin
+                                        $this->session->userdata('id_role') == 2) && // Admin Perusahaan
+                                    $this->auth->has_permission('aktifitas/pemindahan', 'edit')
+                                ): ?>
+                                    <a href="<?php echo site_url('aktifitas/pemindahan/konfirmasi/' . $row->id_pemindahan . '/Packing'); ?>"
+                                        class="btn btn-sm btn-primary" title="Proses Packing"
+                                        onclick="return confirm('Apakah Anda yakin ingin memproses packing?')">
+                                        <i class="fas fa-box"></i> Packing
+                                    </a>
+                                <?php endif; ?>
+
+                                <?php // Tombol Shipping - Admin Packing, Super Admin, Admin Perusahaan ?>
+                                <?php if (
+                                    $row->status == 'Packing' &&
+                                    ($this->session->userdata('id_role') == 4 || // Admin Packing
+                                        $this->session->userdata('id_role') == 1 || // Super Admin
+                                        $this->session->userdata('id_role') == 2) && // Admin Perusahaan
+                                    $this->auth->has_permission('aktifitas/pemindahan', 'edit')
+                                ): ?>
+                                    <a href="<?php echo site_url('aktifitas/pemindahan/konfirmasi/' . $row->id_pemindahan . '/Shipping'); ?>"
+                                        class="btn btn-sm btn-warning" title="Proses Shipping"
+                                        onclick="return confirm('Apakah Anda yakin ingin memproses shipping?')">
+                                        <i class="fas fa-truck"></i> Shipping
+                                    </a>
+                                <?php endif; ?>
+
+                                <?php // Tombol Delivered - Sales, Super Admin, Admin Perusahaan ?>
+                                <?php if (
+                                    $row->status == 'Shipping' &&
+                                    ($this->session->userdata('id_role') == 3 || // Sales
+                                        $this->session->userdata('id_role') == 1 || // Super Admin
+                                        $this->session->userdata('id_role') == 2) && // Admin Perusahaan
+                                    $this->auth->has_permission('aktifitas/pemindahan', 'edit')
+                                ): ?>
+                                    <a href="<?php echo site_url('aktifitas/pemindahan/konfirmasi/' . $row->id_pemindahan . '/Delivered'); ?>"
+                                        class="btn btn-sm btn-success" title="Konfirmasi Diterima"
+                                        onclick="return confirm('Apakah Anda yakin ingin mengkonfirmasi barang diterima?')">
+                                        <i class="fas fa-check"></i> Delivered
+                                    </a>
+                                <?php endif; ?>
+
+                                <?php // Tombol Batal - Admin Packing, Super Admin, Admin Perusahaan ?>
+                                <?php if (
+                                    $row->status != 'Delivered' && $row->status != 'Cancelled' &&
+                                    ($this->session->userdata('id_role') == 4 || // Admin Packing
+                                        $this->session->userdata('id_role') == 1 || // Super Admin
+                                        $this->session->userdata('id_role') == 2) && // Admin Perusahaan
+                                    $this->auth->has_permission('aktifitas/pemindahan', 'edit')
+                                ): ?>
+                                    <a href="<?php echo site_url('aktifitas/pemindahan/konfirmasi/' . $row->id_pemindahan . '/Cancelled'); ?>"
+                                        class="btn btn-sm btn-danger" title="Batalkan"
+                                        onclick="return confirm('Apakah Anda yakin ingin membatalkan pemindahan ini?')">
+                                        <i class="fas fa-times"></i> Batal
+                                    </a>
                                 <?php endif; ?>
                             </td>
                         </tr>

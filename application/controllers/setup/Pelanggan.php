@@ -171,8 +171,9 @@ class Pelanggan extends MY_Controller
             show_404();
         }
 
-        $this->load->model('Penjualan_model');
-        $this->data['penjualan'] = $this->Penjualan_model->get_by_pelanggan($id_pelanggan, 10);
+        // Menggunakan model Pemindahan_barang untuk mendapatkan riwayat transaksi
+        $this->load->model('aktifitas/Pemindahan_model', 'pemindahan');
+        $this->data['transaksi'] = $this->pemindahan->get_by_pelanggan($id_pelanggan, 10);
 
         $this->render_view('setup/pelanggan/detail');
     }

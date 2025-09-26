@@ -95,8 +95,8 @@
                                 <td><?php echo $no++; ?></td>
                                 <td><?php echo $b->sku; ?></td>
                                 <td><?php echo $b->nama_barang; ?></td>
-                                <td><?php echo $b->nama_gudang; ?></td>
-                                <td><?php echo $b->stok ?: 0; ?></td>
+                                <td><?php echo isset($b->nama_gudang) ? $b->nama_gudang : '-'; ?></td>
+                                <td><?php echo isset($b->stok) ? $b->stok : 0; ?></td>
                                 <td>
                                     <?php if ($b->status_aktif == 1): ?>
                                         <span class="badge badge-success">Aktif</span>

@@ -93,7 +93,20 @@ class Pelanggan_model extends MY_Model
         }
         return $this->db->get($this->table)->num_rows() == 0;
     }
+    public function get_transaksi_by_pelanggan($id_pelanggan, $limit = 10)
+    {
+        $this->db->select('pb.id_pemindahan, pb.no_transaksi, pb.tanggal_pemindahan as tanggal, pb.status, 
+                     COUNT(dpb.id_barang) as total_item');
+        $this->db->from('pemindahan_barang pb');
+        $this->db->join('detail_pemindahan_barang dpb', 'pb.id_pemindahan = dpb.id_pemindahan');
+        $this->db->where('pb.id_pelanggan', $id_pelanggan);
+        $this->db->where('pb.deleted_at IS NULL');
+        $this->db->group_by('pb.id_pemindahan, pb.no_transaksi, pb.tanggal_pemindahan, pb.status');
+        $this->db->order_by('pb.tanggal_pemindahan', 'DESC');
+        $this->db->limit($limit);
 
+        return $this->db->get()->result();
+    }
     public function get_by_perusahaan($id_perusahaan)
     {
         $this->db->where('id_perusahaan', $id_perusahaan);
