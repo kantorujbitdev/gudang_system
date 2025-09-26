@@ -84,11 +84,11 @@
                 <thead>
                     <tr>
                         <th width="5%">No</th>
-                        <th width="30%">Barang</th>
+                        <th width="35%">Barang</th>
                         <th width="15%">Gudang</th>
                         <th width="15%">Jumlah Retur</th>
-                        <th width="15%">Jumlah Disetujui</th>
-                        <th width="15%">Alasan</th>
+                        <th width="15%">Stok Saat Ini</th>
+                        <th width="20%">Alasan</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -100,10 +100,12 @@
                             <td><?php echo $row->nama_gudang; ?></td>
                             <td><?php echo $row->jumlah_retur; ?></td>
                             <td>
-                                <input type="hidden" name="id_detail_retur[]" value="<?php echo $row->id_detail_retur; ?>">
-                                <input type="number" class="form-control" name="jumlah_disetujui[]"
-                                    value="<?php echo $row->jumlah_disetujui; ?>" min="0"
-                                    max="<?php echo $row->jumlah_retur; ?>">
+                                <span id="stok-<?php echo $row->id_barang; ?>-<?php echo $row->id_gudang; ?>">
+                                    <?php
+                                    $stok = $this->retur->get_stok_barang($row->id_gudang, $row->id_barang);
+                                    echo $stok ? $stok->jumlah : 0;
+                                    ?>
+                                </span>
                             </td>
                             <td><?php echo $row->alasan_barang ?: '-'; ?></td>
                         </tr>
@@ -113,11 +115,11 @@
         </div>
 
         <div class="form-group">
-            <label for="status">Status Verifikasi <span class="text-danger">*</span></label>
+            <label for="status">Pilih Aksi <span class="text-danger">*</span></label>
             <select class="form-control select2" id="status" name="status" required>
-                <option value="">-- Pilih Status --</option>
-                <option value="Approved">Approved</option>
-                <option value="Rejected">Rejected</option>
+                <option value="">-- Pilih Aksi --</option>
+                <option value="Approved">Lanjutkan Retur</option>
+                <option value="Rejected">Batalkan Retur</option>
             </select>
             <?php echo form_error('status', '<small class="text-danger">', '</small>'); ?>
         </div>

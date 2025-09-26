@@ -3,7 +3,6 @@
         <h6 class="m-0 font-weight-bold text-primary"><?php echo $title; ?></h6>
     </div>
     <div class="card-body">
-        <?php echo form_open(current_url()); ?>
         <div class="row">
             <div class="col-md-6">
                 <div class="form-group">
@@ -18,9 +17,6 @@
                     </select>
                     <?php echo form_error('id_pemindahan', '<small class="text-danger">', '</small>'); ?>
                 </div>
-
-                <!-- Tanggal retur disembunyikan, menggunakan sistem date -->
-                <input type="hidden" id="tanggal_retur" name="tanggal_retur" value="<?php echo date('Y-m-d H:i:s'); ?>">
             </div>
 
             <div class="col-md-6">
@@ -37,9 +33,6 @@
 
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h6 class="mb-0">Daftar Barang</h6>
-            <button type="button" class="btn btn-sm btn-success" id="btn-tambah-barang">
-                <i class="fas fa-plus"></i> Tambah Barang
-            </button>
         </div>
 
         <div class="table-responsive mb-3">
@@ -47,48 +40,21 @@
                 <thead class="thead-dark">
                     <tr>
                         <th width="5%">No</th>
-                        <th width="40%">Barang</th>
+                        <th width="35%">Barang</th>
                         <th width="15%">Gudang</th>
+                        <th width="15%">Jumlah Dikirim</th>
                         <th width="15%">Jumlah Retur</th>
                         <th width="20%">Alasan</th>
-                        <th width="5%">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>1</td>
-                        <td>
-                            <select class="form-control select-barang" name="id_barang[]" required>
-                                <option value="">-- Pilih Barang --</option>
-                            </select>
-                        </td>
-                        <td>
-                            <select class="form-control select-gudang" name="id_gudang[]" required>
-                                <option value="">-- Pilih Gudang --</option>
-                                <?php foreach ($gudang as $row): ?>
-                                    <option value="<?php echo $row->id_gudang; ?>"><?php echo $row->nama_gudang; ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                        <td>
-                            <input type="number" class="form-control" name="jumlah_retur[]" min="1" required>
-                        </td>
-                        <td>
-                            <input type="text" class="form-control" name="alasan_barang[]"
-                                placeholder="Alasan retur barang">
-                        </td>
-                        <td class="text-center">
-                            <button type="button" class="btn btn-sm btn-danger btn-hapus-barang">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                        <td colspan="6" class="text-center">
+                            <em>Silakan pilih pemindahan barang terlebih dahulu</em>
                         </td>
                     </tr>
                 </tbody>
             </table>
-        </div>
-
-        <div class="alert alert-info d-none" id="alert-barang">
-            <i class="fas fa-info-circle"></i> Minimal harus ada 1 barang yang diretur!
         </div>
 
         <div class="form-group text-right">

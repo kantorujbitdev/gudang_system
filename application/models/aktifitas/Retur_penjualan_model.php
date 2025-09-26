@@ -47,9 +47,22 @@ class Retur_penjualan_model extends CI_Model
         return $this->db->get()->result();
     }
 
+    public function is_pemindahan_already_returned($id_pemindahan)
+    {
+        $this->db->where('id_pemindahan', $id_pemindahan);
+        $this->db->where_in('status', ['Approved', 'Completed']);
+        return $this->db->count_all_results('retur_penjualan') > 0;
+    }
+
     public function get_pemindahan()
     {
         $id_perusahaan = $this->session->userdata('id_perusahaan');
+
+        // Get pemindahan yang sudah di-retur
+        $this->db->select('id_pemindahan');
+        $this->db->from('retur_penjualan');
+        $this->db->where_in('status', ['Approved', 'Completed']);
+        $returned_pemindahan = $this->db->get_compiled_select();
 
         $this->db->select('pb.id_pemindahan, pb.no_transaksi');
         $this->db->select('IF(pb.tipe_tujuan = "pelanggan", pl.nama_pelanggan, IF(pb.tipe_tujuan = "konsumen", k.nama_konsumen, "-")) as nama_penerima', FALSE);
@@ -58,6 +71,7 @@ class Retur_penjualan_model extends CI_Model
         $this->db->join('konsumen k', 'pb.id_konsumen = k.id_konsumen', 'left');
         $this->db->where('pb.id_perusahaan', $id_perusahaan);
         $this->db->where('pb.status', 'Delivered');
+        $this->db->where("pb.id_pemindahan NOT IN ($returned_pemindahan)", NULL, FALSE);
         $this->db->order_by('pb.created_at', 'DESC');
         return $this->db->get()->result();
     }

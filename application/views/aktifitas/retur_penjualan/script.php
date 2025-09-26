@@ -9,13 +9,6 @@
             placeholder: 'Pilih opsi'
         });
 
-        // Initialize Select2 for barang with search
-        $('.select-barang').select2({
-            theme: 'bootstrap4',
-            placeholder: '-- Pilih Barang --',
-            allowClear: true
-        });
-
         // Get detail pemindahan
         $('#id_pemindahan').change(function () {
             var id_pemindahan = $(this).val();
@@ -40,27 +33,26 @@
                                     '<td>' + no + '</td>' +
                                     '<td>' +
                                     '<input type="hidden" name="id_barang[]" value="' + item.id_barang + '">' +
+                                    '<input type="hidden" name="id_gudang[]" value="' + item.id_gudang + '">' +
                                     '<input type="text" class="form-control" value="' + item.nama_barang + ' (' + item.sku + ')" readonly>' +
                                     '</td>' +
                                     '<td>' +
-                                    '<input type="hidden" name="id_gudang[]" value="' + item.id_gudang + '">' +
                                     '<input type="text" class="form-control" value="' + item.nama_gudang + '" readonly>' +
                                     '</td>' +
-                                    '<td><input type="number" class="form-control" name="jumlah_retur[]" min="1" max="' + item.jumlah + '" required></td>' +
+                                    '<td>' +
+                                    '<input type="text" class="form-control" value="' + item.jumlah + ' ' + item.satuan + '" readonly>' +
+                                    '</td>' +
+                                    '<td><input type="number" class="form-control" name="jumlah_retur[]" min="1" max="' + item.jumlah + '" required placeholder="Jumlah retur"></td>' +
                                     '<td><input type="text" class="form-control" name="alasan_barang[]" placeholder="Alasan retur barang"></td>' +
-                                    '<td class="text-center"><button type="button" class="btn btn-sm btn-danger btn-hapus-barang"><i class="fas fa-trash"></i></button></td>' +
                                     '</tr>';
 
                                 $('#table_barang tbody').append(html);
                             });
                         } else {
                             var html = '<tr>' +
-                                '<td>1</td>' +
-                                '<td><input type="text" class="form-control" value="Tidak ada barang dalam pemindahan ini" readonly></td>' +
-                                '<td><input type="text" class="form-control" readonly></td>' +
-                                '<td><input type="number" class="form-control" readonly></td>' +
-                                '<td><input type="text" class="form-control" readonly></td>' +
-                                '<td class="text-center"><button type="button" class="btn btn-sm btn-danger btn-hapus-barang"><i class="fas fa-trash"></i></button></td>' +
+                                '<td colspan="6" class="text-center">' +
+                                '<em>Tidak ada barang dalam pemindahan ini</em>' +
+                                '</td>' +
                                 '</tr>';
 
                             $('#table_barang tbody').append(html);
@@ -71,74 +63,31 @@
                 // Clear table
                 $('#table_barang tbody').empty();
 
-                // Add empty row
                 var html = '<tr>' +
-                    '<td>1</td>' +
-                    '<td><select class="form-control select-barang" name="id_barang[]" required><option value="">-- Pilih Barang --</option></select></td>' +
-                    '<td><select class="form-control select-gudang" name="id_gudang[]" required><option value="">-- Pilih Gudang --</option><?php foreach ($gudang as $row): ?><option value="<?php echo $row->id_gudang; ?>"><?php echo $row->nama_gudang; ?></option><?php endforeach; ?></select></td>' +
-                    '<td><input type="number" class="form-control" name="jumlah_retur[]" min="1" required></td>' +
-                    '<td><input type="text" class="form-control" name="alasan_barang[]" placeholder="Alasan retur barang"></td>' +
-                    '<td class="text-center"><button type="button" class="btn btn-sm btn-danger btn-hapus-barang"><i class="fas fa-trash"></i></button></td>' +
+                    '<td colspan="6" class="text-center">' +
+                    '<em>Silakan pilih pemindahan barang terlebih dahulu</em>' +
+                    '</td>' +
                     '</tr>';
 
                 $('#table_barang tbody').append(html);
-
-                // Initialize Select2 for new element
-                $('.select-barang').select2({
-                    theme: 'bootstrap4',
-                    placeholder: '-- Pilih Barang --',
-                    allowClear: true
-                });
-            }
-        });
-
-        // Tambah barang
-        $('#btn-tambah-barang').click(function () {
-            var no = $('#table_barang tbody tr').length + 1;
-            var html = '<tr>' +
-                '<td>' + no + '</td>' +
-                '<td><select class="form-control select-barang" name="id_barang[]" required><option value="">-- Pilih Barang --</option><?php foreach ($barang as $row): ?><option value="<?php echo $row->id_barang; ?>"><?php echo $row->nama_barang; ?> (<?php echo $row->sku; ?>)</option><?php endforeach; ?></select></td>' +
-                '<td><select class="form-control select-gudang" name="id_gudang[]" required><option value="">-- Pilih Gudang --</option><?php foreach ($gudang as $row): ?><option value="<?php echo $row->id_gudang; ?>"><?php echo $row->nama_gudang; ?></option><?php endforeach; ?></select></td>' +
-                '<td><input type="number" class="form-control" name="jumlah_retur[]" min="1" required></td>' +
-                '<td><input type="text" class="form-control" name="alasan_barang[]" placeholder="Alasan retur barang"></td>' +
-                '<td class="text-center"><button type="button" class="btn btn-sm btn-danger btn-hapus-barang"><i class="fas fa-trash"></i></button></td>' +
-                '</tr>';
-
-            $('#table_barang tbody').append(html);
-
-            // Initialize Select2 for new element
-            $('.select-barang').select2({
-                theme: 'bootstrap4',
-                placeholder: '-- Pilih Barang --',
-                allowClear: true
-            });
-        });
-
-        // Hapus barang
-        $(document).on('click', '.btn-hapus-barang', function () {
-            if ($('#table_barang tbody tr').length > 1) {
-                $(this).closest('tr').remove();
-
-                // Renumber rows
-                $('#table_barang tbody tr').each(function (index) {
-                    $(this).find('td:first').text(index + 1);
-                });
-            } else {
-                $('#alert-barang').removeClass('d-none');
-                setTimeout(function () {
-                    $('#alert-barang').addClass('d-none');
-                }, 3000);
             }
         });
 
         // Form validation before submit
-        $('.form-penerimaan').on('submit', function (e) {
+        $('form').on('submit', function (e) {
             var isValid = true;
+
+            // Check if pemindahan is selected
+            if (!$('#id_pemindahan').val()) {
+                e.preventDefault();
+                alert('Harap pilih pemindahan barang terlebih dahulu!');
+                return false;
+            }
 
             // Check if at least one item is filled
             var hasItem = false;
-            $('select[name="id_barang[]"]').each(function () {
-                if ($(this).val()) {
+            $('input[name="jumlah_retur[]"]').each(function () {
+                if ($(this).val() > 0) {
                     hasItem = true;
                     return false;
                 }
@@ -146,10 +95,7 @@
 
             if (!hasItem) {
                 e.preventDefault();
-                $('#alert-barang').removeClass('d-none');
-                setTimeout(function () {
-                    $('#alert-barang').addClass('d-none');
-                }, 3000);
+                alert('Harap isi minimal 1 barang untuk diretur!');
                 return false;
             }
 

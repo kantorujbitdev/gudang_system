@@ -42,19 +42,25 @@ class Retur_penjualan extends MY_Controller
         $this->data['extra_js'] = 'aktifitas/retur_penjualan/script';
 
         $this->form_validation->set_rules('id_pemindahan', 'Pemindahan Barang', 'required');
-        $this->form_validation->set_rules('tanggal_retur', 'Tanggal Retur', 'required');
         $this->form_validation->set_rules('alasan_retur', 'Alasan Retur', 'required');
 
         if ($this->form_validation->run() === FALSE) {
             return $this->render_view('aktifitas/retur_penjualan/form', $this->data);
         }
 
+        // Check if pemindahan already returned
+        $id_pemindahan = $this->input->post('id_pemindahan');
+        if ($this->retur->is_pemindahan_already_returned($id_pemindahan)) {
+            $this->session->set_flashdata('error', 'Pemindahan barang ini sudah pernah di-retur!');
+            return redirect('aktifitas/retur_penjualan/tambah');
+        }
+
         $no_retur = $this->generate_no_retur();
         $data_insert = [
             'no_retur' => $no_retur,
-            'id_pemindahan' => $this->input->post('id_pemindahan'),
+            'id_pemindahan' => $id_pemindahan,
             'id_user' => $this->session->userdata('id_user'),
-            'tanggal_retur' => $this->input->post('tanggal_retur') . ' ' . date('H:i:s'),
+            'tanggal_retur' => date('Y-m-d H:i:s'),
             'alasan_retur' => $this->input->post('alasan_retur'),
             'status' => 'Requested'
         ];
@@ -98,7 +104,6 @@ class Retur_penjualan extends MY_Controller
         $this->data['title'] = 'Verifikasi Retur Penjualan';
         $this->data['retur'] = $this->retur->get($id_retur);
         $this->data['detail'] = $this->retur->get_detail($id_retur);
-        $this->data['gudang'] = $this->gudang->get_by_perusahaan($this->session->userdata('id_perusahaan'));
 
         if (!$this->data['retur']) {
             show_404();
@@ -116,28 +121,40 @@ class Retur_penjualan extends MY_Controller
         }
 
         $status = $this->input->post('status');
-        if ($this->retur->update_status($id_retur, $status)) {
-            $detail_ids = $this->input->post('id_detail_retur');
-            $jumlah_disetujuis = $this->input->post('jumlah_disetujui');
 
-            foreach ($detail_ids as $key => $id_detail) {
-                $this->retur->update_detail($id_detail, [
-                    'jumlah_disetujui' => $jumlah_disetujuis[$key]
-                ]);
-            }
+        if ($status == 'Approved') {
+            // Update status retur
+            if ($this->retur->update_status($id_retur, $status)) {
+                // Update detail retur: set jumlah_disetujui = jumlah_retur
+                $detail = $this->retur->get_detail($id_retur);
+                foreach ($detail as $item) {
+                    $detail_data = [
+                        'jumlah_disetujui' => $item->jumlah_retur
+                    ];
+                    $this->retur->update_detail($item->id_detail_retur, $detail_data);
+                }
 
-            if ($status == 'Approved') {
+                // Tambah stok
                 $this->tambah_stok($id_retur);
+
+                // Log status
+                $this->log_status_transaksi($id_retur, 'retur_penjualan', $status);
+
+                $this->session->set_flashdata('success', 'Retur penjualan berhasil dilanjutkan! Barang akan dikembalikan ke gudang.');
+                return redirect('aktifitas/retur_penjualan');
             }
-
-            $this->log_status_transaksi($id_retur, 'retur_penjualan', $status);
-            $this->session->set_flashdata('success', 'Verifikasi retur penjualan berhasil, status: ' . $status);
         } else {
-            $this->session->set_flashdata('error', 'Gagal verifikasi retur penjualan!');
+            // Jika ditolak
+            if ($this->retur->update_status($id_retur, $status)) {
+                $this->log_status_transaksi($id_retur, 'retur_penjualan', $status);
+                $this->session->set_flashdata('success', 'Retur penjualan berhasil dibatalkan.');
+                return redirect('aktifitas/retur_penjualan');
+            }
         }
-        redirect('aktifitas/retur_penjualan');
-    }
 
+        $this->session->set_flashdata('error', 'Gagal verifikasi retur penjualan!');
+        return redirect('aktifitas/retur_penjualan/verifikasi/' . $id_retur);
+    }
     public function hapus($id_retur)
     {
         if (!$this->check_permission('aktifitas/retur_penjualan', 'delete')) {
@@ -207,28 +224,29 @@ class Retur_penjualan extends MY_Controller
         $detail = $this->retur->get_detail($id_retur);
 
         foreach ($detail as $item) {
-            if ($item->jumlah_disetujui > 0) {
-                $stok = $this->retur->get_stok_barang($item->id_gudang, $item->id_barang);
+            // Get current stock
+            $stok = $this->retur->get_stok_barang($item->id_gudang, $item->id_barang);
 
-                if ($stok) {
-                    $new_stok = $stok->jumlah + $item->jumlah_disetujui;
-                    $this->retur->update_stok($item->id_gudang, $item->id_barang, $new_stok);
+            if ($stok) {
+                // Update stock
+                $new_stok = $stok->jumlah + $item->jumlah_retur;
+                $this->retur->update_stok($item->id_gudang, $item->id_barang, $new_stok);
 
-                    $log_data = [
-                        'id_barang' => $item->id_barang,
-                        'id_user' => $this->session->userdata('id_user'),
-                        'id_perusahaan' => $this->session->userdata('id_perusahaan'),
-                        'id_gudang' => $item->id_gudang,
-                        'jenis' => 'retur_penjualan',
-                        'jumlah' => $item->jumlah_disetujui,
-                        'sisa_stok' => $new_stok,
-                        'keterangan' => 'Retur penjualan ' . $retur->no_retur,
-                        'id_referensi' => $id_retur,
-                        'tipe_referensi' => 'retur_penjualan',
-                        'tanggal' => date('Y-m-d H:i:s')
-                    ];
-                    $this->retur->insert_log_stok($log_data);
-                }
+                // Log stock movement
+                $log_data = [
+                    'id_barang' => $item->id_barang,
+                    'id_user' => $this->session->userdata('id_user'),
+                    'id_perusahaan' => $this->session->userdata('id_perusahaan'),
+                    'id_gudang' => $item->id_gudang,
+                    'jenis' => 'retur_penjualan',
+                    'jumlah' => $item->jumlah_retur,
+                    'sisa_stok' => $new_stok,
+                    'keterangan' => 'Retur penjualan dari pelanggan: ' . $retur->no_retur,
+                    'id_referensi' => $id_retur,
+                    'tipe_referensi' => 'retur_penjualan',
+                    'tanggal' => date('Y-m-d H:i:s')
+                ];
+                $this->retur->insert_log_stok($log_data);
             }
         }
     }
