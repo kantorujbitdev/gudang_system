@@ -5,9 +5,11 @@
                 <?php echo responsive_title_blue('Daftar Kategori') ?>
             </div>
             <div class="col text-right">
-                <a href="<?php echo site_url('setup/kategori/tambah') ?>" class="btn btn-primary btn-sm">
-                    <i class="fas fa-plus"></i> Tambah Kategori
-                </a>
+                <?php if ($this->auth->has_permission('setup/kategori', 'create')): ?>
+                    <a href="<?php echo site_url('setup/kategori/tambah') ?>" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Tambah Kategori
+                    </a>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -33,35 +35,40 @@
                             <td><?php echo $row->nama_perusahaan; ?></td>
                             <td><?php echo $row->deskripsi ?: '-'; ?></td>
                             <td>
-                                    <?php if ($row->status_aktif == 1): ?>
+                                <?php if ($row->status_aktif == 1): ?>
                                     <span class="badge badge-success">Aktif</span>
-                                    <?php else: ?>
+                                <?php else: ?>
                                     <span class="badge badge-danger">Tidak Aktif</span>
-                                    <?php endif; ?>
+                                <?php endif; ?>
                             </td>
                             <td>
                                 <a href="<?php echo site_url('setup/kategori/detail/' . $row->id_kategori); ?>"
                                     class="btn btn-sm btn-info" title="Detail">
                                     <i class="fas fa-info-circle"></i>
                                 </a>
-                                <a href="<?php echo site_url('setup/kategori/edit/' . $row->id_kategori); ?>"
-                                    class="btn btn-sm btn-warning" title="Edit">
-                                    <i class="fas fa-edit"></i>
-                                </a>
 
+                                <?php if ($this->auth->has_permission('setup/kategori', 'edit')): ?>
+                                    <a href="<?php echo site_url('setup/kategori/edit/' . $row->id_kategori); ?>"
+                                        class="btn btn-sm btn-warning" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                <?php endif; ?>
+
+                                <?php if ($this->auth->has_permission('setup/kategori', 'delete')): ?>
                                     <?php if ($row->status_aktif == '1'): ?>
-                                    <a href="<?php echo site_url('setup/kategori/nonaktif/' . $row->id_kategori) ?>"
-                                        class="btn btn-sm btn-danger"
-                                        onclick="return confirm('Apakah Anda yakin ingin menonaktifkan kategori ini?')">
-                                        <i class="fas fa-minus-square"></i>
-                                    </a>
+                                        <a href="<?php echo site_url('setup/kategori/nonaktif/' . $row->id_kategori) ?>"
+                                            class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Apakah Anda yakin ingin menonaktifkan kategori ini?')">
+                                            <i class="fas fa-minus-square"></i>
+                                        </a>
                                     <?php else: ?>
-                                    <a href="<?php echo site_url('setup/kategori/aktif/' . $row->id_kategori) ?>"
-                                        class="btn btn-sm btn-success"
-                                        onclick="return confirm('Apakah Anda yakin ingin mengaktifkan kembali kategori ini?')">
-                                        <i class="fas fa-check-square"></i>
-                                    </a>
+                                        <a href="<?php echo site_url('setup/kategori/aktif/' . $row->id_kategori) ?>"
+                                            class="btn btn-sm btn-success"
+                                            onclick="return confirm('Apakah Anda yakin ingin mengaktifkan kembali kategori ini?')">
+                                            <i class="fas fa-check-square"></i>
+                                        </a>
                                     <?php endif; ?>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

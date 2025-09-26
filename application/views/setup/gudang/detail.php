@@ -1,10 +1,12 @@
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h4 class="m-0 font-weight-bold text-primary">Detail Gudang</h4>
     <div>
-        <a href="<?php echo site_url('setup/gudang/edit/' . $gudang->id_gudang); ?>"
-            class="d-none d-sm-inline-block btn btn-sm btn-warning shadow-sm">
-            <i class="fas fa-edit fa-sm text-white-50"></i>
-        </a>
+        <?php if ($this->auth->has_permission('setup/gudang', 'edit')): ?>
+            <a href="<?php echo site_url('setup/gudang/edit/' . $gudang->id_gudang); ?>" class="btn btn-sm btn-warning"
+                title="Edit">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+        <?php endif; ?>
         <a href="<?php echo site_url('setup/gudang'); ?>"
             class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm ml-2">
             <i class="fas fa-arrow-left fa-sm text-white-50"></i> Kembali
@@ -106,7 +108,7 @@
                                 <td><?php echo $b->jumlah ?: 0; ?></td>
                                 <td><?php echo $b->reserved ?: 0; ?></td>
                                 <td>
-                                    <?php if ($b->aktif == 1): ?>
+                                    <?php if ($b->status_aktif == 1): ?>
                                         <span class="badge badge-success">Aktif</span>
                                     <?php else: ?>
                                         <span class="badge badge-danger">Tidak Aktif</span>

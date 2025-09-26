@@ -5,9 +5,11 @@
                 <?php echo responsive_title_blue('Daftar Pelanggan') ?>
             </div>
             <div class="col text-right">
-                <a href="<?php echo site_url('setup/pelanggan/tambah') ?>" class="btn btn-primary btn-sm">
-                    <i class="fas fa-plus"></i> Tambah Pelanggan
-                </a>
+                <?php if ($this->auth->has_permission('setup/pelanggan', 'create')): ?>
+                    <a href="<?php echo site_url('setup/pelanggan/tambah') ?>" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Tambah Pelanggan
+                    </a>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -29,51 +31,56 @@
                 <tbody>
                     <?php $no = 1;
                     foreach ($pelanggan as $row): ?>
-                                    <tr>
-                                        <td><?php echo $no++; ?></td>
-                                        <td><?php echo $row->nama_pelanggan; ?></td>
-                                        <td><?php echo $row->nama_perusahaan; ?></td>
-                                        <td><?php echo $row->telepon ?: '-'; ?></td>
-                                        <td><?php echo $row->email ?: '-'; ?></td>
-                                        <td>
-                                            <?php if ($row->tipe_pelanggan == 'distributor'): ?>
-                                                            <span class="badge badge-info">Distributor</span>
-                                            <?php else: ?>
-                                                            <span class="badge badge-secondary">Konsumen</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td>
-                                            <?php if ($row->status_aktif == 1): ?>
-                                                            <span class="badge badge-success">Aktif</span>
-                                            <?php else: ?>
-                                                            <span class="badge badge-danger">Tidak Aktif</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td>
-                                            <a href="<?php echo site_url('setup/pelanggan/detail/' . $row->id_pelanggan); ?>"
-                                                class="btn btn-sm btn-info" title="Detail">
-                                                <i class="fas fa-info-circle"></i>
-                                            </a>
-                                            <a href="<?php echo site_url('setup/pelanggan/edit/' . $row->id_pelanggan); ?>"
-                                                class="btn btn-sm btn-warning" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
+                        <tr>
+                            <td><?php echo $no++; ?></td>
+                            <td><?php echo $row->nama_pelanggan; ?></td>
+                            <td><?php echo $row->nama_perusahaan; ?></td>
+                            <td><?php echo $row->telepon ?: '-'; ?></td>
+                            <td><?php echo $row->email ?: '-'; ?></td>
+                            <td>
+                                <?php if ($row->tipe_pelanggan == 'distributor'): ?>
+                                    <span class="badge badge-info">Distributor</span>
+                                <?php else: ?>
+                                    <span class="badge badge-secondary">Konsumen</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if ($row->status_aktif == 1): ?>
+                                    <span class="badge badge-success">Aktif</span>
+                                <?php else: ?>
+                                    <span class="badge badge-danger">Tidak Aktif</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <a href="<?php echo site_url('setup/pelanggan/detail/' . $row->id_pelanggan); ?>"
+                                    class="btn btn-sm btn-info" title="Detail">
+                                    <i class="fas fa-info-circle"></i>
+                                </a>
 
-                                            <?php if ($row->status_aktif == '1'): ?>
-                                                            <a href="<?php echo site_url('setup/pelanggan/nonaktif/' . $row->id_pelanggan) ?>"
-                                                                class="btn btn-sm btn-danger"
-                                                                onclick="return confirm('Apakah Anda yakin ingin menonaktifkan pelanggan ini?')">
-                                                                <i class="fas fa-minus-square"></i>
-                                                            </a>
-                                            <?php else: ?>
-                                                            <a href="<?php echo site_url('setup/pelanggan/aktif/' . $row->id_pelanggan) ?>"
-                                                                class="btn btn-sm btn-success"
-                                                                onclick="return confirm('Apakah Anda yakin ingin mengaktifkan kembali pelanggan ini?')">
-                                                                <i class="fas fa-check-square"></i>
-                                                            </a>
-                                            <?php endif; ?>
-                                        </td>
-                                    </tr>
+                                <?php if ($this->auth->has_permission('setup/pelanggan', 'edit')): ?>
+                                    <a href="<?php echo site_url('setup/pelanggan/edit/' . $row->id_pelanggan); ?>"
+                                        class="btn btn-sm btn-warning" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                <?php endif; ?>
+
+                                <?php if ($this->auth->has_permission('setup/pelanggan', 'delete')): ?>
+                                    <?php if ($row->status_aktif == '1'): ?>
+                                        <a href="<?php echo site_url('setup/pelanggan/nonaktif/' . $row->id_pelanggan) ?>"
+                                            class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Apakah Anda yakin ingin menonaktifkan pelanggan ini?')">
+                                            <i class="fas fa-minus-square"></i>
+                                        </a>
+                                    <?php else: ?>
+                                        <a href="<?php echo site_url('setup/pelanggan/aktif/' . $row->id_pelanggan) ?>"
+                                            class="btn btn-sm btn-success"
+                                            onclick="return confirm('Apakah Anda yakin ingin mengaktifkan kembali pelanggan ini?')">
+                                            <i class="fas fa-check-square"></i>
+                                        </a>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
