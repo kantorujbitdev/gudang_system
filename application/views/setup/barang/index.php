@@ -5,9 +5,11 @@
                 <?php echo responsive_title_blue('Daftar Barang') ?>
             </div>
             <div class="col text-right">
-                <a href="<?php echo site_url('setup/barang/tambah') ?>" class="btn btn-primary btn-sm">
-                    <i class="fas fa-plus"></i> Tambah Barang
-                </a>
+                <?php if ($this->auth->has_permission('setup/barang', 'create')): ?>
+                    <a href="<?php echo site_url('setup/barang/tambah') ?>" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Tambah Barang
+                    </a>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -93,27 +95,35 @@
                                     class="btn btn-sm btn-info" title="Detail">
                                     <i class="fas fa-info-circle"></i>
                                 </a>
-                                <a href="<?php echo site_url('setup/barang/stok/' . $row->id_barang); ?>"
-                                    class="btn btn-sm btn-primary" title="Kelola Stok">
-                                    <i class="fas fa-boxes"></i>
-                                </a>
-                                <a href="<?php echo site_url('setup/barang/edit/' . $row->id_barang); ?>"
-                                    class="btn btn-sm btn-warning" title="Edit">
-                                    <i class="fas fa-edit"></i>
-                                </a>
 
-                                <?php if ($row->status_aktif == '1'): ?>
-                                    <a href="<?php echo site_url('setup/barang/nonaktif/' . $row->id_barang) ?>"
-                                        class="btn btn-sm btn-danger"
-                                        onclick="return confirm('Apakah Anda yakin ingin menonaktifkan barang ini?')">
-                                        <i class="fas fa-minus-square"></i>
+                                <?php if ($this->auth->has_permission('setup/barang/stok', 'view')): ?>
+                                    <a href="<?php echo site_url('setup/barang/stok/' . $row->id_barang); ?>"
+                                        class="btn btn-sm btn-primary" title="Kelola Stok">
+                                        <i class="fas fa-boxes"></i>
                                     </a>
-                                <?php else: ?>
-                                    <a href="<?php echo site_url('setup/barang/aktif/' . $row->id_barang) ?>"
-                                        class="btn btn-sm btn-success"
-                                        onclick="return confirm('Apakah Anda yakin ingin mengaktifkan kembali barang ini?')">
-                                        <i class="fas fa-check-square"></i>
+                                <?php endif; ?>
+
+                                <?php if ($this->auth->has_permission('setup/barang', 'edit')): ?>
+                                    <a href="<?php echo site_url('setup/barang/edit/' . $row->id_barang); ?>"
+                                        class="btn btn-sm btn-warning" title="Edit">
+                                        <i class="fas fa-edit"></i>
                                     </a>
+                                <?php endif; ?>
+
+                                <?php if ($this->auth->has_permission('setup/barang', 'delete')): ?>
+                                    <?php if ($row->status_aktif == '1'): ?>
+                                        <a href="<?php echo site_url('setup/barang/nonaktif/' . $row->id_barang) ?>"
+                                            class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Apakah Anda yakin ingin menonaktifkan barang ini?')">
+                                            <i class="fas fa-minus-square"></i>
+                                        </a>
+                                    <?php else: ?>
+                                        <a href="<?php echo site_url('setup/barang/aktif/' . $row->id_barang) ?>"
+                                            class="btn btn-sm btn-success"
+                                            onclick="return confirm('Apakah Anda yakin ingin mengaktifkan kembali barang ini?')">
+                                            <i class="fas fa-check-square"></i>
+                                        </a>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                             </td>
                         </tr>

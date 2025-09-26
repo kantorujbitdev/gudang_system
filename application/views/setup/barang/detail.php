@@ -1,10 +1,13 @@
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h4 class="m-0 font-weight-bold text-primary">Detail Barang</h4>
     <div>
-        <a href="<?php echo site_url('setup/barang/edit/' . $barang->id_barang); ?>"
-            class="d-none d-sm-inline-block btn btn-sm btn-warning shadow-sm">
-            <i class="fas fa-edit fa-sm text-white-50"></i>
-        </a>
+        <?php if ($this->auth->has_permission('setup/barang', 'edit')): ?>
+            <a href="<?php echo site_url('setup/barang/edit/' . $barang->id_barang); ?>" class="btn btn-sm btn-warning"
+                title="Edit"> Edit
+                <i class="fas fa-edit"></i>
+            </a>
+        <?php endif; ?>
+
         <a href="<?php echo site_url('setup/barang'); ?>"
             class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm ml-2">
             <i class="fas fa-arrow-left fa-sm text-white-50"></i> Kembali
