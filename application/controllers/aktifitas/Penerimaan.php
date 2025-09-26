@@ -30,29 +30,29 @@ class Penerimaan extends MY_Controller
 
     public function tambah()
     {
+        $data['extra_js'] = 'aktifitas/penerimaan/script';
         if (!$this->check_permission('aktifitas/penerimaan', 'create')) {
             $this->session->set_flashdata('error', 'Anda tidak memiliki izin untuk membuat penerimaan barang!');
             return redirect('aktifitas/penerimaan');
         }
 
         $this->data['title'] = 'Tambah Penerimaan Barang';
-        $this->data['gudang'] = $this->gudang->get_all();
-        $this->data['supplier'] = $this->supplier->get_all();
-        $this->data['barang'] = $this->barang->get_all();
+        $this->data['gudang'] = $this->gudang->get_by_perusahaan($this->session->userdata('id_perusahaan'));
+        $this->data['supplier'] = $this->supplier->get_by_perusahaan($this->session->userdata('id_perusahaan'));
+        $this->data['barang'] = $this->barang->get_by_perusahaan($this->session->userdata('id_perusahaan'));
 
         $this->form_validation->set_rules('id_gudang', 'Gudang', 'required');
         $this->form_validation->set_rules('id_supplier', 'Supplier', 'required');
         $this->form_validation->set_rules('tanggal_penerimaan', 'Tanggal Penerimaan', 'required');
 
         if ($this->form_validation->run() === FALSE) {
-            return $this->render_view('aktifitas/penerimaan/form');
+            return $this->render_view('aktifitas/penerimaan/form', $data);
         }
 
         $no_penerimaan = $this->generate_no_penerimaan();
         $data_insert = [
             'no_penerimaan' => $no_penerimaan,
             'id_user' => $this->session->userdata('id_user'),
-            'id_perusahaan' => $this->session->userdata('id_perusahaan'), // Tambahkan ini
             'id_gudang' => $this->input->post('id_gudang'),
             'id_supplier' => $this->input->post('id_supplier'),
             'tanggal_penerimaan' => $this->input->post('tanggal_penerimaan') . ' ' . date('H:i:s'),
@@ -92,6 +92,8 @@ class Penerimaan extends MY_Controller
 
     public function edit($id_penerimaan)
     {
+        $data['extra_js'] = 'aktifitas/penerimaan/script';
+
         if (!$this->check_permission('aktifitas/penerimaan', 'edit')) {
             $this->session->set_flashdata('error', 'Anda tidak memiliki izin untuk mengubah penerimaan barang!');
             return redirect('aktifitas/penerimaan');
@@ -100,9 +102,9 @@ class Penerimaan extends MY_Controller
         $this->data['title'] = 'Edit Penerimaan Barang';
         $this->data['penerimaan'] = $this->penerimaan->get($id_penerimaan);
         $this->data['detail'] = $this->penerimaan->get_detail($id_penerimaan);
-        $this->data['gudang'] = $this->gudang->get_all();
-        $this->data['supplier'] = $this->supplier->get_all();
-        $this->data['barang'] = $this->barang->get_all();
+        $this->data['gudang'] = $this->gudang->get_by_perusahaan($this->session->userdata('id_perusahaan'));
+        $this->data['supplier'] = $this->supplier->get_by_perusahaan($this->session->userdata('id_perusahaan'));
+        $this->data['barang'] = $this->barang->get_by_perusahaan($this->session->userdata('id_perusahaan'));
 
         if (!$this->data['penerimaan']) {
             show_404();
@@ -118,7 +120,7 @@ class Penerimaan extends MY_Controller
         $this->form_validation->set_rules('tanggal_penerimaan', 'Tanggal Penerimaan', 'required');
 
         if ($this->form_validation->run() === FALSE) {
-            return $this->render_view('aktifitas/penerimaan/form');
+            return $this->render_view('aktifitas/penerimaan/form', $data);
         }
 
         $data_update = [

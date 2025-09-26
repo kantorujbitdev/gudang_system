@@ -4,13 +4,13 @@
             <div class="col">
                 <?php echo responsive_title_blue('Penerimaan Barang') ?>
             </div>
-            <?php if ($can_create): ?>
-                <div class="col text-right">
+            <div class="col text-right">
+                <?php if ($this->auth->has_permission('aktifitas/penerimaan', 'create')): ?>
                     <a href="<?php echo site_url('aktifitas/penerimaan/tambah'); ?>" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus"></i> Tambah Penerimaan
                     </a>
-                </div>
-            <?php endif; ?>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
     <div class="card-body">
@@ -63,20 +63,20 @@
                                     class="btn btn-sm btn-info" title="Detail">
                                     <i class="fas fa-info-circle"></i>
                                 </a>
-                                <?php if ($row->status == 'Draft' && $can_edit): ?>
+                                <?php if ($row->status == 'Draft' && $this->auth->has_permission('aktifitas/penerimaan', 'edit')): ?>
                                     <a href="<?php echo site_url('aktifitas/penerimaan/edit/' . $row->id_penerimaan); ?>"
                                         class="btn btn-sm btn-warning" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                 <?php endif; ?>
-                                <?php if ($row->status == 'Draft' && $can_delete): ?>
+                                <?php if ($row->status == 'Draft' && $this->auth->has_permission('aktifitas/penerimaan', 'delete')): ?>
                                     <a href="<?php echo site_url('aktifitas/penerimaan/hapus/' . $row->id_penerimaan); ?>"
                                         class="btn btn-sm btn-danger" title="Hapus"
                                         onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
                                         <i class="fas fa-trash"></i>
                                     </a>
                                 <?php endif; ?>
-                                <?php if ($can_edit): ?>
+                                <?php if ($this->auth->has_permission('aktifitas/penerimaan', 'edit')): ?>
                                     <?php if ($row->status == 'Draft'): ?>
                                         <a href="<?php echo site_url('aktifitas/penerimaan/konfirmasi/' . $row->id_penerimaan . '/Received'); ?>"
                                             class="btn btn-sm btn-primary" title="Proses Penerimaan"

@@ -13,7 +13,7 @@ class Penerimaan_model extends CI_Model
         $user_role = $this->session->userdata('id_role');
         $user_perusahaan = $this->session->userdata('id_perusahaan');
 
-        $this->db->select('pb.*, u.nama as user_nama, s.nama_supplier, g.nama_gudang');
+        $this->db->select('pb.*, u.nama as user_nama, s.nama_supplier, g.nama_gudang, s.id_perusahaan');
         $this->db->from('penerimaan_barang pb');
         $this->db->join('user u', 'pb.id_user = u.id_user');
         $this->db->join('supplier s', 'pb.id_supplier = s.id_supplier');
@@ -21,7 +21,7 @@ class Penerimaan_model extends CI_Model
 
         // Filter berdasarkan role user
         if ($user_role != 1) { // Bukan Super Admin
-            $this->db->where('pb.id_perusahaan', $user_perusahaan);
+            $this->db->where('s.id_perusahaan', $user_perusahaan);
         }
 
         $this->db->order_by('pb.created_at', 'DESC');
@@ -33,7 +33,7 @@ class Penerimaan_model extends CI_Model
         $user_role = $this->session->userdata('id_role');
         $user_perusahaan = $this->session->userdata('id_perusahaan');
 
-        $this->db->select('pb.*, u.nama as user_nama, s.nama_supplier, g.nama_gudang');
+        $this->db->select('pb.*, u.nama as user_nama, s.nama_supplier, g.nama_gudang, s.id_perusahaan');
         $this->db->from('penerimaan_barang pb');
         $this->db->join('user u', 'pb.id_user = u.id_user');
         $this->db->join('supplier s', 'pb.id_supplier = s.id_supplier');
@@ -42,7 +42,7 @@ class Penerimaan_model extends CI_Model
 
         // Filter berdasarkan role user
         if ($user_role != 1) { // Bukan Super Admin
-            $this->db->where('pb.id_perusahaan', $user_perusahaan);
+            $this->db->where('s.id_perusahaan', $user_perusahaan);
         }
 
         return $this->db->get()->row();
@@ -71,50 +71,23 @@ class Penerimaan_model extends CI_Model
 
     public function update($id_penerimaan, $data)
     {
-        $user_role = $this->session->userdata('id_role');
-        $user_perusahaan = $this->session->userdata('id_perusahaan');
-
         $this->db->where('id_penerimaan', $id_penerimaan);
-
-        // Filter berdasarkan role user
-        if ($user_role != 1) { // Bukan Super Admin
-            $this->db->where('pb.id_perusahaan', $user_perusahaan);
-        }
-
         return $this->db->update('penerimaan_barang', $data);
     }
 
     public function update_status($id_penerimaan, $status)
     {
-        $user_role = $this->session->userdata('id_role');
-        $user_perusahaan = $this->session->userdata('id_perusahaan');
-
         $this->db->where('id_penerimaan', $id_penerimaan);
         $data = [
             'status' => $status,
             'updated_at' => date('Y-m-d H:i:s')
         ];
-
-        // Filter berdasarkan role user
-        if ($user_role != 1) { // Bukan Super Admin
-            $this->db->where('pb.id_perusahaan', $user_perusahaan);
-        }
-
         return $this->db->update('penerimaan_barang', $data);
     }
 
     public function delete($id_penerimaan)
     {
-        $user_role = $this->session->userdata('id_role');
-        $user_perusahaan = $this->session->userdata('id_perusahaan');
-
         $this->db->where('id_penerimaan', $id_penerimaan);
-
-        // Filter berdasarkan role user
-        if ($user_role != 1) { // Bukan Super Admin
-            $this->db->where('pb.id_perusahaan', $user_perusahaan);
-        }
-
         return $this->db->delete('penerimaan_barang');
     }
 
@@ -165,9 +138,10 @@ class Penerimaan_model extends CI_Model
 
         // Filter berdasarkan role user
         if ($user_role != 1) { // Bukan Super Admin
-            $this->db->where('pb.id_perusahaan', $user_perusahaan);
+            $this->db->join('supplier s', 'pb.id_supplier = s.id_supplier');
+            $this->db->where('s.id_perusahaan', $user_perusahaan);
         }
 
-        return $this->db->get('penerimaan_barang')->row();
+        return $this->db->get('penerimaan_barang pb')->row();
     }
 }
