@@ -34,18 +34,9 @@
             </div>
 
             <div class="col-md-6">
-                <div class="form-group">
-                    <label for="tanggal_penerimaan">Tanggal Penerimaan <span class="text-danger">*</span></label>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fas fa-calendar"></i></span>
-                        </div>
-                        <input type="date" class="form-control" id="tanggal_penerimaan" name="tanggal_penerimaan"
-                            value="<?php echo set_value('tanggal_penerimaan', isset($penerimaan) ? date('Y-m-d', strtotime($penerimaan->tanggal_penerimaan)) : date('Y-m-d')); ?>"
-                            required>
-                    </div>
-                    <?php echo form_error('tanggal_penerimaan', '<small class="text-danger">', '</small>'); ?>
-                </div>
+                <!-- Tanggal disembunyikan, menggunakan sistem date -->
+                <input type="hidden" id="tanggal_penerimaan" name="tanggal_penerimaan"
+                    value="<?php echo date('Y-m-d H:i:s'); ?>">
 
                 <div class="form-group">
                     <label for="keterangan">Keterangan</label>

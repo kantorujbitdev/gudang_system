@@ -4,7 +4,7 @@
             <div class="col">
                 <?php echo responsive_title_blue('Retur Pembelian') ?>
             </div>
-            <?php if ($can_create): ?>
+            <?php if ($this->auth->has_permission('aktifitas/retur_pembelian', 'create')): ?>
                 <div class="col text-right">
                     <a href="<?php echo site_url('aktifitas/retur_pembelian/tambah'); ?>" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus"></i> Tambah Retur
@@ -64,13 +64,13 @@
                                     class="btn btn-sm btn-info" title="Detail">
                                     <i class="fas fa-info-circle"></i>
                                 </a>
-                                <?php if ($row->status == 'Requested' && $can_edit): ?>
+                                <?php if ($row->status == 'Requested' && $this->auth->has_permission('aktifitas/retur_pembelian', 'edit')): ?>
                                     <a href="<?php echo site_url('aktifitas/retur_pembelian/verifikasi/' . $row->id_retur_beli); ?>"
                                         class="btn btn-sm btn-warning" title="Verifikasi">
                                         <i class="fas fa-check-circle"></i> Verifikasi
                                     </a>
                                 <?php endif; ?>
-                                <?php if ($row->status == 'Requested' && $can_delete): ?>
+                                <?php if ($row->status == 'Requested' && $this->auth->has_permission('aktifitas/retur_pembelian', 'delete')): ?>
                                     <a href="<?php echo site_url('aktifitas/retur_pembelian/hapus/' . $row->id_retur_beli); ?>"
                                         class="btn btn-sm btn-danger" title="Hapus"
                                         onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">

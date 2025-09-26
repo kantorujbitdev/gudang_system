@@ -27,8 +27,8 @@
                         <td><?php echo date('d-m-Y H:i:s', strtotime($retur->tanggal_retur)); ?></td>
                     </tr>
                     <tr>
-                        <th>No Pembelian</th>
-                        <td><?php echo $retur->no_pembelian ?: '-'; ?></td>
+                        <th>No. Penerimaan</th>
+                        <td><?php echo $retur->no_penerimaan ?: '-'; ?></td>
                     </tr>
                     <tr>
                         <th>Supplier</th>
@@ -84,11 +84,11 @@
                 <thead>
                     <tr>
                         <th width="5%">No</th>
-                        <th width="30%">Barang</th>
+                        <th width="35%">Barang</th>
                         <th width="15%">Gudang</th>
                         <th width="15%">Jumlah Retur</th>
-                        <th width="15%">Jumlah Disetujui</th>
-                        <th width="15%">Alasan</th>
+                        <th width="15%">Stok Tersedia</th>
+                        <th width="20%">Alasan</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -100,11 +100,12 @@
                             <td><?php echo $row->nama_gudang; ?></td>
                             <td><?php echo $row->jumlah_retur; ?></td>
                             <td>
-                                <input type="hidden" name="id_detail_retur[]"
-                                    value="<?php echo $row->id_detail_retur_beli; ?>">
-                                <input type="number" class="form-control" name="jumlah_disetujui[]"
-                                    value="<?php echo $row->jumlah_disetujui; ?>" min="0"
-                                    max="<?php echo $row->jumlah_retur; ?>">
+                                <span id="stok-<?php echo $row->id_barang; ?>-<?php echo $row->id_gudang; ?>">
+                                    <?php
+                                    $stok = $this->retur->get_stok_barang($row->id_gudang, $row->id_barang);
+                                    echo $stok ? $stok->jumlah : 0;
+                                    ?>
+                                </span>
                             </td>
                             <td><?php echo $row->alasan_barang ?: '-'; ?></td>
                         </tr>
@@ -115,18 +116,36 @@
 
         <div class="form-group">
             <label for="status">Status Verifikasi <span class="text-danger">*</span></label>
-            <select class="form-control" id="status" name="status" required>
+            <select class="form-control select2" id="status" name="status" required>
                 <option value="">-- Pilih Status --</option>
-                <option value="Approved">Approved</option>
-                <option value="Rejected">Rejected</option>
+                <option value="Approved">Lanjutkan Retur</option>
+                <option value="Rejected">Batalkan Retur</option>
             </select>
             <?php echo form_error('status', '<small class="text-danger">', '</small>'); ?>
         </div>
-
-        <div class="form-group">
-            <button type="submit" class="btn btn-primary">Simpan</button>
-            <a href="<?php echo site_url('aktifitas/retur_pembelian'); ?>" class="btn btn-secondary">Batal</a>
+        <div class="form-group text-right">
+            <a href="<?php echo site_url('aktifitas/retur_pembelian'); ?>" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Batal
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Simpan
+            </button>
         </div>
         <?php echo form_close(); ?>
     </div>
 </div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    function validateStock(input, idBarang, idGudang) {
+        var maxStok = parseInt($('#stok-' + idBarang + '-' + idGudang).text());
+        var jumlahDisetujui = parseInt(input.value);
+
+        if (jumlahDisetujui > maxStok) {
+            alert('Jumlah disetujui tidak boleh melebihi stok tersedia!');
+            input.value = maxStok;
+        }
+    }
+</script>

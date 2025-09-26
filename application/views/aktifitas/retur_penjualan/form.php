@@ -19,17 +19,8 @@
                     <?php echo form_error('id_pemindahan', '<small class="text-danger">', '</small>'); ?>
                 </div>
 
-                <div class="form-group">
-                    <label for="tanggal_retur">Tanggal Retur <span class="text-danger">*</span></label>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fas fa-calendar"></i></span>
-                        </div>
-                        <input type="date" class="form-control" id="tanggal_retur" name="tanggal_retur"
-                            value="<?php echo set_value('tanggal_retur', date('Y-m-d')); ?>" required>
-                    </div>
-                    <?php echo form_error('tanggal_retur', '<small class="text-danger">', '</small>'); ?>
-                </div>
+                <!-- Tanggal retur disembunyikan, menggunakan sistem date -->
+                <input type="hidden" id="tanggal_retur" name="tanggal_retur" value="<?php echo date('Y-m-d H:i:s'); ?>">
             </div>
 
             <div class="col-md-6">

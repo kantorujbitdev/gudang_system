@@ -26,8 +26,8 @@
                         <td><?php echo date('d-m-Y H:i:s', strtotime($retur->tanggal_retur)); ?></td>
                     </tr>
                     <tr>
-                        <th>No Pembelian</th>
-                        <td><?php echo $retur->no_pembelian ?: '-'; ?></td>
+                        <th>No. Penerimaan</th>
+                        <td><?php echo $retur->no_penerimaan ?: '-'; ?></td>
                     </tr>
                     <tr>
                         <th>Supplier</th>
