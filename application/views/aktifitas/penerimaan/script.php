@@ -3,10 +3,17 @@
 
 <script>
     $(document).ready(function () {
-        // Initialize Select2
+        // Initialize Select2 for all select elements
         $('.select2').select2({
             theme: 'bootstrap4',
             placeholder: 'Pilih opsi'
+        });
+
+        // Initialize Select2 for barang with search
+        $('.select-barang').select2({
+            theme: 'bootstrap4',
+            placeholder: '-- Pilih Barang --',
+            allowClear: true
         });
 
         // Tambah barang
@@ -32,7 +39,9 @@
 
             // Initialize Select2 for new element
             $('.select-barang').select2({
-                theme: 'bootstrap4'
+                theme: 'bootstrap4',
+                placeholder: '-- Pilih Barang --',
+                allowClear: true
             });
         });
 
@@ -59,7 +68,7 @@
 
             // Check if at least one item is filled
             var hasItem = false;
-            $('input[name="id_barang[]"]').each(function () {
+            $('select[name="id_barang[]"]').each(function () {
                 if ($(this).val()) {
                     hasItem = true;
                     return false;

@@ -34,9 +34,18 @@
             </div>
 
             <div class="col-md-6">
-                <!-- Hidden field for tanggal penerimaan -->
-                <input type="hidden" id="tanggal_penerimaan" name="tanggal_penerimaan"
-                    value="<?php echo date('Y-m-d H:i:s'); ?>">
+                <div class="form-group">
+                    <label for="tanggal_penerimaan">Tanggal Penerimaan <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                        </div>
+                        <input type="date" class="form-control" id="tanggal_penerimaan" name="tanggal_penerimaan"
+                            value="<?php echo set_value('tanggal_penerimaan', isset($penerimaan) ? date('Y-m-d', strtotime($penerimaan->tanggal_penerimaan)) : date('Y-m-d')); ?>"
+                            required>
+                    </div>
+                    <?php echo form_error('tanggal_penerimaan', '<small class="text-danger">', '</small>'); ?>
+                </div>
 
                 <div class="form-group">
                     <label for="keterangan">Keterangan</label>
@@ -148,35 +157,5 @@
             </button>
         </div>
         <?php echo form_close(); ?>
-    </div>
-</div>
-
-<!-- Modal untuk info stok -->
-<div class="modal fade" id="modalStok" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Informasi Stok Barang</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Gudang</th>
-                                <th>Stok Tersedia</th>
-                                <th>Satuan</th>
-                            </tr>
-                        </thead>
-                        <tbody id="info-stok-body">
-                            <!-- Data akan diisi via AJAX -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
