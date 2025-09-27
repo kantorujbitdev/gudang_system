@@ -48,7 +48,7 @@
 
         <div class="table-responsive mb-3">
             <table class="table table-bordered table-striped" id="table_barang">
-                <thead class="thead-dark">
+                <thead class="thead-light">
                     <tr>
                         <th width="5%">No</th>
                         <th width="35%">Barang</th>

@@ -607,7 +607,7 @@ JOIN `perusahaan` `p` ON (`sg`.`id_perusahaan` = `p`.`id_perusahaan`)
 WHERE `b`.`status_aktif` = 1
   AND `g`.`status_aktif` = 1
   AND `p`.`status_aktif` = 1;
-  
+
 -- Insert data untuk tabel perusahaan
 INSERT INTO `perusahaan` (`id_perusahaan`, `nama_perusahaan`, `alamat`, `telepon`, `email`, `status_aktif`, `deleted_at`, `created_at`, `updated_at`) VALUES
 (1, 'PT. MGV MOTORINDO', 'Jl. Sudirman No. 10, Jakarta', '021-12345678', '', 1, NULL, '2025-09-15 22:53:59', '2025-09-17 12:09:24');
@@ -875,7 +875,7 @@ INSERT INTO `stok_awal` (`id_stok_awal`, `id_barang`, `id_gudang`, `id_perusahaa
 
 
 kita akan melengkapi kode kode yg belum sesuai,
-setelah pesan ini, saya akan kirim kode untuk fitur pemindahan barang, agar dapat sesuai dengan yg dibutuhkan serta desain database yg sudah dimiliki.
+setelah pesan ini, saya akan kirim kode untuk fitur retur pembeliamn, agar dapat sesuai dengan yg dibutuhkan serta desain database yg sudah dimiliki.
 
 perlu di ingat bahwa role user ini penting sebab yg menentukan tampilan, terutama super admin yg tidak memiliki perusahaan, jadi jika super admin membutuhkan id_perusahaan maka seharusnya ada pilihan untuk pilih perusahaan nya.
 
@@ -1138,99 +1138,133 @@ gudang_system/
 ├── README.md
 └── .htaccess
 
-Tahapan Pembangunan Sistem Manajemen Stok Gudang (per modul)
-1. Pondasi Sistem
-Autentikasi:
-Modul login & logout
-Session management
-Middleware role & hak akses menu
-Template:
-Integrasi SB Admin 2 (header, sidebar, footer, dashboard dummy)
-Dinamisasi sidebar dari tabel menu + hak_akses_menu
 
-2. Modul Setup (Master Data)
-2.1 Perusahaan & Gudang
-Form input/edit perusahaan
-Form input/edit gudang (relasi ke perusahaan)
-List perusahaan & gudang
+Untuk laporan dalam sistem manajemen stok gudang ini, saya sarankan desain laporan yang komprehensif namun mudah dipahami. Berikut konsep laporan yang ideal:
 
-2.2 Kategori & Barang
-Form kategori barang
-Form barang (relasi ke kategori & perusahaan)
-Stok awal barang per gudang (stok_awal → update ke stok_gudang)
+1. Laporan Sales
+Tujuan: Melihat performa penjualan per sales
 
-2.3 User & Role
-CRUD user
-Mapping role ke menu (Super Admin, Admin Perusahaan, Sales, Packing, Return)
+Filter:
+Periode tanggal
+Sales (otomatis filter berdasarkan perusahaan)
+Status transaksi (Draft/Delivered/etc)
+Kolom:
+No. Transaksi
+Tanggal
+Nama Sales
+Pelanggan/Konsumen
+Total Item
+Status
+Nilai (jika diperlukan)
+Visualisasi: Grafik penjualan per sales/periode
+2. Laporan Packing
+Tujuan: Monitoring aktivitas packing dan pengiriman
 
-2.4 Supplier & Pelanggan
-CRUD supplier
-CRUD pelanggan (perusahaan → pelanggan distributor)
-✅ Setelah modul ini jadi → sistem sudah siap punya master data lengkap.
+Filter:
+Periode tanggal
+Admin Packing
+Status packing
+Kolom:
+No. Referensi
+Tanggal Packing
+Admin Packing
+Jumlah Item
+Status
+Waktu Proses (dari packing hingga delivered)
+Visualisasi: Grafik efisiensi waktu packing
+3. Laporan Mutasi Barang
+Tujuan: Melacak semua pergerakan barang
 
-3. Modul Transaksi Utama
-3.1 Pembelian
-Header pembelian + detail barang
-Status: Draft → Menunggu Penerimaan
-Belum update stok (stok bertambah di penerimaan)
+Filter:
+Periode tanggal
+Gudang
+Jenis mutasi (masuk/keluar/retur/transfer)
+Barang/kategori
+Kolom:
+Tanggal
+No. Referensi
+Jenis Mutasi
+Barang
+Gudang Asal/Tujuan
+Jumlah
+Sisa Stok
+Fitur: Drill down ke detail transaksi
+4. Laporan Ringkasan Stok
+Tujuan: Overview kondisi stok secara keseluruhan
 
-3.2 Penerimaan Barang
-Header penerimaan_barang + detail
-Relasi ke pembelian
-Status: Draft → Received → Completed
-Saat Received → update stok_gudang & log_stok
+Filter:
+Periode tanggal
+Gudang
+Kategori barang
+Kolom:
+Kode/Nama Barang
+Stok Awal
+Total Masuk
+Total Keluar
+Stok Akhir
+Selisih
+Visualisasi:
+Grafik stok masuk/keluar
+Heatmap stok per gudang
+Alert untuk stok minimum
+Fitur Tambahan yang Penting:
+Export Data:
+Excel/CSV untuk analisis lebih lanjut
+PDF untuk dokumentasi/cetak
+Real-time Dashboard:
+Widget stok kritikal
+Grafik mutasi harian/mingguan
+Status transaksi terkini
+Drill Down Capability:
+Dari ringkasan → detail → transaksi spesifik
+Klik pada grafik untuk lihat detail
+Filter Berdasarkan Role:
+Super Admin: Lihat semua perusahaan
+Admin Perusahaan: Hanya perusahaannya
+Sales: Hanya transaksinya
+Packing: Hanya aktivitas packingnya
+Notifikasi Otomatis:
+Stok menipis
+Retur pending
+Transaksi melebihi SLA
+Contoh Implementasi Dashboard:
 
-3.3 Penjualan
-Header penjualan + detail barang
-Status: Draft → Packing → Shipping → Delivered → Completed
-Saat Shipping → stok gudang berkurang + log stok
-Integrasi dengan role Sales (user hanya bisa input penjualan, stok tetap dari gudang)
+┌─────────────────────────────────────────────────────────────┐
+│                   DASHBOARD STOK GUDANG                    │
+├─────────────────────────────────────────────────────────────┤
+│ [Filter: Periode, Gudang, Perusahaan]                      │
+│                                                             │
+│ ┌─────────────┐ ┌──────────────┐ ┌─────────────────────┐   │
+│ │   Stok      │ │  Mutasi      │ │  Performa Sales    │   │
+│ │   Overview  │ │  Barang      │ │                    │   │
+│ │             │ │              │ │                    │   │
+│ │ Total: 1,234│ │ Masuk: 456   │ │ Top Sales:         │   │
+│ │ Min: 12     │ │ Keluar: 789  │ │ • Budi (120 item)  │   │
+│ │ Max: 89     │ │ Retur: 23    │ │ • Ani (98 item)   │   │
+│ └─────────────┘ └──────────────┘ └─────────────────────┘   │
+│                                                             │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │                Transaksi Terkini                         │ │
+│ │ ┌─────┬────────────┬──────────┬──────────┬──────────┐ │ │
+│ │ │ No  │ Tanggal    │ Jenis    │ Status   │ User     │ │ │
+│ │ ├─────┼────────────┼──────────┼──────────┼──────────┤ │ │
+│ │ │ 001 │ 20/09/2023│ Penerimaan│ Completed│ Admin    │ │ │
+│ │ │ 002 │ 20/09/2023│ Retur    │ Requested│ Sales    │ │ │
+│ │ └─────┴────────────┴──────────┴──────────┴──────────┘ │ │
+│ └─────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+Teknis Implementasi:
+Gunakan log_stok sebagai sumber utama data mutasi
+Buat view v_laporan_summary untuk menghitung stok awal/akhir
+Implementasikan server-side processing untuk data besar
+Gunakan library seperti PhpSpreadsheet untuk export
+Integrasi dengan Chart.js untuk visualisasi
+Dengan desain ini, laporan akan memberikan insight yang berguna untuk:
 
-3.4 Transfer Stok
-Header transfer_stok + detail barang
-Status: Draft → Packing → Shipping → Delivered
-Saat Shipping → kurangi stok gudang asal
-Saat Delivered → tambah stok gudang tujuan
-Catat ke log_stok
-
-3.5 Retur
-Retur Penjualan (retur_penjualan + detail)
-Requested → Verification → Approved → Completed
-Approved → tambah stok ke gudang
-Retur Pembelian (retur_pembelian + detail)
-Requested → Verification → Approved → Completed
-Approved → kurangi stok dari gudang
-✅ Setelah semua transaksi ini beres → sistem sudah bisa jalan penuh dari input barang → pembelian → stok masuk → penjualan → stok keluar → retur.
-
-4. Audit & Approval
-Implementasi log_status_transaksi untuk semua transaksi
-Catat siapa user yang update status & kapan
-Approval flow per role:
-Admin Return → approve/reject retur
-Admin Packing → approve status packing & shipping
-Admin Perusahaan → kontrol penuh transaksi perusahaannya
-Super Admin → bisa lihat semua
-
-5. Modul Laporan
-5.1 Laporan Sales
-Detail penjualan per pelanggan/konsumen
-Filter per tanggal, perusahaan, gudang
-
-5.2 Laporan Packing
-Daftar aktivitas packing & pengiriman
-
-5.3 Laporan Mutasi
-Mutasi barang per gudang
-Data dari log_stok
-
-5.4 Laporan Summary
-Ringkasan stok per barang & per gudang:
-Saldo awal
-Masuk
-Keluar
-Saldo akhir
-
-
+Manajemen stok yang efisien
+Identifikasi tren penjualan
+Monitoring operasional gudang
+Pengambilan keputusan berbasis data
 
 
 
