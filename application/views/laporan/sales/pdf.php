@@ -44,6 +44,21 @@
             margin-top: 20px;
             font-size: 10px;
         }
+
+        .summary {
+            margin-bottom: 20px;
+        }
+
+        .summary-box {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .summary-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 
@@ -53,6 +68,31 @@
         <p>Periode: <?php echo date('d-m-Y', strtotime($filter['tanggal_awal'])); ?> s/d
             <?php echo date('d-m-Y', strtotime($filter['tanggal_akhir'])); ?>
         </p>
+    </div>
+
+    <div class="summary">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="summary-box">
+                    <div class="summary-title">Total Transaksi</div>
+                    <div class="summary-value"><?php echo $summary->total_transaksi ?: 0; ?></div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="summary-box">
+                    <div class="summary-title">Total Barang</div>
+                    <div class="summary-value"><?php echo $summary->total_barang ?: 0; ?></div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="summary-box">
+                    <div class="summary-title">Rata-rata</div>
+                    <div class="summary-value">
+                        <?php echo number_format(($summary->total_barang ?: 0) / ($summary->total_transaksi ?: 1), 0, ',', '.'); ?>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <table>

@@ -9,7 +9,7 @@
                     <i class="fas fa-filter"></i> Filter
                 </button>
                 <button class="btn btn-success btn-sm" data-toggle="collapse" data-target="#summaryCollapse">
-                    <i class="fas fa-chart-pie"></i> Summary
+                    <i class="fas fa-chart-pie"></i> Dashboard
                 </button>
                 <button class="btn btn-primary btn-sm" data-toggle="collapse" data-target="#exportCollapse">
                     <i class="fas fa-file-excel"></i> Export
@@ -40,7 +40,7 @@
                     <div class="col-md-3">
                         <div class="form-group">
                             <label for="id_barang">Barang</label>
-                            <select class="form-control" id="id_barang" name="id_barang">
+                            <select class="form-control select2" id="id_barang" name="id_barang">
                                 <option value="">Semua Barang</option>
                                 <?php foreach ($barang as $row): ?>
                                     <option value="<?php echo $row->id_barang; ?>" <?php echo ($filter['id_barang'] == $row->id_barang) ? 'selected' : ''; ?>>
@@ -65,7 +65,7 @@
                     <div class="col-md-3">
                         <div class="form-group">
                             <label for="id_user">User</label>
-                            <select class="form-control" id="id_user" name="id_user">
+                            <select class="form-control select2" id="id_user" name="id_user">
                                 <option value="">Semua User</option>
                                 <?php
                                 $current_role = '';
@@ -101,7 +101,7 @@
             </div>
         </div>
 
-        <!-- Summary -->
+        <!-- Dashboard -->
         <div class="collapse <?php echo $this->input->post() ? 'show' : ''; ?>" id="summaryCollapse">
             <div class="card card-body mb-4">
                 <div class="row">
@@ -110,7 +110,7 @@
                             <div class="card-body">
                                 <h5 class="card-title">Total Transaksi</h5>
                                 <h3 class="card-text">
-                                    <?php echo $this->sales->get_summary($filter)->total_transaksi ?: 0; ?>
+                                    <?php echo $summary->total_transaksi ?: 0; ?>
                                 </h3>
                             </div>
                         </div>
@@ -120,7 +120,7 @@
                             <div class="card-body">
                                 <h5 class="card-title">Total Barang</h5>
                                 <h3 class="card-text">
-                                    <?php echo $this->sales->get_summary($filter)->total_barang ?: 0; ?>
+                                    <?php echo $summary->total_barang ?: 0; ?>
                                 </h3>
                             </div>
                         </div>
@@ -130,14 +130,49 @@
                             <div class="card-body">
                                 <h5 class="card-title">Rata-rata</h5>
                                 <h3 class="card-text">
-                                    <?php echo number_format(($this->sales->get_summary($filter)->total_barang ?: 0) / ($this->sales->get_summary($filter)->total_transaksi ?: 1), 0, ',', '.'); ?>
+                                    <?php echo number_format(($summary->total_barang ?: 0) / ($summary->total_transaksi ?: 1), 0, ',', '.'); ?>
                                 </h3>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="row mt-3">
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h6>Performa Sales</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Sales</th>
+                                        <th>Transaksi</th>
+                                        <th>Total Barang</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php $no = 1; ?>
+                                    <?php foreach ($sales_performance as $row): ?>
+                                        <tr>
+                                            <td><?php echo $no++; ?></td>
+                                            <td><?php echo $row->nama; ?></td>
+                                            <td><?php echo $row->total_transaksi; ?></td>
+                                            <td><?php echo $row->total_barang; ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Grafik Penjualan Periode</h6>
+                        <div class="table-responsive">
+                            <canvas id="salesChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
                     <div class="col-md-6">
                         <h6>Top 5 Tujuan</h6>
                         <div class="table-responsive">
@@ -292,7 +327,6 @@
                     <?php endforeach; ?>
                 </tbody>
             </table>
-
         </div>
     </div>
 </div>

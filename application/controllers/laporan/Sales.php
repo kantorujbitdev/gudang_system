@@ -35,8 +35,12 @@ class Sales extends MY_Controller
 
         $this->data['filter'] = $filter;
         $this->data['sales'] = $this->sales->get_filtered($filter);
+        $this->data['sales_performance'] = $this->sales->get_sales_performance($filter);
+        $this->data['sales_by_period'] = $this->sales->get_sales_by_period($filter);
+        $this->data['summary'] = $this->sales->get_summary($filter);
+        $this->data['extra_js'] = 'laporan/sales/script';
 
-        $this->render_view('laporan/sales/index');
+        $this->render_view('laporan/sales/index', $this->data);
     }
 
     public function filter()
@@ -59,10 +63,13 @@ class Sales extends MY_Controller
 
         $this->data['filter'] = $filter;
         $this->data['sales'] = $this->sales->get_filtered($filter);
+        $this->data['sales_performance'] = $this->sales->get_sales_performance($filter);
+        $this->data['sales_by_period'] = $this->sales->get_sales_by_period($filter);
+        $this->data['summary'] = $this->sales->get_summary($filter);
+        $this->data['extra_js'] = 'laporan/sales/script';
 
-        $this->render_view('laporan/sales/index');
+        $this->render_view('laporan/sales/index', $this->data);
     }
-
     public function detail($id_pemindahan)
     {
         $pemindahan = $this->sales->get_pemindahan($id_pemindahan);

@@ -7,7 +7,102 @@ class Sales_model extends CI_Model
     {
         parent::__construct();
     }
+    public function get_sales_performance($filter)
+    {
+        $id_perusahaan = $this->session->userdata('id_perusahaan');
+        $id_user = $this->session->userdata('id_user');
+        $user_role = $this->session->userdata('id_role');
 
+        $this->db->select('u.id_user, u.nama, 
+                     COUNT(DISTINCT pb.id_pemindahan) as total_transaksi,
+                     SUM(dpb.jumlah) as total_barang');
+        $this->db->from('pemindahan_barang pb');
+        $this->db->join('detail_pemindahan_barang dpb', 'pb.id_pemindahan = dpb.id_pemindahan');
+        $this->db->join('user u', 'pb.id_user = u.id_user');
+        $this->db->where('pb.id_perusahaan', $id_perusahaan);
+        $this->db->where('pb.tipe_tujuan', 'konsumen');
+
+        // Filter status - hanya menampilkan Shipping dan Delivered
+        if (isset($filter['status']) && !empty($filter['status'])) {
+            $this->db->where('pb.status', $filter['status']);
+        } else {
+            // Default: hanya menampilkan Shipping dan Delivered
+            $this->db->where_in('pb.status', ['Shipping', 'Delivered']);
+        }
+
+        // Jika role adalah Sales, hanya tampilkan data miliknya sendiri
+        if ($user_role == 3) { // 3 adalah id_role untuk Sales Online
+            $this->db->where('pb.id_user', $id_user);
+        }
+
+        if ($filter['tanggal_awal']) {
+            $this->db->where('DATE(pb.tanggal_pemindahan) >=', $filter['tanggal_awal']);
+        }
+
+        if ($filter['tanggal_akhir']) {
+            $this->db->where('DATE(pb.tanggal_pemindahan) <=', $filter['tanggal_akhir']);
+        }
+
+        if ($filter['id_barang']) {
+            $this->db->where('dpb.id_barang', $filter['id_barang']);
+        }
+
+        if ($filter['id_user']) {
+            $this->db->where('pb.id_user', $filter['id_user']);
+        }
+
+        $this->db->group_by('u.id_user, u.nama');
+        $this->db->order_by('total_barang', 'DESC');
+        return $this->db->get()->result();
+    }
+
+    public function get_sales_by_period($filter)
+    {
+        $id_perusahaan = $this->session->userdata('id_perusahaan');
+        $id_user = $this->session->userdata('id_user');
+        $user_role = $this->session->userdata('id_role');
+
+        $this->db->select('DATE(pb.tanggal_pemindahan) as tanggal, 
+                     COUNT(DISTINCT pb.id_pemindahan) as total_transaksi,
+                     SUM(dpb.jumlah) as total_barang');
+        $this->db->from('pemindahan_barang pb');
+        $this->db->join('detail_pemindahan_barang dpb', 'pb.id_pemindahan = dpb.id_pemindahan');
+        $this->db->where('pb.id_perusahaan', $id_perusahaan);
+        $this->db->where('pb.tipe_tujuan', 'konsumen');
+
+        // Filter status - hanya menampilkan Shipping dan Delivered
+        if (isset($filter['status']) && !empty($filter['status'])) {
+            $this->db->where('pb.status', $filter['status']);
+        } else {
+            // Default: hanya menampilkan Shipping dan Delivered
+            $this->db->where_in('pb.status', ['Shipping', 'Delivered']);
+        }
+
+        // Jika role adalah Sales, hanya tampilkan data miliknya sendiri
+        if ($user_role == 3) { // 3 adalah id_role untuk Sales Online
+            $this->db->where('pb.id_user', $id_user);
+        }
+
+        if ($filter['tanggal_awal']) {
+            $this->db->where('DATE(pb.tanggal_pemindahan) >=', $filter['tanggal_awal']);
+        }
+
+        if ($filter['tanggal_akhir']) {
+            $this->db->where('DATE(pb.tanggal_pemindahan) <=', $filter['tanggal_akhir']);
+        }
+
+        if ($filter['id_barang']) {
+            $this->db->where('dpb.id_barang', $filter['id_barang']);
+        }
+
+        if ($filter['id_user']) {
+            $this->db->where('pb.id_user', $filter['id_user']);
+        }
+
+        $this->db->group_by('DATE(pb.tanggal_pemindahan)');
+        $this->db->order_by('tanggal', 'ASC');
+        return $this->db->get()->result();
+    }
     public function get_filtered($filter)
     {
         $id_perusahaan = $this->session->userdata('id_perusahaan');
