@@ -63,8 +63,9 @@ echo isset($data_master_js) ? $data_master_js : '';
                         <?php echo form_error('id_gudang_asal', '<small class="text-danger">', '</small>'); ?>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
+
+                <?php if ($this->session->userdata('id_role') != 3): // Bukan Sales ?>
+                    <div class="col-md-6">
                         <div class="form-group">
                             <label for="tipe_tujuan">Tipe Tujuan <span class="text-danger">*</span></label>
                             <select class="form-control" id="tipe_tujuan" name="tipe_tujuan" required>
@@ -75,7 +76,7 @@ echo isset($data_master_js) ? $data_master_js : '';
                             <?php echo form_error('tipe_tujuan', '<small class="text-danger">', '</small>'); ?>
                         </div>
                     </div>
-                </div>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
 
@@ -91,22 +92,24 @@ echo isset($data_master_js) ? $data_master_js : '';
                     </button>
                 </div>
             </div>
-            <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-striped table-hover compact small"
+                    <table class="table table-bordered table-striped table-hover compact small " width="100%"
                         id="table_barang_dipindahkan">
                         <thead>
                             <tr>
                                 <th width="4%">No</th>
-                                <th width="20%">Nama Barang</th>
-                                <th width="10%">Kode Barang</th>
-                                <th width="10%">SKU</th>
-                                <th width="8%">Ukuran</th>
-                                <th width="15%">Motor</th>
+                                <th width="15%">Nama Barang</th>
+                                <th width="12%">Motor</th>
                                 <th width="10%">Warna</th>
                                 <th width="8%">Jumlah</th>
                                 <th width="6%">Satuan</th>
-                                <th width="9%">Aksi</th>
+                                <?php if ($this->session->userdata('id_role') == 3 || (isset($tipe_tujuan_default) && $tipe_tujuan_default == 'konsumen')): ?>
+                                    <th width="12%">Toko</th>
+                                    <th width="15%">Nama Konsumen</th>
+                                    <th width="15%">Alamat Konsumen</th>
+                                <?php endif; ?>
+                                <th width="5%">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -115,9 +118,6 @@ echo isset($data_master_js) ? $data_master_js : '';
                                     <tr>
                                         <td><?php echo $key + 1; ?></td>
                                         <td><?php echo $item->nama_barang; ?></td>
-                                        <td><?php echo $item->kode_barang ?: '-'; ?></td>
-                                        <td><?php echo $item->sku; ?></td>
-                                        <td><?php echo $item->ukuran ?: '-'; ?></td>
                                         <td><?php echo $item->motor ?: '-'; ?></td>
                                         <td><?php echo $item->warna ?: '-'; ?></td>
                                         <td>
@@ -126,6 +126,30 @@ echo isset($data_master_js) ? $data_master_js : '';
                                                 data-id_barang="<?php echo $item->id_barang; ?>">
                                         </td>
                                         <td><?php echo $item->satuan; ?></td>
+                                        <?php if ($this->session->userdata('id_role') == 3 || (isset($tipe_tujuan_default) && $tipe_tujuan_default == 'konsumen')): ?>
+                                            <td>
+                                                <select class="form-control form-control-sm toko-konsumen" name="toko_konsumen[]"
+                                                    required>
+                                                    <option value="">-- Pilih Toko --</option>
+                                                    <?php foreach ($toko_konsumen as $toko): ?>
+                                                        <option value="<?php echo $toko->id_toko_konsumen; ?>" <?php echo (isset($item->id_toko_konsumen) && $item->id_toko_konsumen == $toko->id_toko_konsumen) ? 'selected' : ''; ?>>
+                                                            <?php echo $toko->nama_toko_konsumen; ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control form-control-sm nama-konsumen"
+                                                    name="nama_konsumen[]"
+                                                    value="<?php echo isset($item->nama_konsumen) ? $item->nama_konsumen : ''; ?>"
+                                                    placeholder="Nama konsumen" required>
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control form-control-sm mt-1 alamat-konsumen"
+                                                    name="alamat_konsumen[]" rows="2" placeholder="Alamat konsumen"
+                                                    required><?php echo isset($item->alamat_konsumen) ? $item->alamat_konsumen : ''; ?></textarea>
+                                            </td>
+                                        <?php endif; ?>
                                         <td>
                                             <button type="button" class="btn btn-sm btn-danger btn-hapus-barang"
                                                 data-id_barang="<?php echo $item->id_barang; ?>">
@@ -141,77 +165,9 @@ echo isset($data_master_js) ? $data_master_js : '';
             </div>
         </div>
 
-        <!-- Informasi Transaksi -->
+        <!-- Informasi Tambahan -->
         <div class="row mb-4">
-            <div class="col-md-6">
-                <!-- Gudang Tujuan -->
-                <div id="gudang_tujuan_field" style="display: none;">
-                    <div class="form-group">
-                        <label for="id_gudang_tujuan">Gudang Tujuan</label>
-                        <select class="form-control" id="id_gudang_tujuan" name="id_gudang_tujuan">
-                            <option value="">-- Pilih Gudang Tujuan --</option>
-                            <?php foreach ($gudang as $row): ?>
-                                <option value="<?php echo $row->id_gudang; ?>" <?php echo (isset($pemindahan) && $pemindahan->id_gudang_tujuan == $row->id_gudang) ? 'selected' : ''; ?>>
-                                    <?php echo $row->nama_gudang; ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Pelanggan -->
-                <div id="pelanggan_field" style="display: none;">
-                    <div class="form-group">
-                        <label for="id_pelanggan">Pelanggan</label>
-                        <select class="form-control" id="id_pelanggan" name="id_pelanggan">
-                            <option value="">-- Pilih Pelanggan --</option>
-                            <?php foreach ($pelanggan as $row): ?>
-                                <option value="<?php echo $row->id_pelanggan; ?>" <?php echo (isset($pemindahan) && $pemindahan->id_pelanggan == $row->id_pelanggan) ? 'selected' : ''; ?>>
-                                    <?php echo $row->nama_pelanggan; ?> (<?php echo $row->tipe_pelanggan; ?>)
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-
-                        <div id="alamat_pelanggan" class="mt-2" style="display: none;">
-                            <div class="card card-body bg-light">
-                                <h6>Alamat Pelanggan:</h6>
-                                <p id="alamat_text"></p>
-                                <p><strong>Telepon:</strong> <span id="telepon_text"></span></p>
-                                <p><strong>Email:</strong> <span id="email_text"></span></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Konsumen -->
-                <div id="konsumen_field" style="display: none;">
-                    <div class="form-group">
-                        <label for="id_toko_konsumen">Toko</label>
-                        <select class="form-control" id="id_toko_konsumen" name="id_toko_konsumen">
-                            <option value="">-- Pilih Toko --</option>
-                            <?php foreach ($toko_konsumen as $row): ?>
-                                <option value="<?php echo $row->id_toko_konsumen; ?>" <?php echo (isset($pemindahan) && $pemindahan->id_konsumen && $pemindahan->id_toko_konsumen == $row->id_toko_konsumen) ? 'selected' : ''; ?>>
-                                    <?php echo $row->nama_toko_konsumen; ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="nama_konsumen">Nama Konsumen</label>
-                        <input type="text" class="form-control" id="nama_konsumen" name="nama_konsumen"
-                            value="<?php echo set_value('nama_konsumen', isset($pemindahan) && $pemindahan->id_konsumen ? $pemindahan->nama_konsumen : ''); ?>">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="alamat_konsumen">Alamat Konsumen</label>
-                        <textarea class="form-control" id="alamat_konsumen" name="alamat_konsumen"
-                            rows="3"><?php echo set_value('alamat_konsumen', isset($pemindahan) && $pemindahan->id_konsumen ? $pemindahan->alamat_konsumen : ''); ?></textarea>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-
+            <div class="col-md-12">
                 <div class="form-group">
                     <label for="keterangan">Keterangan</label>
                     <textarea class="form-control" id="keterangan" name="keterangan"
@@ -220,12 +176,58 @@ echo isset($data_master_js) ? $data_master_js : '';
             </div>
         </div>
 
+        <!-- Untuk non-Sales, tampilkan pilihan tujuan -->
+        <?php if ($this->session->userdata('id_role') != 3): ?>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <!-- Gudang Tujuan -->
+                    <div id="gudang_tujuan_field" style="display: none;">
+                        <div class="form-group">
+                            <label for="id_gudang_tujuan">Gudang Tujuan</label>
+                            <select class="form-control" id="id_gudang_tujuan" name="id_gudang_tujuan">
+                                <option value="">-- Pilih Gudang Tujuan --</option>
+                                <?php foreach ($gudang as $row): ?>
+                                    <option value="<?php echo $row->id_gudang; ?>" <?php echo (isset($pemindahan) && $pemindahan->id_gudang_tujuan == $row->id_gudang) ? 'selected' : ''; ?>>
+                                        <?php echo $row->nama_gudang; ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Pelanggan -->
+                    <div id="pelanggan_field" style="display: none;">
+                        <div class="form-group">
+                            <label for="id_pelanggan">Pelanggan</label>
+                            <select class="form-control" id="id_pelanggan" name="id_pelanggan">
+                                <option value="">-- Pilih Pelanggan --</option>
+                                <?php foreach ($pelanggan as $row): ?>
+                                    <option value="<?php echo $row->id_pelanggan; ?>" <?php echo (isset($pemindahan) && $pemindahan->id_pelanggan == $row->id_pelanggan) ? 'selected' : ''; ?>>
+                                        <?php echo $row->nama_pelanggan; ?> (<?php echo $row->tipe_pelanggan; ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+
+                            <div id="alamat_pelanggan" class="mt-2" style="display: none;">
+                                <div class="card card-body bg-light">
+                                    <h6>Alamat Pelanggan:</h6>
+                                    <p id="alamat_text"></p>
+                                    <p><strong>Telepon:</strong> <span id="telepon_text"></span></p>
+                                    <p><strong>Email:</strong> <span id="email_text"></span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
+
         <input type="hidden" id="barang_dipindahkan" name="barang_dipindahkan" value="">
-        <div class="form-group text-right mt-4">
+
+        <div class="form-group mt-4 text-right">
             <a href="<?php echo site_url('aktifitas/pemindahan'); ?>" class="btn btn-secondary">
                 <i class="fas fa-times"></i> Batal
             </a>
-
             <button type="submit" class="btn btn-primary">
                 <i class="fas fa-save"></i> Simpan
             </button>
@@ -233,7 +235,6 @@ echo isset($data_master_js) ? $data_master_js : '';
         <?php echo form_close(); ?>
     </div>
 </div>
-
 <!-- Modal untuk Pilih Barang -->
 <div class="modal fade" id="modalBarang" tabindex="-1" role="dialog" aria-labelledby="modalBarangLabel"
     aria-hidden="true">
@@ -249,26 +250,36 @@ echo isset($data_master_js) ? $data_master_js : '';
                 <div class="form-group">
                     <div class="input-group">
                         <input type="text" class="form-control" id="cari_barang_modal"
-                            placeholder="Ketik nama barang, SKU, atau motor">
+                            placeholder="Ketik nama barang atau motor">
                         <div class="input-group-append">
                             <span class="input-group-text"><i class="fas fa-search"></i></span>
                         </div>
                     </div>
                 </div>
+
+                <!-- Info barang yang dipilih -->
+                <div class="alert alert-info d-none" id="info-selected">
+                    <i class="fas fa-info-circle"></i> <span id="selected-count">0</span> barang dipilih
+                </div>
+
                 <div class="table-responsive">
-                    <table class="table table-bordered table-striped table-hover compact small" id="table_barang_modal">
+                    <table class="table table-bordered table-striped table-hover compact small" widht="100%"
+                        id="table_barang_modal">
                         <thead>
                             <tr>
-                                <th width="4%">No</th>
                                 <th width="20%">Nama Barang</th>
                                 <th width="10%">Kode Barang</th>
-                                <th width="10%">SKU</th>
-                                <th width="8%">Ukuran</th>
                                 <th width="15%">Motor</th>
                                 <th width="10%">Warna</th>
                                 <th width="8%">Stok</th>
                                 <th width="6%">Satuan</th>
-                                <th width="9%">Aksi</th>
+                                <th width="9%">Jumlah</th>
+                                <th width="4%">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input" id="select-all">
+                                        <label class="custom-control-label" for="select-all"></label>
+                                    </div>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -278,7 +289,11 @@ echo isset($data_master_js) ? $data_master_js : '';
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times"></i> Tutup</button>
+                <button type="button" class="btn btn-primary" id="btn-pilih-semua">
+                    <i class="fas fa-check"></i> Pilih Barang
+                </button>
             </div>
         </div>
     </div>

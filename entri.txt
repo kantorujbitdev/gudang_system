@@ -774,7 +774,7 @@ INSERT INTO hak_akses_menu (id_role, id_menu, can_view, can_create, can_edit, ca
 INSERT INTO hak_akses_menu (id_role, id_menu, can_view, can_create, can_edit, can_delete) VALUES
 (4, 1, 1, 0, 0, 0),  -- Dashboard (View only)
 (4, 12, 1, 1, 1, 0), -- Aktifitas
-(4, 13, 1, 1, 1, 0), -- Pemindahan Barang
+(4, 13, 1, 0, 1, 0), -- Pemindahan Barang
 (4, 15, 1, 1, 1, 0), -- Retur Penjualan
 (4, 17, 1, 1, 1, 0), -- Daftar
 (4, 18, 1, 1, 1, 0), -- Pemindahan Barang

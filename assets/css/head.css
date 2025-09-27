@@ -1,3 +1,36 @@
+/* Custom checkbox styling */
+.custom-control-input:checked ~ .custom-control-label::before {
+	color: #fff;
+	border-color: #007bff;
+	background-color: #007bff;
+}
+
+.custom-checkbox .custom-control-label::before {
+	border-radius: 0.25rem;
+}
+
+/* Modal styling improvements */
+.modal-header {
+	background-color: #f8f9fa;
+	border-bottom: 1px solid #dee2e6;
+}
+
+.modal-footer {
+	background-color: #f8f9fa;
+	border-top: 1px solid #dee2e6;
+}
+
+/* Table hover effect */
+.table-hover tbody tr:hover {
+	background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* Badge styling */
+.badge {
+	font-size: 0.75em;
+	padding: 0.4em 0.6em;
+}
+
 /* =============================
    USER PROFILE DROPDOWN
 ============================= */

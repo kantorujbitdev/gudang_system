@@ -118,6 +118,7 @@ class Pemindahan extends MY_Controller
         $this->render_view('aktifitas/pemindahan/index');
     }
 
+
     public function tambah()
     {
         $data['extra_js'] = 'aktifitas/pemindahan/pemindahan_script';
@@ -164,15 +165,24 @@ class Pemindahan extends MY_Controller
             $this->data['barang'] = $this->barang->get_by_perusahaan($id_perusahaan);
         }
 
+        // Set default tipe tujuan untuk Sales
+        if ($user_role == 3) {
+            $this->data['tipe_tujuan_default'] = 'konsumen';
+        }
+
         $this->form_validation->set_rules('id_gudang_asal', 'Gudang Asal', 'required');
-        $this->form_validation->set_rules('tipe_tujuan', 'Tipe Tujuan', 'required');
+
+        // Untuk Sales, tipe tujuan otomatis konsumen
+        if ($user_role != 3) {
+            $this->form_validation->set_rules('tipe_tujuan', 'Tipe Tujuan', 'required');
+        }
 
         if ($this->form_validation->run() == FALSE) {
             return $this->render_view('aktifitas/pemindahan/form', $data);
         }
 
         // Generate nomor transaksi berdasarkan tipe tujuan
-        $tipe_tujuan = $this->input->post('tipe_tujuan');
+        $tipe_tujuan = ($user_role == 3) ? 'konsumen' : $this->input->post('tipe_tujuan');
         $no_transaksi = $this->generate_no_transaksi($tipe_tujuan);
 
         // Tentukan perusahaan
@@ -190,7 +200,6 @@ class Pemindahan extends MY_Controller
             'status' => 'Draft'
         ];
 
-        $tipe_tujuan = $this->input->post('tipe_tujuan');
         $data_insert['tipe_tujuan'] = $tipe_tujuan;
 
         // Validasi gudang asal dan tujuan
@@ -216,16 +225,8 @@ class Pemindahan extends MY_Controller
         } elseif ($tipe_tujuan == 'pelanggan') {
             $data_insert['id_pelanggan'] = $this->input->post('id_pelanggan');
         } elseif ($tipe_tujuan == 'konsumen') {
-            // Buat konsumen baru
-            $data_konsumen = [
-                'nama_konsumen' => $this->input->post('nama_konsumen'),
-                'id_toko_konsumen' => $this->input->post('id_toko_konsumen'),
-                'alamat_konsumen' => $this->input->post('alamat_konsumen'),
-                'id_perusahaan' => $id_perusahaan
-            ];
-
-            $id_konsumen = $this->konsumen->insert($data_konsumen);
-            $data_insert['id_konsumen'] = $id_konsumen;
+            // Untuk konsumen, data akan diproses per baris di detail
+            $data_insert['id_konsumen'] = null; // Akan diisi nanti
         }
 
         $id_pemindahan = $this->pemindahan->insert($data_insert);
@@ -245,11 +246,32 @@ class Pemindahan extends MY_Controller
                         return redirect('aktifitas/pemindahan/tambah');
                     }
 
+                    // Jika tipe tujuan konsumen, simpan data konsumen
+                    $id_konsumen = null;
+                    if ($tipe_tujuan == 'konsumen') {
+                        // Buat konsumen baru
+                        $data_konsumen = [
+                            'nama_konsumen' => $barang->nama_konsumen,
+                            'id_toko_konsumen' => $barang->id_toko_konsumen,
+                            'alamat_konsumen' => $barang->alamat_konsumen,
+                            'id_perusahaan' => $id_perusahaan
+                        ];
+
+                        $id_konsumen = $this->konsumen->insert($data_konsumen);
+
+                        // Update pemindahan dengan id_konsumen (hanya untuk baris pertama)
+                        if ($data_insert['id_konsumen'] === null) {
+                            $data_insert['id_konsumen'] = $id_konsumen;
+                            $this->pemindahan->update($id_pemindahan, $data_insert);
+                        }
+                    }
+
                     $this->pemindahan->insert_detail([
                         'id_pemindahan' => $id_pemindahan,
                         'id_barang' => $barang->id_barang,
                         'id_gudang' => $this->input->post('id_gudang_asal'),
-                        'jumlah' => $barang->jumlah
+                        'jumlah' => $barang->jumlah,
+                        'id_konsumen' => $id_konsumen // Tambahkan id_konsumen di detail
                     ]);
 
                     // Tambah reserved saat draft

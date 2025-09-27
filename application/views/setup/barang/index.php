@@ -20,7 +20,6 @@
                     <tr>
                         <th>No</th>
                         <th>Gambar</th>
-                        <th>SKU</th>
                         <th>Kode Barang</th>
                         <th>Nama Barang</th>
                         <th>Kategori</th>
@@ -48,7 +47,6 @@
                                     <span class="text-muted">Tidak ada</span>
                                 <?php endif; ?>
                             </td>
-                            <td><?php echo $row->sku; ?></td>
                             <td><?php echo $row->kode_barang ?: '-'; ?></td>
                             <td><?php echo $row->nama_barang; ?></td>
                             <td><?php echo $row->nama_kategori ?: '-'; ?></td>

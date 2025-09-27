@@ -38,16 +38,19 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="id_user">Admin Packing</label>
-                            <select class="form-control select2" id="id_user" name="id_user">
-                                <option value="">Semua User</option>
-                                <?php foreach ($user as $row): ?>
-                                    <option value="<?php echo $row->id_user; ?>" <?php echo ($filter['id_user'] == $row->id_user) ? 'selected' : ''; ?>><?php echo $row->nama; ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
+                        <?php if ($this->session->userdata('id_role') != 4): // Tampilkan filter user hanya untuk non-Admin Packing ?>
+                            <div class="form-group">
+                                <label for="id_user">Admin Packing</label>
+                                <select class="form-control" id="id_user" name="id_user">
+                                    <option value="">-- Semua --</option>
+                                    <?php foreach ($user as $row): ?>
+                                        <option value="<?php echo $row->id_user; ?>" <?php echo (isset($filter['id_user']) && $filter['id_user'] == $row->id_user) ? 'selected' : ''; ?>>
+                                            <?php echo $row->nama; ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        <?php endif; ?>
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">

@@ -18,13 +18,22 @@ class Packing extends MY_Controller
     public function index()
     {
         $this->data['title'] = 'Laporan Packing';
-        $this->data['user'] = $this->user->get_by_role(4); // Admin Packing
+
+        // Jika login sebagai Admin Packing, hanya tampilkan data packing miliknya sendiri
+        $user_role = $this->session->userdata('id_role');
+        $id_user = $this->session->userdata('id_user');
+
+        if ($user_role == 4) { // Admin Packing
+            $this->data['user'] = [$this->user->get($id_user)]; // Hanya user yang sedang login
+        } else {
+            $this->data['user'] = $this->user->get_by_role(4); // Semua Admin Packing (untuk Super Admin/Admin Perusahaan)
+        }
 
         // Set filter default
         $filter = [
             'tanggal_awal' => date('Y-m-01'),
             'tanggal_akhir' => date('Y-m-d'),
-            'id_user' => '',
+            'id_user' => ($user_role == 4) ? $id_user : '', // Filter berdasarkan user yang login
             'status' => ''
         ];
 
@@ -43,13 +52,22 @@ class Packing extends MY_Controller
     public function filter()
     {
         $this->data['title'] = 'Laporan Packing';
-        $this->data['user'] = $this->user->get_by_role(4); // Admin Packing
+
+        // Jika login sebagai Admin Packing, hanya tampilkan data packing miliknya sendiri
+        $user_role = $this->session->userdata('id_role');
+        $id_user = $this->session->userdata('id_user');
+
+        if ($user_role == 4) { // Admin Packing
+            $this->data['user'] = [$this->user->get($id_user)]; // Hanya user yang sedang login
+        } else {
+            $this->data['user'] = $this->user->get_by_role(4); // Semua Admin Packing (untuk Super Admin/Admin Perusahaan)
+        }
 
         // Get filter dari POST
         $filter = [
             'tanggal_awal' => $this->input->post('tanggal_awal') ?: date('Y-m-01'),
             'tanggal_akhir' => $this->input->post('tanggal_akhir') ?: date('Y-m-d'),
-            'id_user' => $this->input->post('id_user'),
+            'id_user' => ($user_role == 4) ? $id_user : $this->input->post('id_user'), // Filter berdasarkan user yang login
             'status' => $this->input->post('status')
         ];
 

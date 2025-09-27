@@ -12,7 +12,12 @@ class Pemindahan_model extends CI_Model
         $this->db->insert('packing', $data);
         return $this->db->insert_id();
     }
-
+    public function update_detail_with_konsumen($id_pemindahan, $id_barang, $id_konsumen)
+    {
+        $this->db->where('id_pemindahan', $id_pemindahan);
+        $this->db->where('id_barang', $id_barang);
+        return $this->db->update('detail_pemindahan_barang', ['id_konsumen' => $id_konsumen]);
+    }
     public function insert_detail_packing($data)
     {
         $this->db->insert('detail_packing', $data);
@@ -172,7 +177,17 @@ class Pemindahan_model extends CI_Model
         $this->db->insert('detail_pemindahan_barang', $data);
         return $this->db->insert_id();
     }
+    public function get_detail_with_konsumen($id_pemindahan)
+    {
+        $this->db->select('dpb.*, b.nama_barang, b.satuan, b.sku, k.nama_konsumen, k.alamat_konsumen, tk.nama_toko_konsumen');
+        $this->db->from('detail_pemindahan_barang dpb');
+        $this->db->join('barang b', 'dpb.id_barang = b.id_barang');
+        $this->db->join('konsumen k', 'dpb.id_konsumen = k.id_konsumen', 'left');
+        $this->db->join('toko_konsumen tk', 'k.id_toko_konsumen = tk.id_toko_konsumen', 'left');
+        $this->db->where('dpb.id_pemindahan', $id_pemindahan);
 
+        return $this->db->get()->result();
+    }
     public function update($id_pemindahan, $data)
     {
         $this->db->where('id_pemindahan', $id_pemindahan);
