@@ -19,30 +19,43 @@ class Barang extends MY_Controller
     }
     public function get_motor()
     {
+        // hanya untuk AJAX
         if (!$this->input->is_ajax_request()) {
             show_404();
         }
 
-        $search = $this->input->get('q');
-        $this->db->select('motor');
-        $this->db->distinct();
-        $this->db->like('motor', $search);
+        // ambil query pencarian (opsional)
+        $search = $this->input->get('q', TRUE); // TRUE = XSS clean
+        $limit = 100; // batasi jumlah kembalian untuk performa
+
+        // ambil id (jika ada) dan nama_motor
+        // kalau tabel motor cuma punya nama_motor, id_motor akan dianggap tidak ada,
+        // nanti kita fallback ke nama_motor sebagai id.
+        $this->db->select('id_motor, nama_motor');
+        $this->db->from('motor');
         $this->db->where('status_aktif', 1);
-        $this->db->where('deleted_at IS NULL');
-        $this->db->limit(10);
-        $query = $this->db->get('barang');
+
+        if (!empty($search)) {
+            $this->db->like('nama_motor', $search);
+        }
+
+        $this->db->limit($limit);
+        $query = $this->db->get();
 
         $result = [];
         if ($query->num_rows() > 0) {
             foreach ($query->result() as $row) {
-                if (!empty($row->motor)) {
-                    $result[] = ['id' => $row->motor, 'text' => $row->motor];
-                }
+                $id = isset($row->id_motor) && $row->id_motor ? $row->id_motor : $row->nama_motor;
+                $result[] = [
+                    'id' => $id,
+                    'text' => $row->nama_motor
+                ];
             }
         }
 
         echo json_encode($result);
     }
+
 
     public function get_warna()
     {
