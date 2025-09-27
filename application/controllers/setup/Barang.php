@@ -17,7 +17,59 @@ class Barang extends MY_Controller
         // Cek akses menu
         $this->check_menu_access('setup/barang');
     }
+    public function get_motor()
+    {
+        if (!$this->input->is_ajax_request()) {
+            show_404();
+        }
 
+        $search = $this->input->get('q');
+        $this->db->select('motor');
+        $this->db->distinct();
+        $this->db->like('motor', $search);
+        $this->db->where('status_aktif', 1);
+        $this->db->where('deleted_at IS NULL');
+        $this->db->limit(10);
+        $query = $this->db->get('barang');
+
+        $result = [];
+        if ($query->num_rows() > 0) {
+            foreach ($query->result() as $row) {
+                if (!empty($row->motor)) {
+                    $result[] = ['id' => $row->motor, 'text' => $row->motor];
+                }
+            }
+        }
+
+        echo json_encode($result);
+    }
+
+    public function get_warna()
+    {
+        if (!$this->input->is_ajax_request()) {
+            show_404();
+        }
+
+        $search = $this->input->get('q');
+        $this->db->select('warna');
+        $this->db->distinct();
+        $this->db->like('warna', $search);
+        $this->db->where('status_aktif', 1);
+        $this->db->where('deleted_at IS NULL');
+        $this->db->limit(10);
+        $query = $this->db->get('barang');
+
+        $result = [];
+        if ($query->num_rows() > 0) {
+            foreach ($query->result() as $row) {
+                if (!empty($row->warna)) {
+                    $result[] = ['id' => $row->warna, 'text' => $row->warna];
+                }
+            }
+        }
+
+        echo json_encode($result);
+    }
     public function stok($id_barang)
     {
         $this->data['title'] = 'Manajemen Stok Barang';
@@ -273,8 +325,9 @@ class Barang extends MY_Controller
                 }
             }
         }
+        $this->data['extra_js'] = 'setup/barang/script';
 
-        $this->render_view('setup/barang/form');
+        $this->render_view('setup/barang/form', $this->data);
     }
 
     public function edit($id_barang)
@@ -335,7 +388,9 @@ class Barang extends MY_Controller
             }
         }
 
-        $this->render_view('setup/barang/form');
+        $this->data['extra_js'] = 'setup/barang/script';
+
+        $this->render_view('setup/barang/form', $this->data);
     }
 
     public function nonaktif($id)

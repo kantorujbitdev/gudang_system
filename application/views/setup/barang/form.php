@@ -63,25 +63,39 @@
 
                 <div class="form-group">
                     <?php echo form_label('Motor', 'motor'); ?>
-                    <?php echo form_input(array(
-                        'name' => 'motor',
-                        'id' => 'motor',
-                        'class' => 'form-control',
-                        'value' => set_value('motor', isset($barang) ? $barang->motor : ''),
-                        'maxlength' => '100'
-                    )); ?>
+                    <div class="input-group">
+                        <?php echo form_input(array(
+                            'name' => 'motor',
+                            'id' => 'motor',
+                            'class' => 'form-control suggestion-input',
+                            'value' => set_value('motor', isset($barang) ? $barang->motor : ''),
+                            'maxlength' => '100',
+                            'autocomplete' => 'off'
+                        )); ?>
+                        <div class="input-group-append">
+                            <span class="input-group-text"><i class="fas fa-motorcycle"></i></span>
+                        </div>
+                    </div>
+                    <div id="motor-suggestions" class="suggestion-list"></div>
                     <?php echo form_error('motor', '<small class="text-danger">', '</small>'); ?>
                 </div>
 
                 <div class="form-group">
                     <?php echo form_label('Warna', 'warna'); ?>
-                    <?php echo form_input(array(
-                        'name' => 'warna',
-                        'id' => 'warna',
-                        'class' => 'form-control',
-                        'value' => set_value('warna', isset($barang) ? $barang->warna : ''),
-                        'maxlength' => '100'
-                    )); ?>
+                    <div class="input-group">
+                        <?php echo form_input(array(
+                            'name' => 'warna',
+                            'id' => 'warna',
+                            'class' => 'form-control suggestion-input',
+                            'value' => set_value('warna', isset($barang) ? $barang->warna : ''),
+                            'maxlength' => '100',
+                            'autocomplete' => 'off'
+                        )); ?>
+                        <div class="input-group-append">
+                            <span class="input-group-text"><i class="fas fa-palette"></i></span>
+                        </div>
+                    </div>
+                    <div id="warna-suggestions" class="suggestion-list"></div>
                     <?php echo form_error('warna', '<small class="text-danger">', '</small>'); ?>
                 </div>
             </div>
@@ -209,4 +223,3 @@
         <?php echo form_close(); ?>
     </div>
 </div>
-<?php $this->load->view('setup/barang/script'); ?>

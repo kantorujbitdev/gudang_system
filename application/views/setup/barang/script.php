@@ -1,3 +1,5 @@
+<!-- Tambahkan di bagian head -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Custom file input label
@@ -61,8 +63,96 @@
                 loadKategori(initial_id_perusahaan, initial_selected_kategori);
             }
         <?php endif; ?>
-    });
 
+        // Suggestion functionality
+        function setupSuggestion(inputId, suggestionId, url) {
+            var input = $('#' + inputId);
+            var suggestion = $('#' + suggestionId);
+            var timeout;
+
+            input.on('input', function () {
+                var query = $(this).val();
+
+                clearTimeout(timeout);
+
+                if (query.length < 1) {
+                    suggestion.hide();
+                    return;
+                }
+
+                timeout = setTimeout(function () {
+                    $.ajax({
+                        url: url,
+                        type: 'GET',
+                        data: { q: query },
+                        dataType: 'json',
+                        success: function (data) {
+                            suggestion.empty();
+
+                            if (data.length > 0) {
+                                $.each(data, function (i, item) {
+                                    suggestion.append('<div class="suggestion-item" data-value="' + item.text + '">' + item.text + '</div>');
+                                });
+                                suggestion.show();
+                            } else {
+                                suggestion.hide();
+                            }
+                        },
+                        error: function () {
+                            suggestion.hide();
+                        }
+                    });
+                }, 300);
+            });
+
+            input.on('keydown', function (e) {
+                var items = suggestion.find('.suggestion-item');
+                var active = suggestion.find('.suggestion-item.active');
+
+                if (e.keyCode === 40) { // Down arrow
+                    e.preventDefault();
+                    if (active.length === 0) {
+                        items.first().addClass('active');
+                    } else {
+                        active.removeClass('active');
+                        active.next().addClass('active');
+                    }
+                } else if (e.keyCode === 38) { // Up arrow
+                    e.preventDefault();
+                    if (active.length === 0) {
+                        items.last().addClass('active');
+                    } else {
+                        active.removeClass('active');
+                        active.prev().addClass('active');
+                    }
+                } else if (e.keyCode === 13) { // Enter
+                    e.preventDefault();
+                    if (active.length > 0) {
+                        input.val(active.data('value'));
+                        suggestion.hide();
+                    }
+                } else if (e.keyCode === 27) { // Escape
+                    suggestion.hide();
+                }
+            });
+
+            suggestion.on('click', '.suggestion-item', function () {
+                input.val($(this).data('value'));
+                suggestion.hide();
+            });
+
+            $(document).on('click', function (e) {
+                if (!$(e.target).closest('#' + inputId).length && !$(e.target).closest(suggestion).length) {
+                    suggestion.hide();
+                }
+            });
+        }
+
+        // Setup suggestions for each field
+        setupSuggestion('ukuran', 'ukuran-suggestions', '<?php echo site_url('setup/barang/get_ukuran'); ?>');
+        setupSuggestion('motor', 'motor-suggestions', '<?php echo site_url('setup/barang/get_motor'); ?>');
+        setupSuggestion('warna', 'warna-suggestions', '<?php echo site_url('setup/barang/get_warna'); ?>');
+    });
 
     $(document).ready(function () {
         // Tambah stok
@@ -77,14 +167,33 @@
                     success: function (response) {
                         if (response.status === 'success') {
                             $('#tambahStokModal').modal('hide');
-                            alert(response.message);
-                            location.reload();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil',
+                                text: response.message,
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'OK'
+                            }).then((result) => {
+                                location.reload();
+                            });
                         } else {
-                            alert(response.message);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal',
+                                text: response.message,
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'OK'
+                            });
                         }
                     },
                     error: function () {
-                        alert('Terjadi kesalahan saat memproses data');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Terjadi kesalahan saat memproses data',
+                            confirmButtonColor: '#3085d6',
+                            confirmButtonText: 'OK'
+                        });
                     }
                 });
             } else {
@@ -116,7 +225,13 @@
 
             if (form[0].checkValidity()) {
                 if (jumlah === 0) {
-                    alert('Jumlah tidak boleh nol');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Peringatan',
+                        text: 'Jumlah tidak boleh nol',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'OK'
+                    });
                     return;
                 }
 
@@ -136,14 +251,33 @@
                     success: function (response) {
                         if (response.status === 'success') {
                             $('#editStokModal').modal('hide');
-                            alert(response.message);
-                            location.reload();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil',
+                                text: response.message,
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'OK'
+                            }).then((result) => {
+                                location.reload();
+                            });
                         } else {
-                            alert(response.message);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal',
+                                text: response.message,
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'OK'
+                            });
                         }
                     },
                     error: function () {
-                        alert('Terjadi kesalahan saat memproses data');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Terjadi kesalahan saat memproses data',
+                            confirmButtonColor: '#3085d6',
+                            confirmButtonText: 'OK'
+                        });
                     }
                 });
             } else {
