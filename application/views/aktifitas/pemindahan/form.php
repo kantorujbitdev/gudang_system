@@ -94,7 +94,7 @@ echo isset($data_master_js) ? $data_master_js : '';
             </div>
             <div class="card-body" style="max-height: 400px; overflow-y: auto;">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-striped table-hover compact small " width="100%"
+                    <table class="table table-bordered table-striped table-hover table-sm" width="100%"
                         id="table_barang_dipindahkan">
                         <thead>
                             <tr>
@@ -104,11 +104,10 @@ echo isset($data_master_js) ? $data_master_js : '';
                                 <th width="10%">Warna</th>
                                 <th width="8%">Jumlah</th>
                                 <th width="6%">Satuan</th>
-                                <?php if ($this->session->userdata('id_role') == 3 || (isset($tipe_tujuan_default) && $tipe_tujuan_default == 'konsumen')): ?>
-                                    <th width="12%">Toko</th>
-                                    <th width="15%">Nama Konsumen</th>
-                                    <th width="15%">Alamat Konsumen</th>
-                                <?php endif; ?>
+                                <!-- Kolom Konsumen - Awalnya disembunyikan -->
+                                <th class="konsumen-column" width="12%" style="display: none;">Toko</th>
+                                <th class="konsumen-column" width="15%" style="display: none;">Nama Konsumen</th>
+                                <th class="konsumen-column" width="15%" style="display: none;">Alamat Konsumen</th>
                                 <th width="5%">Aksi</th>
                             </tr>
                         </thead>
@@ -126,30 +125,29 @@ echo isset($data_master_js) ? $data_master_js : '';
                                                 data-id_barang="<?php echo $item->id_barang; ?>">
                                         </td>
                                         <td><?php echo $item->satuan; ?></td>
-                                        <?php if ($this->session->userdata('id_role') == 3 || (isset($tipe_tujuan_default) && $tipe_tujuan_default == 'konsumen')): ?>
-                                            <td>
-                                                <select class="form-control form-control-sm toko-konsumen" name="toko_konsumen[]"
-                                                    required>
-                                                    <option value="">-- Pilih Toko --</option>
-                                                    <?php foreach ($toko_konsumen as $toko): ?>
-                                                        <option value="<?php echo $toko->id_toko_konsumen; ?>" <?php echo (isset($item->id_toko_konsumen) && $item->id_toko_konsumen == $toko->id_toko_konsumen) ? 'selected' : ''; ?>>
-                                                            <?php echo $toko->nama_toko_konsumen; ?>
-                                                        </option>
-                                                    <?php endforeach; ?>
-                                                </select>
-                                            </td>
-                                            <td>
-                                                <input type="text" class="form-control form-control-sm nama-konsumen"
-                                                    name="nama_konsumen[]"
-                                                    value="<?php echo isset($item->nama_konsumen) ? $item->nama_konsumen : ''; ?>"
-                                                    placeholder="Nama konsumen" required>
-                                            </td>
-                                            <td>
-                                                <textarea class="form-control form-control-sm mt-1 alamat-konsumen"
-                                                    name="alamat_konsumen[]" rows="2" placeholder="Alamat konsumen"
-                                                    required><?php echo isset($item->alamat_konsumen) ? $item->alamat_konsumen : ''; ?></textarea>
-                                            </td>
-                                        <?php endif; ?>
+                                        <!-- Kolom Konsumen - Awalnya disembunyikan -->
+                                        <td class="konsumen-column" style="display: none;">
+                                            <select class="form-control form-control-sm toko-konsumen" name="toko_konsumen[]"
+                                                required>
+                                                <option value="">-- Pilih Toko --</option>
+                                                <?php foreach ($toko_konsumen as $toko): ?>
+                                                    <option value="<?php echo $toko->id_toko_konsumen; ?>" <?php echo (isset($item->id_toko_konsumen) && $item->id_toko_konsumen == $toko->id_toko_konsumen) ? 'selected' : ''; ?>>
+                                                        <?php echo $toko->nama_toko_konsumen; ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </td>
+                                        <td class="konsumen-column" style="display: none;">
+                                            <input type="text" class="form-control form-control-sm nama-konsumen"
+                                                name="nama_konsumen[]"
+                                                value="<?php echo isset($item->nama_konsumen) ? $item->nama_konsumen : ''; ?>"
+                                                placeholder="Nama konsumen" required>
+                                        </td>
+                                        <td class="konsumen-column" style="display: none;">
+                                            <textarea class="form-control form-control-sm mt-1 alamat-konsumen"
+                                                name="alamat_konsumen[]" rows="2" placeholder="Alamat konsumen"
+                                                required><?php echo isset($item->alamat_konsumen) ? $item->alamat_konsumen : ''; ?></textarea>
+                                        </td>
                                         <td>
                                             <button type="button" class="btn btn-sm btn-danger btn-hapus-barang"
                                                 data-id_barang="<?php echo $item->id_barang; ?>">
@@ -263,7 +261,7 @@ echo isset($data_master_js) ? $data_master_js : '';
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table table-bordered table-striped table-hover compact small" widht="100%"
+                    <table class="table table-bordered table-striped table-hover table-sm" width="100%"
                         id="table_barang_modal">
                         <thead>
                             <tr>

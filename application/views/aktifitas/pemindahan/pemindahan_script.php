@@ -2,6 +2,23 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 <script>
     $(document).ready(function () {
+        // Fungsi untuk toggle kolom konsumen
+        function toggleKonsumenColumns(show) {
+            if (show) {
+                $('.konsumen-column').show();
+            } else {
+                $('.konsumen-column').hide();
+            }
+        }
+
+        // Inisialisasi kolom konsumen berdasarkan tipe tujuan awal
+        var initialTipeTujuan = $('#tipe_tujuan').val();
+        if (initialTipeTujuan === 'konsumen' || <?php echo $this->session->userdata('id_role') == 3 ? 'true' : 'false'; ?>) {
+            toggleKonsumenColumns(true);
+        } else {
+            toggleKonsumenColumns(false);
+        }
+
         // For Super Admin, get data based on company
         <?php if ($this->session->userdata('id_role') == 1): ?>
             $('#id_perusahaan').change(function () {
@@ -90,9 +107,13 @@
             if (tipe == 'gudang') {
                 $('#gudang_tujuan_field').show();
                 $('#id_gudang_tujuan').attr('required', true);
+                toggleKonsumenColumns(false);
             } else if (tipe == 'pelanggan') {
                 $('#pelanggan_field').show();
                 $('#id_pelanggan').attr('required', true);
+                toggleKonsumenColumns(false);
+            } else if (tipe == 'konsumen') {
+                toggleKonsumenColumns(true);
             }
         });
 
@@ -172,7 +193,6 @@
                         if (response.length > 0) {
                             $.each(response, function (i, item) {
                                 html += '<tr>' +
-
                                     '<td>' + item.nama_barang + '</td>' +
                                     '<td>' + (item.kode_barang || '-') + '</td>' +
                                     '<td>' + (item.motor || '-') + '</td>' +
@@ -218,12 +238,11 @@
             var keyword = $(this).val().toLowerCase();
 
             $('#table_barang_modal tbody tr').each(function () {
-                var nama_barang = $(this).find('td:eq(1)').text().toLowerCase();
-                var sku = $(this).find('td:eq(3)').text().toLowerCase();
-                var kode_barang = $(this).find('td:eq(2)').text().toLowerCase();
-                var motor = $(this).find('td:eq(5)').text().toLowerCase();
+                var nama_barang = $(this).find('td:eq(0)').text().toLowerCase();
+                var kode_barang = $(this).find('td:eq(1)').text().toLowerCase();
+                var motor = $(this).find('td:eq(2)').text().toLowerCase();
 
-                if (nama_barang.indexOf(keyword) !== -1 || sku.indexOf(keyword) !== -1 || kode_barang.indexOf(keyword) !== -1 || motor.indexOf(keyword) !== -1) {
+                if (nama_barang.indexOf(keyword) !== -1 || kode_barang.indexOf(keyword) !== -1 || motor.indexOf(keyword) !== -1) {
                     $(this).show();
                 } else {
                     $(this).hide();
@@ -261,6 +280,7 @@
         // Add selected barang to dipindahan list
         $('#btn-pilih-semua').click(function () {
             var selectedBarang = [];
+            var isKonsumen = $('#tipe_tujuan').val() === 'konsumen' || <?php echo $this->session->userdata('id_role') == 3 ? 'true' : 'false'; ?>;
 
             $('.checkbox-barang:checked').each(function () {
                 var checkbox = $(this);
@@ -284,8 +304,6 @@
                     id_barang: checkbox.data('id_barang'),
                     nama_barang: checkbox.data('nama_barang'),
                     kode_barang: checkbox.data('kode_barang'),
-                    sku: checkbox.data('sku'),
-                    ukuran: checkbox.data('ukuran'),
                     motor: checkbox.data('motor'),
                     warna: checkbox.data('warna'),
                     satuan: checkbox.data('satuan'),
@@ -318,9 +336,6 @@
                 if (!exists) {
                     var no = $('#table_barang_dipindahkan tbody tr').length + 1;
 
-                    // Check if Sales or konsumen type
-                    var isSalesOrKonsumen = <?php echo ($this->session->userdata('id_role') == 3 || (isset($tipe_tujuan_default) && $tipe_tujuan_default == 'konsumen')) ? 'true' : 'false'; ?>;
-
                     var html = '<tr>' +
                         '<td>' + no + '</td>' +
                         '<td>' + barang.nama_barang + '</td>' +
@@ -329,8 +344,9 @@
                         '<td><input type="number" class="form-control form-control-sm jumlah-barang" name="jumlah[]" min="1" value="' + barang.jumlah + '" data-id_barang="' + barang.id_barang + '"></td>' +
                         '<td>' + barang.satuan + '</td>';
 
-                    if (isSalesOrKonsumen) {
-                        html += '<td>' +
+                    // Tambahkan kolom konsumen jika diperlukan
+                    if (isKonsumen) {
+                        html += '<td class="konsumen-column">' +
                             '<select class="form-control form-control-sm toko-konsumen" name="toko_konsumen[]" required>' +
                             '<option value="">-- Pilih Toko --</option>';
                         <?php foreach ($toko_konsumen as $toko): ?>
@@ -338,10 +354,10 @@
                         <?php endforeach; ?>
                         html += '</select>' +
                             '</td>' +
-                            '<td>' +
+                            '<td class="konsumen-column">' +
                             '<input type="text" class="form-control form-control-sm nama-konsumen" name="nama_konsumen[]" placeholder="Nama konsumen" required>' +
                             '</td>' +
-                            '<td>' + '<textarea class="form-control form-control-sm mt-1 alamat-konsumen" name="alamat_konsumen[]" rows="2" placeholder="Alamat konsumen" required></textarea>' +
+                            '<td class="konsumen-column">' + '<textarea class="form-control form-control-sm mt-1 alamat-konsumen" name="alamat_konsumen[]" rows="2" placeholder="Alamat konsumen" required></textarea>' +
                             '</td>';
                     }
 
@@ -371,7 +387,7 @@
             });
         });
 
-        // Remove barang from dipindahkan list
+        // Remove barang from dipindahan list
         $(document).on('click', '.btn-hapus-barang', function () {
             $(this).closest('tr').remove();
 
@@ -388,7 +404,7 @@
         // Update hidden field for barang dipindahkan
         function updateBarangDipindahkan() {
             var barang = [];
-            var isSalesOrKonsumen = <?php echo ($this->session->userdata('id_role') == 3 || (isset($tipe_tujuan_default) && $tipe_tujuan_default == 'konsumen')) ? 'true' : 'false'; ?>;
+            var isKonsumen = $('#tipe_tujuan').val() === 'konsumen' || <?php echo $this->session->userdata('id_role') == 3 ? 'true' : 'false'; ?>;
 
             $('#table_barang_dipindahkan tbody tr').each(function (index) {
                 var id_barang = $(this).find('input.jumlah-barang').data('id_barang');
@@ -399,7 +415,7 @@
                     jumlah: jumlah
                 };
 
-                if (isSalesOrKonsumen) {
+                if (isKonsumen) {
                     barang_data.id_toko_konsumen = $(this).find('select.toko-konsumen').val();
                     barang_data.nama_konsumen = $(this).find('input.nama-konsumen').val();
                     barang_data.alamat_konsumen = $(this).find('textarea.alamat-konsumen').val();
@@ -412,6 +428,7 @@
 
             $('#barang_dipindahkan').val(JSON.stringify(barang));
         }
+
         // Update jumlah barang badge
         function updateJumlahBarang() {
             var dipindahkanCount = $('#table_barang_dipindahkan tbody tr').length;
@@ -424,6 +441,7 @@
             updateBarangDipindahkan();
 
             var barang = JSON.parse($('#barang_dipindahkan').val());
+            var isKonsumen = $('#tipe_tujuan').val() === 'konsumen' || <?php echo $this->session->userdata('id_role') == 3 ? 'true' : 'false'; ?>;
 
             if (barang.length === 0) {
                 e.preventDefault();
@@ -452,8 +470,7 @@
                 }
 
                 // Validate konsumen data if needed
-                var isSalesOrKonsumen = <?php echo ($this->session->userdata('id_role') == 3 || (isset($tipe_tujuan_default) && $tipe_tujuan_default == 'konsumen')) ? 'true' : 'false'; ?>;
-                if (isSalesOrKonsumen) {
+                if (isKonsumen) {
                     if (!barang[i].id_toko_konsumen || !barang[i].nama_konsumen || !barang[i].alamat_konsumen) {
                         e.preventDefault();
                         Swal.fire({
