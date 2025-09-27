@@ -7,7 +7,17 @@ class Pemindahan_model extends CI_Model
     {
         parent::__construct();
     }
+    public function insert_packing($data)
+    {
+        $this->db->insert('packing', $data);
+        return $this->db->insert_id();
+    }
 
+    public function insert_detail_packing($data)
+    {
+        $this->db->insert('detail_packing', $data);
+        return $this->db->insert_id();
+    }
     public function get_data_by_perusahaan($id_perusahaan)
     {
         $data = [];

@@ -485,6 +485,9 @@ class Pemindahan extends MY_Controller
                 $this->kurangi_stok_dan_reserved($id_pemindahan);
             }
             // Untuk Gudang, tidak ada perubahan stok saat packing
+
+            // Simpan data ke tabel packing
+            $this->simpan_data_packing($id_pemindahan);
         }
 
         if ($status == 'Delivered') {
@@ -520,6 +523,58 @@ class Pemindahan extends MY_Controller
 
         log_message('debug', '=== END konfirmasi ===');
         return redirect('aktifitas/pemindahan');
+    }
+
+    // Fungsi untuk menyimpan data ke tabel packing
+    private function simpan_data_packing($id_pemindahan)
+    {
+        log_message('debug', '=== START simpan_data_packing for pemindahan ID: ' . $id_pemindahan . ' ===');
+
+        $pemindahan = $this->pemindahan->get($id_pemindahan);
+        $detail = $this->pemindahan->get_detail($id_pemindahan);
+
+        // Cek apakah sudah ada data packing untuk pemindahan ini
+        $this->db->where('id_referensi', $id_pemindahan);
+        $this->db->where('tipe_referensi', 'pemindahan_barang');
+        $existing_packing = $this->db->get('packing')->row();
+
+        if (!$existing_packing) {
+            // Buat data packing baru
+            $data_packing = [
+                'id_referensi' => $id_pemindahan,
+                'tipe_referensi' => 'pemindahan_barang',
+                'id_user' => $this->session->userdata('id_user'),
+                'tanggal_packing' => date('Y-m-d H:i:s'),
+                'status' => 'Packing',
+                'catatan' => 'Packing otomatis dari pemindahan barang ' . $pemindahan->no_transaksi
+            ];
+
+            $id_packing = $this->pemindahan->insert_packing($data_packing);
+
+            if ($id_packing) {
+                // Simpan detail packing
+                foreach ($detail as $item) {
+                    $data_detail_packing = [
+                        'id_packing' => $id_packing,
+                        'id_barang' => $item->id_barang,
+                        'jumlah' => $item->jumlah
+                    ];
+
+                    $this->pemindahan->insert_detail_packing($data_detail_packing);
+                }
+
+                // Log status transaksi untuk packing
+                $this->log_status_transaksi($id_packing, 'packing', 'Packing');
+
+                log_message('debug', 'Data packing berhasil disimpan dengan ID: ' . $id_packing);
+            } else {
+                log_message('debug', 'Gagal menyimpan data packing');
+            }
+        } else {
+            log_message('debug', 'Data packing sudah ada untuk pemindahan ID: ' . $id_pemindahan);
+        }
+
+        log_message('debug', '=== END simpan_data_packing ===');
     }
 
     public function detail($id_pemindahan)

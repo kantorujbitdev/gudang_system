@@ -875,6 +875,9 @@ INSERT INTO `stok_awal` (`id_stok_awal`, `id_barang`, `id_gudang`, `id_perusahaa
 
 
 kita akan melengkapi kode kode yg belum sesuai,
+
+saya akan kirim kan kode yg sudah tersedia namun masih memiliki banyak kesalahan, sehingga anda perlu memperbaiki nya, kode nya yaitu:
+
 setelah pesan ini, saya akan kirim kode untuk fitur retur pembeliamn, agar dapat sesuai dengan yg dibutuhkan serta desain database yg sudah dimiliki.
 
 perlu di ingat bahwa role user ini penting sebab yg menentukan tampilan, terutama super admin yg tidak memiliki perusahaan, jadi jika super admin membutuhkan id_perusahaan maka seharusnya ada pilihan untuk pilih perusahaan nya.
