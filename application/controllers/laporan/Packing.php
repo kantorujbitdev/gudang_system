@@ -30,8 +30,14 @@ class Packing extends MY_Controller
 
         $this->data['filter'] = $filter;
         $this->data['packing'] = $this->packing->get_filtered($filter);
+        $this->data['packing_efficiency'] = $this->packing->get_packing_efficiency($filter);
+        $this->data['packing_by_period'] = $this->packing->get_packing_by_period($filter);
+        $this->data['packing_by_user'] = $this->packing->get_packing_by_user($filter);
+        $this->data['summary'] = $this->packing->get_summary($filter);
+        $this->data['avg_packing_time'] = $this->packing->get_average_packing_time($filter);
+        $this->data['extra_js'] = 'laporan/packing/script';
 
-        $this->render_view('laporan/packing/index');
+        $this->render_view('laporan/packing/index', $this->data);
     }
 
     public function filter()
@@ -49,8 +55,14 @@ class Packing extends MY_Controller
 
         $this->data['filter'] = $filter;
         $this->data['packing'] = $this->packing->get_filtered($filter);
+        $this->data['packing_efficiency'] = $this->packing->get_packing_efficiency($filter);
+        $this->data['packing_by_period'] = $this->packing->get_packing_by_period($filter);
+        $this->data['packing_by_user'] = $this->packing->get_packing_by_user($filter);
+        $this->data['summary'] = $this->packing->get_summary($filter);
+        $this->data['avg_packing_time'] = $this->packing->get_average_packing_time($filter);
+        $this->data['extra_js'] = 'laporan/packing/script';
 
-        $this->render_view('laporan/packing/index');
+        $this->render_view('laporan/packing/index', $this->data);
     }
 
     public function detail($id_packing)

@@ -44,6 +44,29 @@
             margin-top: 20px;
             font-size: 10px;
         }
+
+        .summary {
+            margin-bottom: 20px;
+        }
+
+        .summary-box {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: inline-block;
+            width: 48%;
+            margin-right: 1%;
+        }
+
+        .summary-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .summary-value {
+            font-size: 18px;
+            font-weight: bold;
+        }
     </style>
 </head>
 
@@ -53,6 +76,17 @@
         <p>Periode: <?php echo date('d-m-Y', strtotime($filter['tanggal_awal'])); ?> s/d
             <?php echo date('d-m-Y', strtotime($filter['tanggal_akhir'])); ?>
         </p>
+    </div>
+
+    <div class="summary">
+        <div class="summary-box">
+            <div class="summary-title">Total Packing</div>
+            <div class="summary-value"><?php echo $summary->total_packing ?: 0; ?></div>
+        </div>
+        <div class="summary-box">
+            <div class="summary-title">Total Barang</div>
+            <div class="summary-value"><?php echo $summary->total_barang ?: 0; ?></div>
+        </div>
     </div>
 
     <table>

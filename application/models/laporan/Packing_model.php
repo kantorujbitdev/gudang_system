@@ -7,24 +7,113 @@ class Packing_model extends CI_Model
     {
         parent::__construct();
     }
+    public function get_packing_efficiency($filter)
+    {
+        $id_perusahaan = $this->session->userdata('id_perusahaan');
 
+        $this->db->select('p.id_packing, p.tanggal_packing, pb.tanggal_pemindahan as tanggal_transaksi,
+                         TIMESTAMPDIFF(HOUR, pb.tanggal_pemindahan, p.tanggal_packing) as waktu_packing,
+                         p.status, u.nama as user_nama', FALSE);
+        $this->db->from('packing p');
+        $this->db->join('user u', 'p.id_user = u.id_user');
+        $this->db->join('pemindahan_barang pb', 'p.id_referensi = pb.id_pemindahan AND p.tipe_referensi = "pemindahan_barang"', 'left');
+        $this->db->where('pb.id_perusahaan', $id_perusahaan);
+
+        if ($filter['tanggal_awal']) {
+            $this->db->where('DATE(p.tanggal_packing) >=', $filter['tanggal_awal']);
+        }
+
+        if ($filter['tanggal_akhir']) {
+            $this->db->where('DATE(p.tanggal_packing) <=', $filter['tanggal_akhir']);
+        }
+
+        if ($filter['id_user']) {
+            $this->db->where('p.id_user', $filter['id_user']);
+        }
+
+        if ($filter['status']) {
+            $this->db->where('p.status', $filter['status']);
+        }
+
+        $this->db->order_by('p.tanggal_packing', 'DESC');
+        return $this->db->get()->result();
+    }
+
+    public function get_packing_by_period($filter)
+    {
+        $id_perusahaan = $this->session->userdata('id_perusahaan');
+
+        $this->db->select('DATE(p.tanggal_packing) as tanggal, 
+                         COUNT(DISTINCT p.id_packing) as total_packing,
+                         SUM(dp.jumlah) as total_barang', FALSE);
+        $this->db->from('packing p');
+        $this->db->join('detail_packing dp', 'p.id_packing = dp.id_packing');
+        $this->db->join('pemindahan_barang pb', 'p.id_referensi = pb.id_pemindahan AND p.tipe_referensi = "pemindahan_barang"', 'left');
+        $this->db->where('pb.id_perusahaan', $id_perusahaan);
+
+        if ($filter['tanggal_awal']) {
+            $this->db->where('DATE(p.tanggal_packing) >=', $filter['tanggal_awal']);
+        }
+
+        if ($filter['tanggal_akhir']) {
+            $this->db->where('DATE(p.tanggal_packing) <=', $filter['tanggal_akhir']);
+        }
+
+        if ($filter['id_user']) {
+            $this->db->where('p.id_user', $filter['id_user']);
+        }
+
+        if ($filter['status']) {
+            $this->db->where('p.status', $filter['status']);
+        }
+
+        $this->db->group_by('DATE(p.tanggal_packing)');
+        $this->db->order_by('tanggal', 'ASC');
+        return $this->db->get()->result();
+    }
+
+    public function get_average_packing_time($filter)
+    {
+        $id_perusahaan = $this->session->userdata('id_perusahaan');
+
+        $this->db->select('AVG(TIMESTAMPDIFF(HOUR, pb.tanggal_pemindahan, p.tanggal_packing)) as rata_rata_waktu', FALSE);
+        $this->db->from('packing p');
+        $this->db->join('pemindahan_barang pb', 'p.id_referensi = pb.id_pemindahan AND p.tipe_referensi = "pemindahan_barang"', 'left');
+        $this->db->where('pb.id_perusahaan', $id_perusahaan);
+
+        if ($filter['tanggal_awal']) {
+            $this->db->where('DATE(p.tanggal_packing) >=', $filter['tanggal_awal']);
+        }
+
+        if ($filter['tanggal_akhir']) {
+            $this->db->where('DATE(p.tanggal_packing) <=', $filter['tanggal_akhir']);
+        }
+
+        if ($filter['id_user']) {
+            $this->db->where('p.id_user', $filter['id_user']);
+        }
+
+        if ($filter['status']) {
+            $this->db->where('p.status', $filter['status']);
+        }
+
+        return $this->db->get()->row();
+    }
     public function get_filtered($filter)
     {
         $id_perusahaan = $this->session->userdata('id_perusahaan');
 
         // Menggunakan select manual untuk menghindari masalah backtick
         $this->db->select('p.id_packing, p.tanggal_packing, p.tipe_referensi, p.id_referensi, p.status, p.catatan,
-                         u.nama as user_nama, dp.id_barang, b.nama_barang, b.satuan, dp.jumlah', FALSE);
+                     u.nama as user_nama, dp.id_barang, b.nama_barang, b.satuan, dp.jumlah', FALSE);
         $this->db->from('packing p');
         $this->db->join('user u', 'p.id_user = u.id_user');
         $this->db->join('detail_packing dp', 'p.id_packing = dp.id_packing');
         $this->db->join('barang b', 'dp.id_barang = b.id_barang');
 
-        // Join dengan tabel referensi untuk mendapatkan id_perusahaan
-        if ($this->db->table_exists('pemindahan_barang')) {
-            $this->db->join('pemindahan_barang pb', 'p.id_referensi = pb.id_pemindahan AND p.tipe_referensi = "pemindahan_barang"', 'left');
-            $this->db->where('pb.id_perusahaan', $id_perusahaan);
-        }
+        // Perbaikan join untuk mendapatkan data perusahaan
+        $this->db->join('pemindahan_barang pb', 'p.id_referensi = pb.id_pemindahan AND p.tipe_referensi = "pemindahan_barang"', 'left');
+        $this->db->where('pb.id_perusahaan', $id_perusahaan);
 
         if ($filter['tanggal_awal']) {
             $this->db->where('DATE(p.tanggal_packing) >=', $filter['tanggal_awal']);
