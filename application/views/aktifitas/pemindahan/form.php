@@ -46,21 +46,6 @@ echo isset($data_master_js) ? $data_master_js : '';
                         <?php echo form_error('id_gudang_asal', '<small class="text-danger">', '</small>'); ?>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group"></div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="cari_barang">Cari Barang</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="cari_barang"
-                                placeholder="Ketik nama barang, SKU, atau motor">
-                            <div class="input-group-append">
-                                <span class="input-group-text"><i class="fas fa-search"></i></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         <?php else: ?>
             <div class="row mb-4">
@@ -80,56 +65,31 @@ echo isset($data_master_js) ? $data_master_js : '';
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label for="cari_barang">Cari Barang</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="cari_barang"
-                                placeholder="Ketik nama barang, SKU, atau motor">
-                            <div class="input-group-append">
-                                <span class="input-group-text"><i class="fas fa-search"></i></span>
-                            </div>
+                        <div class="form-group">
+                            <label for="tipe_tujuan">Tipe Tujuan <span class="text-danger">*</span></label>
+                            <select class="form-control" id="tipe_tujuan" name="tipe_tujuan" required>
+                                <option value="konsumen" <?php echo (!isset($pemindahan) || $pemindahan->tipe_tujuan == 'konsumen') ? 'selected' : ''; ?>>Konsumen</option>
+                                <option value="pelanggan" <?php echo (isset($pemindahan) && $pemindahan->tipe_tujuan == 'pelanggan') ? 'selected' : ''; ?>>Pelanggan</option>
+                                <option value="gudang" <?php echo (isset($pemindahan) && $pemindahan->tipe_tujuan == 'gudang') ? 'selected' : ''; ?>>Gudang</option>
+                            </select>
+                            <?php echo form_error('tipe_tujuan', '<small class="text-danger">', '</small>'); ?>
                         </div>
                     </div>
                 </div>
             </div>
         <?php endif; ?>
 
-        <!-- Daftar Barang Tersedia -->
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h6 class="m-0 font-weight-bold text-primary">Daftar Barang Tersedia</h6>
-                <span class="badge badge-info" id="jumlah-barang-tersedia">0 barang</span>
-            </div>
-            <div class="card-body" style="max-height: 300px; overflow-y: auto;">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped table-hover compact small"
-                        id="table_barang_tersedia">
-                        <thead>
-                            <tr>
-                                <th width="4%">No</th>
-                                <th width="20%">Nama Barang</th>
-                                <th width="10%">Kode Barang</th>
-                                <th width="10%">SKU</th>
-                                <th width="8%">Ukuran</th>
-                                <th width="15%">Motor</th>
-                                <th width="10%">Warna</th>
-                                <th width="8%">Stok</th>
-                                <th width="6%">Satuan</th>
-                                <th width="9%">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Data akan diisi via JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
         <!-- Barang Dipindahkan -->
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h6 class="m-0 font-weight-bold text-primary">Barang Dipindahkan</h6>
-                <span class="badge badge-success" id="jumlah-barang-dipindahkan">0 barang</span>
+                <div>
+                    <span class="badge badge-success mr-2" id="jumlah-barang-dipindahkan">0 barang</span>
+                    <button type="button" class="btn btn-sm btn-primary" id="btn-tambah-barang-modal"
+                        data-toggle="modal" data-target="#modalBarang">
+                        <i class="fas fa-plus"></i> Tambah Barang
+                    </button>
+                </div>
             </div>
             <div class="card-body" style="max-height: 300px; overflow-y: auto;">
                 <div class="table-responsive">
@@ -181,28 +141,8 @@ echo isset($data_master_js) ? $data_master_js : '';
             </div>
         </div>
 
-        <hr>
-
-
         <!-- Informasi Transaksi -->
         <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="tipe_tujuan">Tipe Tujuan <span class="text-danger">*</span></label>
-                    <select class="form-control" id="tipe_tujuan" name="tipe_tujuan" required>
-                        <option value="konsumen" <?php echo (!isset($pemindahan) || $pemindahan->tipe_tujuan == 'konsumen') ? 'selected' : ''; ?>>Konsumen</option>
-                        <option value="pelanggan" <?php echo (isset($pemindahan) && $pemindahan->tipe_tujuan == 'pelanggan') ? 'selected' : ''; ?>>Pelanggan</option>
-                        <option value="gudang" <?php echo (isset($pemindahan) && $pemindahan->tipe_tujuan == 'gudang') ? 'selected' : ''; ?>>Gudang</option>
-                    </select>
-                    <?php echo form_error('tipe_tujuan', '<small class="text-danger">', '</small>'); ?>
-                </div>
-
-                <div class="form-group">
-                    <label for="keterangan">Keterangan</label>
-                    <textarea class="form-control" id="keterangan" name="keterangan"
-                        rows="2"><?php echo set_value('keterangan', isset($pemindahan) ? $pemindahan->keterangan : ''); ?></textarea>
-                </div>
-            </div>
             <div class="col-md-6">
                 <!-- Gudang Tujuan -->
                 <div id="gudang_tujuan_field" style="display: none;">
@@ -270,18 +210,76 @@ echo isset($data_master_js) ? $data_master_js : '';
                     </div>
                 </div>
             </div>
+            <div class="col-md-6">
+
+                <div class="form-group">
+                    <label for="keterangan">Keterangan</label>
+                    <textarea class="form-control" id="keterangan" name="keterangan"
+                        rows="2"><?php echo set_value('keterangan', isset($pemindahan) ? $pemindahan->keterangan : ''); ?></textarea>
+                </div>
+            </div>
         </div>
 
         <input type="hidden" id="barang_dipindahkan" name="barang_dipindahkan" value="">
-
-        <div class="form-group mt-4">
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> Simpan
-            </button>
+        <div class="form-group text-right mt-4">
             <a href="<?php echo site_url('aktifitas/pemindahan'); ?>" class="btn btn-secondary">
                 <i class="fas fa-times"></i> Batal
             </a>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Simpan
+            </button>
         </div>
         <?php echo form_close(); ?>
+    </div>
+</div>
+
+<!-- Modal untuk Pilih Barang -->
+<div class="modal fade" id="modalBarang" tabindex="-1" role="dialog" aria-labelledby="modalBarangLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalBarangLabel">Pilih Barang</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="cari_barang_modal"
+                            placeholder="Ketik nama barang, SKU, atau motor">
+                        <div class="input-group-append">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover compact small" id="table_barang_modal">
+                        <thead>
+                            <tr>
+                                <th width="4%">No</th>
+                                <th width="20%">Nama Barang</th>
+                                <th width="10%">Kode Barang</th>
+                                <th width="10%">SKU</th>
+                                <th width="8%">Ukuran</th>
+                                <th width="15%">Motor</th>
+                                <th width="10%">Warna</th>
+                                <th width="8%">Stok</th>
+                                <th width="6%">Satuan</th>
+                                <th width="9%">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data akan diisi via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+            </div>
+        </div>
     </div>
 </div>

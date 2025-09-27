@@ -1,3 +1,5 @@
+<!-- Tambahkan di bagian head -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 <script>
     $(document).ready(function () {
         // For Super Admin, get data based on company
@@ -39,7 +41,7 @@
                             $('#id_pelanggan').html(pelangganHtml);
 
                             // Reset barang tables
-                            $('#table_barang_tersedia tbody').html('<tr><td colspan="10" class="text-center">Pilih gudang terlebih dahulu</td></tr>');
+                            $('#table_barang_modal tbody').html('<tr><td colspan="10" class="text-center">Pilih gudang terlebih dahulu</td></tr>');
                             $('#table_barang_dipindahkan tbody').html('');
                             updateBarangDipindahkan();
                             updateJumlahBarang();
@@ -54,7 +56,7 @@
                     $('#id_gudang_asal').html('<option value="">-- Pilih Gudang --</option>');
                     $('#id_gudang_tujuan').html('<option value="">-- Pilih Gudang Tujuan --</option>');
                     $('#id_pelanggan').html('<option value="">-- Pilih Pelanggan --</option>');
-                    $('#table_barang_tersedia tbody').html('<tr><td colspan="10" class="text-center">Pilih gudang terlebih dahulu</td></tr>');
+                    $('#table_barang_modal tbody').html('<tr><td colspan="10" class="text-center">Pilih gudang terlebih dahulu</td></tr>');
                     $('#table_barang_dipindahkan tbody').html('');
                     updateBarangDipindahkan();
                     updateJumlahBarang();
@@ -66,6 +68,30 @@
                 $('#id_perusahaan').trigger('change');
             }
         <?php endif; ?>
+
+        // Validasi sebelum membuka modal barang
+        $('#btn-tambah-barang-modal').click(function (e) {
+            var id_gudang = $('#id_gudang_asal').val();
+
+            if (!id_gudang) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Tampilkan pesan peringatan
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Peringatan',
+                    text: 'Silakan pilih gudang asal terlebih dahulu!',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+
+                // Fokus ke select gudang
+                $('#id_gudang_asal').focus();
+
+                return false;
+            }
+        });
 
         // Toggle tipe tujuan
         $('#tipe_tujuan').change(function () {
@@ -126,12 +152,12 @@
             }
         });
 
-        // Get barang by gudang
+        // Get barang by gudang untuk modal
         $('#id_gudang_asal').change(function () {
             var id_gudang = $(this).val();
 
             if (id_gudang) {
-                $('#table_barang_tersedia tbody').html('<tr><td colspan="10" class="text-center">Loading...</td></tr>');
+                $('#table_barang_modal tbody').html('<tr><td colspan="10" class="text-center">Loading...</td></tr>');
 
                 $.ajax({
                     url: '<?php echo site_url('aktifitas/pemindahan/get_barang_by_gudang'); ?>',
@@ -155,38 +181,35 @@
                                     '<td>' + (item.warna || '-') + '</td>' +
                                     '<td>' + (item.jumlah - item.reserved) + '</td>' +
                                     '<td>' + (item.satuan || '-') + '</td>' +
-                                    '<td><button type="button" class="btn btn-sm btn-primary btn-tambah-barang" ' +
+                                    '<td><button type="button" class="btn btn-sm btn-primary btn-pilih-barang-modal" ' +
                                     'data-id_barang="' + item.id_barang + '" data-nama_barang="' + item.nama_barang + '" ' +
                                     'data-kode_barang="' + (item.kode_barang || '') + '" data-sku="' + item.sku + '" ' +
                                     'data-ukuran="' + (item.ukuran || '') + '" data-motor="' + (item.motor || '') + '" ' +
                                     'data-warna="' + (item.warna || '') + '" data-satuan="' + (item.satuan || '') + '" ' +
                                     'data-stok="' + (item.jumlah - item.reserved) + '">' +
-                                    '<i class="fas fa-plus"></i></button></td>' +
+                                    '<i class="fas fa-plus"></i> Pilih</button></td>' +
                                     '</tr>';
                             });
                         } else {
                             html = '<tr><td colspan="10" class="text-center">Tidak ada barang tersedia</td></tr>';
                         }
 
-                        $('#table_barang_tersedia tbody').html(html);
-                        updateJumlahBarang();
+                        $('#table_barang_modal tbody').html(html);
                     },
                     error: function () {
-                        $('#table_barang_tersedia tbody').html('<tr><td colspan="10" class="text-center">Error loading data</td></tr>');
+                        $('#table_barang_modal tbody').html('<tr><td colspan="10" class="text-center">Error loading data</td></tr>');
                     }
                 });
             } else {
-                $('#table_barang_tersedia tbody').html('<tr><td colspan="10" class="text-center">Pilih gudang terlebih dahulu</td></tr>');
-                updateJumlahBarang();
+                $('#table_barang_modal tbody').html('<tr><td colspan="10" class="text-center">Pilih gudang terlebih dahulu</td></tr>');
             }
         });
 
-        // Search barang
-        $('#cari_barang').keyup(function () {
+        // Search barang di modal
+        $('#cari_barang_modal').keyup(function () {
             var keyword = $(this).val().toLowerCase();
-            var visibleCount = 0;
 
-            $('#table_barang_tersedia tbody tr').each(function () {
+            $('#table_barang_modal tbody tr').each(function () {
                 var nama_barang = $(this).find('td:eq(1)').text().toLowerCase();
                 var sku = $(this).find('td:eq(3)').text().toLowerCase();
                 var kode_barang = $(this).find('td:eq(2)').text().toLowerCase();
@@ -194,18 +217,14 @@
 
                 if (nama_barang.indexOf(keyword) !== -1 || sku.indexOf(keyword) !== -1 || kode_barang.indexOf(keyword) !== -1 || motor.indexOf(keyword) !== -1) {
                     $(this).show();
-                    visibleCount++;
                 } else {
                     $(this).hide();
                 }
             });
-
-            // Update jumlah barang tersedia yang terlihat
-            $('#jumlah-barang-tersedia').text(visibleCount + ' barang');
         });
 
-        // Add barang to dipindahkan list
-        $(document).on('click', '.btn-tambah-barang', function () {
+        // Add barang to dipindahkan list dari modal
+        $(document).on('click', '.btn-pilih-barang-modal', function () {
             var id_barang = $(this).data('id_barang');
             var nama_barang = $(this).data('nama_barang');
             var kode_barang = $(this).data('kode_barang');
@@ -226,7 +245,13 @@
             });
 
             if (exists) {
-                alert('Barang sudah ditambahkan!');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Peringatan',
+                    text: 'Barang sudah ditambahkan!',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
                 return;
             }
 
@@ -249,6 +274,9 @@
             // Update hidden field and count
             updateBarangDipindahkan();
             updateJumlahBarang();
+
+            // Close modal
+            $('#modalBarang').modal('hide');
         });
 
         // Remove barang from dipindahkan list
@@ -256,7 +284,7 @@
             $(this).closest('tr').remove();
 
             // Renumber rows
-            $('#table_barang_dipindahkan tbody tr').each(function (index) {
+            $('#table_barang_dipindahan tbody tr').each(function (index) {
                 $(this).find('td:first').text(index + 1);
             });
 
@@ -286,10 +314,7 @@
 
         // Update jumlah barang badge
         function updateJumlahBarang() {
-            var tersediaCount = $('#table_barang_tersedia tbody tr:visible').length;
             var dipindahkanCount = $('#table_barang_dipindahkan tbody tr').length;
-
-            $('#jumlah-barang-tersedia').text(tersediaCount + ' barang');
             $('#jumlah-barang-dipindahkan').text(dipindahkanCount + ' barang');
         }
 
@@ -302,7 +327,13 @@
 
             if (barang.length === 0) {
                 e.preventDefault();
-                alert('Pilih minimal 1 barang untuk dipindahkan!');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Peringatan',
+                    text: 'Pilih minimal 1 barang untuk dipindahkan!',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
                 return false;
             }
 
@@ -310,7 +341,13 @@
             for (var i = 0; i < barang.length; i++) {
                 if (barang[i].jumlah <= 0) {
                     e.preventDefault();
-                    alert('Jumlah barang harus lebih dari 0!');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Peringatan',
+                        text: 'Jumlah barang harus lebih dari 0!',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'OK'
+                    });
                     return false;
                 }
             }
